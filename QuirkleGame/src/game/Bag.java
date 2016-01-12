@@ -97,5 +97,20 @@ public class Bag {
 		// TODO Implement body.
 	}
 	
+	/**
+	 * Returns the game this bag is for.
+	 * @return The game. You lost it.
+	 */
+	public Game getGame() {
+		return this.game;
+	}
+	
+	/**
+	 * Returns a string representation of the bag, showing the amount of tiles left.
+	 */
+	public String toString() {
+		return "Bag contains " + this.getNumberOfTiles() + " tiles.";
+	}
+	
 	
 }
