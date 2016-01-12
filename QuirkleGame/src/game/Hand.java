@@ -13,7 +13,7 @@ public class Hand {
 	 * @param ownerPlayer
 	 */
 	public Hand(Player ownerPlayer) {
-		
+		// TODO Implement body.
 	}
 	
 	/**
@@ -21,6 +21,7 @@ public class Hand {
 	 * @return boolean, true if succesful
 	 */
 	public boolean resetHand() {
+		// TODO Implement body.
 		return true;
 	}
 	
@@ -42,6 +43,7 @@ public class Hand {
 	 */
 	
 	public boolean addTohand(List<Tile> tileList) {
+		// TODO Implement body.
 		return true;
 	}
 	
@@ -73,6 +75,7 @@ public class Hand {
 	 */
 	
 	public Tile[] getTilesInHand() {
+		// TODO Implement body.
 		return null;
 	}
 	
@@ -81,6 +84,7 @@ public class Hand {
 	 * @return Player object
 	 */
 	public Player getOwnerOfHand() {
+		// TODO Implement body.
 		return null;
 	}
 	
@@ -90,7 +94,16 @@ public class Hand {
 	 */
 	
 	public int getAmountOfTiles() {
+		// TODO Implement body.
 		return 0;
+	}
+	
+	/**
+	 * @return a textual representation of the current hand.
+	 */
+	
+	public String toString() {
+		return "String";
 	}
 	
 	
