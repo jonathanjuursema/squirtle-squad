@@ -1,4 +1,4 @@
-package server;
+package protocol;
 
 /*
  * Protocol file downloaded on January 12 from:
