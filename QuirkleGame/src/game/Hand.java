@@ -17,6 +17,28 @@ public class Hand {
 	}
 	
 	/**
+	 * Check if the tile is currently in hand.
+	 * @param tile 
+	 * @return true if tile is in hand.
+	 */
+	
+	public boolean hasInHand(Tile tile) {
+		// TODO Implement body.
+		return true;
+	}
+	
+	/**
+	 * Check if the tiles is currently in hand.
+	 * @param tiles 
+	 * @return true if tile is in hand.
+	 */
+	
+	public boolean hasInHand(List<Tile> tiles) {
+		// TODO Implement body.
+		return true;
+	}
+	
+	/**
 	 * Reset the hand: it removes all the tiles an ensures that current hand is empty.
 	 * @return boolean, true if succesful
 	 */
