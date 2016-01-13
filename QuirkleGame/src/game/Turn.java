@@ -3,6 +3,8 @@ package game;
 import java.util.ArrayList;
 import java.util.List;
 
+import exceptions.SquareOutOfBoundsException;
+
 public class Turn {
 	
 	private List<Move> moves = new ArrayList<Move>();
@@ -81,20 +83,25 @@ public class Turn {
 		}
 	}
 	
-	public boolean isValidMove(Move m) {
+	public boolean isValidMove(Move m) throws SquareOutOfBoundsException {
+		Sequence row = new Sequence();
+		Sequence column = new Sequence(); 
+		
 		for(int i = 0; i < 4; i++){
 			Move currentMove = m;
 			
-			Sequence row = new Sequence(currentMove.getTileToPlay());
-			
 			while(!currentMove.getPosition().getNeighbour(i).isEmpty()) {
-				row.addTile(currentMove.getPosition().getNeighbour(i).getTile());
+				if ((i & 1) == 0) { 
+					row.addTile(currentMove.getPosition().getNeighbour(i).getTile());
+				} else {
+					column.addTile(currentMove.getPosition().getNeighbour(i).getTile());
+				}
 			}
-			
-			row.checkSequence();
 		}
 		
-		return true;
+		if(!row.checkSequence() || !column.checkSequence()) {
+			return false;
+		} else { return true; }
 	}
 	
 	

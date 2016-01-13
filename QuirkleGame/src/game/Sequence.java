@@ -20,6 +20,10 @@ public class Sequence {
 		this.shape = beginTile.getShape();
 	}
 	
+	public Sequence() {
+		
+	}
+	
 	/**
 	 * Add Tile to sequence.
 	 * If this.sequence.size() > 2 then the identity of the sequence will be determined.
@@ -48,12 +52,12 @@ public class Sequence {
 	 */
 		
 	public boolean checkSequence() {
+		List<Character> shape = new ArrayList<Character>();
+		List<Character> color = new ArrayList<Character>();
 		
-		if(this.color != null) {
+		for(Tile t: this.sequence) {
 			
-			List<Character> shape = new ArrayList<Character>();
-			
-			for(Tile t: this.sequence) {
+			if(this.color != null) {
 				if(shape.contains(t.getShape())) {
 					return false;
 				} else {
@@ -61,21 +65,14 @@ public class Sequence {
 				}
 			}
 			
-		}
-			
-		if(this.shape != null) {
-			
-			List<Character> color = new ArrayList<Character>();
-			
-			for(Tile t: this.sequence) {
+			if(this.shape != null) {
 				if(color.contains(t.getColor())) {
 					return false;
 				} else {
 					color.add(t.getColor());
 				}
 			}
-			
-		}
+		}	
 		
 		return true;
 	}
