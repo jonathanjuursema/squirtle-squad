@@ -3,6 +3,12 @@ package game;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * TODO Write file header.
+ * 
+ * @author Jonathan Juursema & Peter Wessels
+ *
+ */
 public class Move {
 	public Tile tileToPlay;
 	public BoardSquare position;

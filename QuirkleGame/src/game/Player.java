@@ -1,5 +1,11 @@
 package game;
 
+/**
+ * TODO Write file header.
+ * 
+ * @author Jonathan Juursema & Peter Wessels
+ *
+ */
 public abstract class Player {
 	public Hand hand;
 	public String name;
