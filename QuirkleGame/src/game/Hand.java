@@ -3,6 +3,13 @@ package game;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This hand represents the 'hand' of a player in real life. A hand contains a player's tiles
+ * and the contents of the hand can be manipulated through various functions.
+ * 
+ * @author Jonathan Juursema & Peter Wessels
+ *
+ */
 public class Hand {
 	private List<Tile> tilesInHand = new ArrayList<Tile>();
 	private Player ownerPlayer;
@@ -66,7 +73,6 @@ public class Hand {
 	
 	public void addTohand(List<Tile> tileList) {
 		// TODO Implement body.
-		return true;
 	}
 	
 	/**

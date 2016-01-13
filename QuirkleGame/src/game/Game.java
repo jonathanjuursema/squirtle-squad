@@ -5,9 +5,20 @@ import java.util.List;
 import server.ConnectionHandler;
 import server.Server;
 
+/**
+ * This class manages an entire game, including their players. It is instantiated by the
+ * server several clients are put in it.
+ * 
+ * @author Jonathan Juursema & Peter Wessels
+ *
+ */
 public class Game {
 	
-	private final static int TILESPERTYPE = 3;
+	public final static int DIFFERENTSHAPES = 6;
+	public final static int DIFFERENTCOLORS = 6;
+	
+	public final static int DEFAULTTILESPERTYPE = 3;
+	private int tilesPerType = Game.DEFAULTTILESPERTYPE;
 	
 	private int playerCount;
 	private List<Player> players;
@@ -86,6 +97,14 @@ public class Game {
 	 */
 	private void finish() {
 		// TODO Implement body.
+	}
+	
+	/**
+	 * Returns the amount of tiles per type for this game. Usually 3.
+	 * @return The amount of tiles per type.
+	 */
+	public int getTilesPerType() {
+		return this.tilesPerType;
 	}
 
 }
