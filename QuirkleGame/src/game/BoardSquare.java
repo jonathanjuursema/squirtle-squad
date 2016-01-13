@@ -2,10 +2,10 @@ package game;
 
 public class BoardSquare {
 	
-	public static final char NORTH = 'N';	
-	public static final char EAST = 'E';	
-	public static final char SOUTH = 'S';	
-	public static final char WEST = 'W';  
+	public static final int NORTH = 0;	
+	public static final int EAST = 1;	
+	public static final int SOUTH = 2;	
+	public static final int WEST = 3;  
 
 	private Tile tile;
 	
@@ -36,7 +36,7 @@ public class BoardSquare {
 	 * @param direction
 	 * @return
 	 */
-	public BoardSquare getNeighbour(char direction) {
+	public BoardSquare getNeighbour(int direction) {
 		// TODO Implement body;
 		return null;
 	}
