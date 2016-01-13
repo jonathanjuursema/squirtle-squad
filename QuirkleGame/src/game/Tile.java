@@ -1,7 +1,13 @@
 package game;
 
-import protocol.Protocol;
-
+/**
+ * A Tile represents a woorden tile in the real game. In the real game, there exist multiple
+ * copies of a tile with the same properties (same color, same shape). This is also true with 
+ * this implementation, because different tiles with the same properties have different addresses.
+ * 
+ * @author Jonathan Juursema & Peter Wessels
+ *
+ */
 public class Tile {
 	
 	public static final char RED = 'A';
@@ -10,6 +16,9 @@ public class Tile {
 	public static final char GREEN = 'D';
 	public static final char BLUE = 'E';
 	public static final char PURPLE = 'F'; 
+
+	public static final char FIRSTCOLOR = 'A';
+	public static final char LASTCOLOR = 'F';
 	
 	public static final char CIRCLE = 'A';
 	public static final char CROSS = 'B';
@@ -17,6 +26,9 @@ public class Tile {
 	public static final char SQUARE = 'D';
 	public static final char STAR = 'E';
 	public static final char PLUS = 'F'; 
+	
+	public static final char FIRSTSHAPE = 'A';
+	public static final char LASTSHAPE = 'F';
 	
 	private char color;
 	private char shape;
