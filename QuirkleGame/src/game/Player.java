@@ -6,11 +6,19 @@ public abstract class Player {
 	public String colour;
 	public Game game;
 	
-	
 	public Player(String name, String colour) {
 		// TODO: implement body
 	}
 	
+	/**
+	 * Submit the turn to the game.
+	 * @param turn the turn that needs passed through the game.
+	 */
+	
+	public void playTurn(Turn turn) {
+		// TODO: implement body
+	}
+
 	public Hand getHand() {
 		return hand;
 	}
