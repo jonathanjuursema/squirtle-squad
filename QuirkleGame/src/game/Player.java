@@ -6,6 +6,10 @@ public abstract class Player {
 	public String colour;
 	public Game game;
 	
+	public int score;
+	
+	public static enum status { IN_LOBBY, IN_GAME };
+	
 	public Player(String name, String colour) {
 		// TODO: implement body
 	}
@@ -18,11 +22,37 @@ public abstract class Player {
 	public void playTurn(Turn turn) {
 		// TODO: implement body
 	}
+	
+	/**
+	 * Increment the score.
+	 * @param amount
+	 */
+	
+	public void incrementScore(int amount) {
+		this.score += amount;
+	}
+	
+	/**
+	 * Returns the score of the player
+	 */
+	
+	public int getScore() {
+		return this.score;
+	}
+	
+	/**
+	 * Returns the hand of the player
+	 * @return
+	 */
 
 	public Hand getHand() {
 		return hand;
 	}
-
+	
+	/**
+	 * Assigns a hand to the player
+	 * @param hand
+	 */
 	public void assignHand(Hand hand) {
 		this.hand = hand;
 	}

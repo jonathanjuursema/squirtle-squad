@@ -64,7 +64,7 @@ public class Hand {
 	 * @return boolean True if succesful
 	 */
 	
-	public boolean addTohand(List<Tile> tileList) {
+	public void addTohand(List<Tile> tileList) {
 		// TODO Implement body.
 		return true;
 	}
@@ -75,9 +75,8 @@ public class Hand {
 	 * @return true if succesful
 	 */
 	
-	public boolean removeFromHand(Tile tile) {
+	public void removeFromHand(Tile tile) {
 		// TODO: Implement removeTileFromHand 
-		return true;
 	}
 	
 	/**

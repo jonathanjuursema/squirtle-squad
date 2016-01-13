@@ -11,5 +11,23 @@ public class Move {
 		this.tileToPlay = tile;
 		this.position = boardsquare;
 	}
+
+	public Tile getTileToPlay() {
+		return tileToPlay;
+	}
+
+	public void setTileToPlay(Tile tileToPlay) {
+		this.tileToPlay = tileToPlay;
+	}
+
+	public BoardSquare getPosition() {
+		return position;
+	}
+
+	public void setPosition(BoardSquare position) {
+		this.position = position;
+	}
+	
+	
 	
 }
