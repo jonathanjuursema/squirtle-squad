@@ -65,4 +65,12 @@ public class BoardSquare {
 		return this.y;
 	}
 	
+	/**
+	 * Returns the tile on this BoardSquare
+	 * @return The Tile on this BoardSquare
+	 */
+	
+	public Tile getTile() {
+		return this.tile;
+	}
 }
