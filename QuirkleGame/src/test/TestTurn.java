@@ -1,5 +1,6 @@
 package test;
 
+// TODO Convert this to a decent JUnit test. :)
 import exceptions.SquareOutOfBoundsException;
 import exceptions.TileNotInBagException;
 import exceptions.TooFewTilesInBagException;
