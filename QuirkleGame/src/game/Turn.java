@@ -118,33 +118,34 @@ public class Turn {
 		// Then we loop over the 4 directions 
 		// to check the tiles on both 4 directions.
 		for(int i = 0; i < 4; i++){
-			// The initial Move is set here
-			Move currentMove = m;
+			// The initial BoardSquare is set here
+			BoardSquare currentMove = m.getPosition();
 			
 			try {
 				// The while loop checks if the current move 
 				// has an neighbour in the current direction.
 				
-				while(!currentMove.getPosition().getNeighbour(i).isEmpty()) {
+				while(!currentMove.getNeighbour(i).isEmpty()) {
 					
 					// If the neighbour is not empty, 
 					// the tile will be added to the 
 					// corresponding row or column.
 					if ((i & 1) == 0) { 
-						row.addTile(currentMove.getPosition().getNeighbour(i).getTile());
+						row.addTile(currentMove.getNeighbour(i).getTile());
 					} else {
-						column.addTile(currentMove.getPosition().getNeighbour(i).getTile());
+						column.addTile(currentMove.getNeighbour(i).getTile());
 					}
+					// Setting the next currentMove
+					currentMove = currentMove.getNeighbour(i);
 				}
 			} catch (SquareOutOfBoundsException e) {
 				// If the neighbour is not existing the
 				// next direction will be checked by i++;
 				i++;
-				e.printStackTrace();
 			}
 		}
 		
-		// When all four the directions are check,
+		// When all four the directions are checked,
 		// both the row and column will be checked
 		// if the move is legal.
 		if(!row.checkSequence() || !column.checkSequence()) {
@@ -156,11 +157,13 @@ public class Turn {
 		// Determine if moves are in same row or column
 		List<Integer> directions = new ArrayList<Integer>();
 		if(this.getMoves().get(0).getPosition().getX() == this.getMoves().get(1).getPosition().getX()) {
-			directions.add(BoardSquare.EAST);
-			directions.add(BoardSquare.WEST);
-		} else if (this.getMoves().get(0).getPosition().getY() == this.getMoves().get(1).getPosition().getY()) {
+			// If the sequence is a row, then the columns needs to be checked
 			directions.add(BoardSquare.NORTH);
 			directions.add(BoardSquare.SOUTH);
+		} else if (this.getMoves().get(0).getPosition().getY() == this.getMoves().get(1).getPosition().getY()) {
+			// If the sequence is a column, then the rows needs to be checked
+			directions.add(BoardSquare.EAST);
+			directions.add(BoardSquare.WEST);
 		} else {
 			// Error
 		}
@@ -173,22 +176,22 @@ public class Turn {
 		// Setting the score to 0;
 		int score = 0;
 		
-		// Loop over the directions
-		for(Integer direction : directions){
+		// Loop over the moves that needs to be placed
+		for(Move m : this.getMoves()){
 			
-			// Loop over the moves that needs to be placed
-			for(Move m : this.getMoves()){
+			// Loop over the directions
+			for(Integer oppositeDirection : directions){
 				
 				// Initialize the sequence 
 				Sequence sequence = new Sequence();
 				
-				// Loop over the tiles on the board in opposite direction.
-				int oppositeDirection = (direction + 1) % 4;
+				// Get the initial BoardSquare
+				BoardSquare currentSquare = m.getPosition();
+				
+				// Add move to sequence
+				sequence.addTile(m.getTile());
 				
 				try {
-					// Get the initial BoardSquare
-					BoardSquare currentSquare = m.getPosition();
-					
 					// Loop over the neighbours in opposite directions
 					while(!this.getBoardCopy().getSquare(
 							currentSquare.getX(), 
@@ -199,18 +202,18 @@ public class Turn {
 								currentSquare.getX(), 
 								currentSquare.getY()).getNeighbour(oppositeDirection).getTile());
 						
-						// Set the new currentsquare
+						// Set the new currentSquare
 						currentSquare = this.getBoardCopy().getSquare(
 								currentSquare.getX(), 
 								currentSquare.getY()).getNeighbour(oppositeDirection);
 					}
 					
 				} catch (SquareOutOfBoundsException e) {
-					direction++;
+					continue;
 				}
 				
 				// adding the score of the sequence to the total score
-				score += sequence.getSize();
+				score += sequence.getScore();
 			}
 		}
 		
