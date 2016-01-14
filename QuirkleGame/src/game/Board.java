@@ -28,7 +28,7 @@ public class Board {
 		this.board = new BoardSquare[arraySize][arraySize];
 		for (int i = 0; i < arraySize; i++) {
 			for (int j = 0; j < arraySize; j++) {
-				this.board[i][j] = new BoardSquare(this, i, j);
+				this.board[i][j] = new BoardSquare(this, i - (board.length / 2), j - (board[0].length / 2));
 			}
 		}
 	}
@@ -109,7 +109,10 @@ public class Board {
 			 * To truly copy, we use System.arraycopy on every column and assign this copy
 			 * to the new column in boardCopy.
 			 */
-			System.arraycopy(this.board[i], 0, boardCopy[i], 0, this.board[i].length);
+			for (int j = 0; j < this.board[i].length; j++) {
+				boardCopy[i][j] = new BoardSquare(this, i, j);
+				boardCopy[i][j].placeTile(board[i][j].getTile());
+			}
 		}
 		// Finally, we construct a new Board using this copy of the board.
 		return new Board(this.game, boardCopy);
