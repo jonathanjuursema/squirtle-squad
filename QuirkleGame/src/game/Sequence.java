@@ -113,7 +113,10 @@ public class Sequence {
 		return true;
 	}
 	
-	public int getSize() {
+	public int getScore() {
+		if(this.sequence.size() == 6) {
+			return 12;
+		}
 		return this.sequence.size();
 	}
 

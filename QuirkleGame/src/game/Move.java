@@ -1,8 +1,5 @@
 package game;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * TODO Write file header.
  * 
@@ -10,6 +7,7 @@ import java.util.List;
  *
  */
 public class Move {
+	// TODO: Commenting
 	public Tile tileToPlay;
 	public BoardSquare position;
 	
@@ -18,7 +16,7 @@ public class Move {
 		this.position = boardsquare;
 	}
 
-	public Tile getTileToPlay() {
+	public Tile getTile() {
 		return tileToPlay;
 	}
 
@@ -34,6 +32,15 @@ public class Move {
 		this.position = position;
 	}
 	
-	
+	/**
+	 * This function will translate the object into 
+	 * a textual representation. It will print the
+	 * Tiles contained by the move and the play they
+	 * will be placed
+	 * @return String The message
+	 */
+	public String toString() {
+		return "Custom toString";
+	}
 	
 }
