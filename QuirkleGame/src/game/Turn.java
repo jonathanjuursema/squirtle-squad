@@ -47,7 +47,7 @@ public class Turn {
 		this.moves.add(move);
 		try {
 			this.isPossibleTurn();
-		} catch (IllegalTurnException | IllegalMoveException e) {
+		} catch (IllegalTurnException | IllegalMoveException | SquareOutOfBoundsException e) {
 			e.printStackTrace();
 			this.moves.remove(move);
 		}
@@ -65,9 +65,12 @@ public class Turn {
 	/**
 	 * Private function to check if current turn is possible.
 	 * @return true if turn is according to the game rules.
+	 * @throws SquareOutOfBoundsException
+	 * @throws IllegalTurnException
+	 * @throws IllegalMoveException
 	 */
 	
-	private boolean isPossibleTurn() throws IllegalTurnException, IllegalMoveException {
+	private boolean isPossibleTurn() throws IllegalTurnException, IllegalMoveException, SquareOutOfBoundsException  {
 		
 		// Check if an swapRequest has been added
 		if(this.swapRequest != null) {
@@ -85,17 +88,13 @@ public class Turn {
 			if(this.swapRequest != null) {
 				throw new IllegalTurnException();
 			}
+			
 			// Loop over the moves
 			for(Move m : this.getMoves()){
 				// Try to place the tile's on the corresponding boardsquare
-				try {
-					this.getBoardCopy().placeTile(m.getTile(), 
+				this.getBoardCopy().placeTile(m.getTile(), 
 							m.getPosition().getX(), 
 							m.getPosition().getY());
-				} catch (SquareOutOfBoundsException e) {
-					// If the tile could not be placed, then return false
-					return false;
-				}
 				
 				// Check if every move is according to the game rules
 				if(!this.isValidMove(m)) {
