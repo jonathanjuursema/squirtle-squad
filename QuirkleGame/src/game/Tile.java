@@ -82,18 +82,18 @@ public class Tile {
 		}
 		
 		response += " ";
-		
-		if (this.getColor() == Tile.CIRCLE) {
+		// Editted getColor to getShape
+		if (this.getShape() == Tile.CIRCLE) {
 			response += "CIRCLE";
-		} else if (this.getColor() == Tile.CROSS) {
+		} else if (this.getShape() == Tile.CROSS) {
 			response += "CROSS";
-		} else if (this.getColor() == Tile.DIAMOND) {
+		} else if (this.getShape() == Tile.DIAMOND) {
 			response += "DIAMOND";
-		} else if (this.getColor() == Tile.SQUARE) {
+		} else if (this.getShape() == Tile.SQUARE) {
 			response += "SQUARE";
-		} else if (this.getColor() == Tile.STAR) {
+		} else if (this.getShape() == Tile.STAR) {
 			response += "STAR";
-		} else if (this.getColor() == Tile.PLUS) {
+		} else if (this.getShape() == Tile.PLUS) {
 			response += "PLUS";
 		}
 		
