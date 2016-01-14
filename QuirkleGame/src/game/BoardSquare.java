@@ -114,4 +114,14 @@ public class BoardSquare {
  	public int getY() {
 		return this.y;
 	}
+ 	
+ 	public String toString() {
+ 		if (this.tile != null) {
+ 			return "BoardSquare on position X:" + this.x + " Y:" + this.y + " "
+ 					+ "with tile " + this.tile.toString() + ".";
+ 		} else {
+
+ 	 		return "Empty BoardSquare on position X:" + this.x + " Y:" + this.y + ".";
+ 		}
+ 	}
 }
