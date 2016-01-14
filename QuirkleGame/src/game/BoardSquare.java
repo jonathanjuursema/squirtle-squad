@@ -72,13 +72,13 @@ public class BoardSquare {
 	public BoardSquare getNeighbour(int direction) throws SquareOutOfBoundsException {
 		switch (direction) {
 			case BoardSquare.NORTH:
-				return this.board.getSquare(this.x + 1, this.y);
-			case BoardSquare.EAST:
 				return this.board.getSquare(this.x, this.y + 1);
+			case BoardSquare.EAST:
+				return this.board.getSquare(this.x + 1, this.y);
 			case BoardSquare.SOUTH:
-				return this.board.getSquare(this.x - 1, this.y);
-			case BoardSquare.WEST:
 				return this.board.getSquare(this.x, this.y - 1);
+			case BoardSquare.WEST:
+				return this.board.getSquare(this.x - 1, this.y);
 			default:
 				return null;
 		}
