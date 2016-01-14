@@ -22,9 +22,11 @@ public class Sequence {
 	
 	public Sequence(Tile beginTile) {
 		this.addTile(beginTile);
-		this.color = beginTile.getColor();
-		this.shape = beginTile.getShape();
 	}
+	
+	/**
+	 * Constructing the sequence with no beginTile
+	 */
 	
 	public Sequence() {
 		
@@ -37,50 +39,82 @@ public class Sequence {
 	 */
 	
 	public void addTile(Tile tile) {
+		
+		// If the sequence has 2 tiles, the type of the sequence
+		// can be determined.
+		
 		if(this.sequence.size() == 2) {
-			// If 2 tiles are placed, the identity of the sequence can be determined
+			
+			// If the first and second tile got the same color
+			// the sequence resembles in the same color.
+			// If the first and second tile got the same shape
+			// the sequence resembles in the same shape.
+			
 			if(this.sequence.get(0).getColor() == this.sequence.get(1).getColor()) {
 				this.color = this.sequence.get(0).getColor();
 			} else if(this.sequence.get(0).getShape() == this.sequence.get(1).getShape()) {
 				this.shape = this.sequence.get(0).getShape();
-			} else {
-				//throw new IllegalMoveException("");
 			}
+			
+			// an extra else statement could be made if
+			// both tiles do not corresponded. But I chose
+			// to implement this in the checkSequence() method.
+			// Otherwise this function throws an IllegalMoveException,
+			// which is not desirable.
 		}
 		
+		// Always add the tile to the sequence
 		this.sequence.add(tile);
 	}
 	
 	/**
-	 * Checks if the current sequence is 
-	 * according to the game rules.
+	 * Checks if the current sequence is according to the game rules.
+	 * The function checks the sequence according to the identity.
 	 * @return true if sequence if according to the game rules
 	 */
 		
 	public boolean checkSequence() {
+		// If only 1 tile is representing the sequence,
+		// the sequence does not have to be checked.
+		if(this.sequence.size() == 1) {
+			return true;
+		}
+		
+		// The lists that are used to check the content of an sequence
 		List<Character> shape = new ArrayList<Character>();
 		List<Character> color = new ArrayList<Character>();
 		
+		// Loop over every tile in the sequence
 		for(Tile t: this.sequence) {
 			
+			// If the sequence resembles in the same colour
 			if(this.color != null) {
+				// check if the same shape already exists.
 				if(shape.contains(t.getShape())) {
 					return false;
 				} else {
+					// If not, add the shape to the list
 					shape.add(t.getShape());
 				}
-			}
-			
-			if(this.shape != null) {
+			} else if(this.shape != null) {
+				// check if the same colour already exists.
 				if(color.contains(t.getColor())) {
 					return false;
 				} else {
+					// If not, add the colour to the list
 					color.add(t.getColor());
 				}
+			} else { 
+				// If the sequence has no identity
+				return false;
 			}
 		}	
 		
 		return true;
+	}
+	
+	public int getSize() {
+		return this.sequence.size();
 	}
 
 }
