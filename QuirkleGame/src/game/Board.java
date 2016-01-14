@@ -28,7 +28,8 @@ public class Board {
 		this.board = new BoardSquare[arraySize][arraySize];
 		for (int i = 0; i < arraySize; i++) {
 			for (int j = 0; j < arraySize; j++) {
-				this.board[i][j] = new BoardSquare(this, i - (board.length / 2), j - (board[0].length / 2));
+				this.board[i][j] = 
+						new BoardSquare(this, i - (board.length / 2), j - (board[0].length / 2));
 			}
 		}
 	}
@@ -70,6 +71,7 @@ public class Board {
 	 * @throws SquareOutOfBoundsException When a coordinate is out of bounds.
 	 */
 	public void placeTile(Tile tile, int x, int y) throws SquareOutOfBoundsException {
+		// TODO Should throw exception when there is already a tile.
 		this.getSquare(x, y).placeTile(tile);
 	}
 	
@@ -81,6 +83,7 @@ public class Board {
 	 * @throws SquareOutOfBoundsException When a coordinate is out of bounds.
 	 */
 	public void removeTile(int x, int y) throws SquareOutOfBoundsException {
+		// TODO Should throw exception when there is no tile.
 		this.getSquare(x, y).removeTile();
 	}
 	
