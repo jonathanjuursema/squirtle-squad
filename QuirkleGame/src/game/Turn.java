@@ -51,6 +51,7 @@ public class Turn {
 			e.printStackTrace();
 			this.moves.remove(move);
 		}
+		this.score = this.getScore();
 		// TODO: implement further
 	}
 	
@@ -107,7 +108,7 @@ public class Turn {
 		return true;
 	}
 	
-	public boolean isValidMove(Move m) {
+	private boolean isValidMove(Move m) {
 		// We first create 2 sequences to 
 		// represent the horizontal line, the row
 		// and the vertical line, the column 
@@ -152,7 +153,17 @@ public class Turn {
 		} else { return true; }
 	}
 	
-	public int calculateScore() {
+	/**
+	 * The function getScore() calculates the score
+	 * of the current turn according to the game rules.
+	 * First will determined if the moves form a row
+	 * or a column. Of each tile the corresponding 
+	 * neighbours (in case of a row, the columns and
+	 * viceversa) will be counted.
+	 * @return The score of the whole turn.
+	 */
+	
+	public int getScore() {
 		// Determine if moves are in same row or column
 		List<Integer> directions = new ArrayList<Integer>();
 		if(this.getMoves().get(0).getPosition().getX() == this.getMoves().get(1).getPosition().getX()) {
@@ -217,7 +228,6 @@ public class Turn {
 		}
 		
 		// TODO: Add score of column/row of sequence
-		
 		return score;
 	}
 	

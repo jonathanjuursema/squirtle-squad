@@ -6,7 +6,7 @@ package game;
  * @author Jonathan Juursema & Peter Wessels
  *
  */
-public abstract class Player {
+public class Player {
 	public Hand hand;
 	public String name;
 	public String colour;
@@ -18,6 +18,7 @@ public abstract class Player {
 	
 	public Player(String name, String colour) {
 		// TODO: implement body
+		this.name = name;
 	}
 	
 	/**
