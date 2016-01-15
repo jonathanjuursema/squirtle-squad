@@ -33,6 +33,8 @@ public class BoardTest {
 
 	@Test
 	public void testNeighbourBoardSquare() throws SquareOutOfBoundsException {
+		assertEquals(null, board.getSquare(0, 5).getNeighbour(6));
+		
 		assertEquals(board.getSquare(0, 6), board.getSquare(0, 5).getNeighbour(BoardSquare.NORTH));
 		assertEquals(board.getSquare(7, 3), board.getSquare(6, 3).getNeighbour(BoardSquare.EAST));
 		assertEquals(board.getSquare(2, -1), board.getSquare(2, 0).getNeighbour(BoardSquare.SOUTH));
@@ -71,8 +73,19 @@ public class BoardTest {
 	}
 	
 	@Test
-	public void testBoardCopy() {
-		// TODO Implement;
+	public void testBoardCopy() throws SquareOutOfBoundsException {
+		board.placeTile(new Tile(Tile.BLUE, Tile.CIRCLE), 0, 0);
+		board.placeTile(new Tile(Tile.RED, Tile.SQUARE), 0, 1);
+		board.placeTile(new Tile(Tile.ORANGE, Tile.DIAMOND), -1, 0);
+		board.placeTile(new Tile(Tile.PURPLE, Tile.STAR), 3, 3);
+		board.placeTile(new Tile(Tile.GREEN, Tile.CROSS), -2, 4);
+		
+		System.out.println(board.toString());
+		
+		Board board2 = new Board(game);
+		board2.setBoard(board.copy(board2));
+		
+		System.out.println(board2.toString());
 	}
 	
 	@Test
