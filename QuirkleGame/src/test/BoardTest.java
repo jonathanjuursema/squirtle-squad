@@ -37,6 +37,11 @@ public class BoardTest {
 		assertEquals(board.getSquare(7, 3), board.getSquare(6, 3).getNeighbour(BoardSquare.EAST));
 		assertEquals(board.getSquare(2, -1), board.getSquare(2, 0).getNeighbour(BoardSquare.SOUTH));
 		assertEquals(board.getSquare(-5, -7), board.getSquare(-4, -7).getNeighbour(BoardSquare.WEST));
+
+		assertEquals(board.getSquare(3, 4), board.getSquare(3, 4).getNeighbour(BoardSquare.NORTH).getNeighbour(BoardSquare.SOUTH));
+		assertEquals(board.getSquare(7, 3), board.getSquare(7, 3).getNeighbour(BoardSquare.SOUTH).getNeighbour(BoardSquare.NORTH));
+		assertEquals(board.getSquare(-8, 3), board.getSquare(-8, 3).getNeighbour(BoardSquare.EAST).getNeighbour(BoardSquare.WEST));
+		assertEquals(board.getSquare(0, 0), board.getSquare(0, 0).getNeighbour(BoardSquare.WEST).getNeighbour(BoardSquare.EAST));
 	}
 	
 	@Test
@@ -52,6 +57,17 @@ public class BoardTest {
 		
 		board.removeTile(2, 3);
 		assertTrue(board.getSquare(2, 3).isEmpty());
+	}
+	
+	@Test
+	public void testToString() throws SquareOutOfBoundsException {
+		board.placeTile(new Tile(Tile.BLUE, Tile.CIRCLE), 0, 0);
+		board.placeTile(new Tile(Tile.RED, Tile.SQUARE), 0, 1);
+		board.placeTile(new Tile(Tile.ORANGE, Tile.DIAMOND), -1, 0);
+		board.placeTile(new Tile(Tile.PURPLE, Tile.STAR), 3, 3);
+		board.placeTile(new Tile(Tile.GREEN, Tile.CROSS), -2, 4);
+		
+		System.out.println(board.toString());
 	}
 	
 	@Test
