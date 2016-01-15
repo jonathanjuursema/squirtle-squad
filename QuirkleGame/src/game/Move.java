@@ -40,7 +40,7 @@ public class Move {
 	 * @return String The message
 	 */
 	public String toString() {
-		return "Custom toString";
+		return "Move with Tile " + this.tileToPlay.toString() + " on " + this.position.toString();
 	}
 	
 }

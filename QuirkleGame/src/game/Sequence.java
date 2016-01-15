@@ -43,8 +43,8 @@ public class Sequence {
 		// If the sequence has 2 tiles, the type of the sequence
 		// can be determined.
 		
-		if(this.sequence.size() == 2) {
-			
+		if(this.sequence.size() == 1) {
+			System.out.println("Bepalen van de identity");
 			// If the first and second tile got the same color
 			// the sequence resembles in the same color.
 			// If the first and second tile got the same shape
@@ -111,6 +111,26 @@ public class Sequence {
 		}	
 		
 		return true;
+	}
+	
+	public String toString() {
+		String message;
+		message = "Sequence with ";
+		if(color != null && shape == null) {
+			message += "the same COLOR as identity \n";
+		} else if (color == null && shape != null) {
+			message += "the same SHAPE as identity \n";
+		} else {
+			message += "an unknown identity";
+		}
+		
+		if(this.sequence.size() > 0) {
+			message += " with the following tiles:\n";
+			message += this.sequence.toString();
+		} else { 
+			message += " is empty";
+		}
+		return message;
 	}
 	
 	public int getScore() {
