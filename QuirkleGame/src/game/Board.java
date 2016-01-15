@@ -38,20 +38,6 @@ public class Board {
 	}
 
 	/**
-	 * Initializes a game board for a given game, using a given board. Useful
-	 * for copying a game board.
-	 * 
-	 * @param game
-	 *            The game. You lost it.
-	 * @param board
-	 *            A COPY of another game board.
-	 */
-	public Board(Game game, BoardSquare[][] board) {
-		this(game);
-		this.board = board;
-	}
-
-	/**
 	 * Retrieves the BoardSquare on a specified position on the Board.
 	 * 
 	 * @param xcoord
@@ -124,11 +110,24 @@ public class Board {
 	}
 
 	/**
+	 * Overwrites the current board with a new board. This is useful after
+	 * making copies.
+	 * 
+	 * @param board
+	 *            The new BoardSquare array.
+	 */
+	public void setBoard(BoardSquare[][] board) {
+		this.board = board;
+	}
+
+	/**
 	 * Returns a copy of the game board.
 	 * 
+	 * @param board
+	 *            The (empty) board to which BoardSquares should be associated.
 	 * @return A copy of the game board.
 	 */
-	public BoardSquare[][] copy() {
+	public BoardSquare[][] copy(Board board) {
 		// We make a new 2D-array of board squares of the same size as our
 		// current board.
 		BoardSquare[][] boardCopy = new BoardSquare[this.board.length][this.board[0].length];
@@ -140,8 +139,8 @@ public class Board {
 			 * and assign this copy to the new column in boardCopy.
 			 */
 			for (int j = 0; j < this.board[i].length; j++) {
-				boardCopy[i][j] = new BoardSquare(this, board[i][j].getX(), board[i][j].getY(),
-								board[i][j].getTile());
+				boardCopy[i][j] = new BoardSquare(board, this.board[i][j].getX(),
+								this.board[i][j].getY(), this.board[i][j].getTile());
 			}
 		}
 		// Finally, we construct a new Board using this copy of the board.
@@ -191,9 +190,10 @@ public class Board {
 			representation = representation.concat(String.format("% 3d", x) + "|");
 			linesep = linesep.concat("---+");
 		}
-		
-		representation = representation.concat(System.lineSeparator() + linesep + System.lineSeparator());
-		
+
+		representation = representation
+						.concat(System.lineSeparator() + linesep + System.lineSeparator());
+
 		for (int y = minY; y <= maxY; y++) {
 			representation = representation.concat(" " + String.format("% 3d", y) + "|");
 			for (int x = minX; x <= maxX; x++) {
@@ -202,15 +202,17 @@ public class Board {
 					if (s.isEmpty()) {
 						representation = representation.concat("   |");
 					} else {
-						representation = representation.concat(
-										String.valueOf(s.getTile().getColor()) + 
-										String.valueOf(s.getTile().getShape()) + " |");
+						representation = representation
+										.concat(String.valueOf(s.getTile().getColor())
+														+ String.valueOf(s.getTile().getShape())
+														+ " |");
 					}
-				} catch (SquareOutOfBoundsException e) { }
+				} catch (SquareOutOfBoundsException e) {
+				}
 			}
-			representation = representation.concat(System.lineSeparator() + linesep + System.lineSeparator());
+			representation = representation
+							.concat(System.lineSeparator() + linesep + System.lineSeparator());
 		}
-		
 
 		return representation;
 	}

@@ -82,7 +82,8 @@ public class BoardTest {
 		
 		System.out.println(board.toString());
 		
-		Board board2 = new Board(game, board.copy());
+		Board board2 = new Board(game);
+		board2.setBoard(board.copy(board2));
 		
 		System.out.println(board2.toString());
 	}
