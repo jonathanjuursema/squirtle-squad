@@ -13,7 +13,7 @@ public class SquareOutOfBoundsException extends QwirkleException {
 	char vector;
 	
 	public SquareOutOfBoundsException(int index, int max, char vector) {
-		this.index = index;
+		this.index = index - (max / 2);
 		this.max = max / 2;
 		this.min = (this.max - 1) * -1;
 		this.vector = vector;
