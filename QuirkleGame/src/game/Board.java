@@ -183,29 +183,26 @@ public class Board {
 		String representation = "Displaying board from (" + minX + "," + minY + ") to (" + maxX
 						+ "," + maxY + ")." + System.lineSeparator() + System.lineSeparator();
 
-		representation = representation.concat("    |");
+		representation = representation.concat("     |");
 
-		String linesep = " ---+";
+		String linesep = " ----+";
 		for (int x = minX; x <= maxX; x++) {
-			representation = representation.concat(String.format("% 3d", x) + "|");
-			linesep = linesep.concat("---+");
+			representation = representation.concat(String.format("% 3d ", x) + "|");
+			linesep = linesep.concat("----+");
 		}
 
 		representation = representation
 						.concat(System.lineSeparator() + linesep + System.lineSeparator());
 
 		for (int y = minY; y <= maxY; y++) {
-			representation = representation.concat(" " + String.format("% 3d", y) + "|");
+			representation = representation.concat(" " + String.format("% 3d ", y) + "|");
 			for (int x = minX; x <= maxX; x++) {
 				try {
 					BoardSquare s = this.getSquare(x, y);
 					if (s.isEmpty()) {
-						representation = representation.concat("   |");
+						representation = representation.concat("    |");
 					} else {
-						representation = representation
-										.concat(String.valueOf(s.getTile().getColor())
-														+ String.valueOf(s.getTile().getShape())
-														+ " |");
+						representation = representation.concat(" " + s.getTile() + " |");
 					}
 				} catch (SquareOutOfBoundsException e) {
 				}
