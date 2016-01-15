@@ -71,8 +71,18 @@ public class BoardTest {
 	}
 	
 	@Test
-	public void testBoardCopy() {
-		// TODO Implement;
+	public void testBoardCopy() throws SquareOutOfBoundsException {
+		board.placeTile(new Tile(Tile.BLUE, Tile.CIRCLE), 0, 0);
+		board.placeTile(new Tile(Tile.RED, Tile.SQUARE), 0, 1);
+		board.placeTile(new Tile(Tile.ORANGE, Tile.DIAMOND), -1, 0);
+		board.placeTile(new Tile(Tile.PURPLE, Tile.STAR), 3, 3);
+		board.placeTile(new Tile(Tile.GREEN, Tile.CROSS), -2, 4);
+		
+		System.out.println(board.toString());
+		
+		Board board2 = new Board(game, board.copy());
+		
+		System.out.println(board2.toString());
 	}
 	
 	@Test
