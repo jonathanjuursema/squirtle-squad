@@ -47,6 +47,10 @@ public class BoardSquareTest {
 	
 	@Test
 	public void testTiles() {
+
+		assertTrue(bs1.isEmpty());
+		assertFalse(bs2.isEmpty());
+		assertTrue(bs3.isEmpty());
 		
 		assertEquals(t2, bs2.getTile());
 		assertEquals(null, bs1.getTile());
@@ -64,6 +68,16 @@ public class BoardSquareTest {
 		
 		assertEquals(t1, bs2.getTile());
 
+	}
+	
+	@Test
+	public void testToString() {
+		assertTrue(bs1.toString().toLowerCase().contains("empty"));
+		assertTrue(bs2.toString().toLowerCase().contains("tile"));
+		assertTrue(bs3.toString().toLowerCase().contains("empty"));
+		assertFalse(bs1.toString().toLowerCase().contains("tile"));
+		assertFalse(bs2.toString().toLowerCase().contains("empty"));
+		assertFalse(bs3.toString().toLowerCase().contains("tile"));
 	}
 
 }

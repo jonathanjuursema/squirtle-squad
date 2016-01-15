@@ -33,6 +33,8 @@ public class BoardTest {
 
 	@Test
 	public void testNeighbourBoardSquare() throws SquareOutOfBoundsException {
+		assertEquals(null, board.getSquare(0, 5).getNeighbour(6));
+		
 		assertEquals(board.getSquare(0, 6), board.getSquare(0, 5).getNeighbour(BoardSquare.NORTH));
 		assertEquals(board.getSquare(7, 3), board.getSquare(6, 3).getNeighbour(BoardSquare.EAST));
 		assertEquals(board.getSquare(2, -1), board.getSquare(2, 0).getNeighbour(BoardSquare.SOUTH));

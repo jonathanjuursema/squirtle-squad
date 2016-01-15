@@ -116,11 +116,10 @@ public class BoardSquare {
 	}
  	
  	public String toString() {
- 		if (this.tile != null) {
+ 		if (!this.isEmpty()) {
  			return "BoardSquare on position X:" + this.x + " Y:" + this.y + " "
  					+ "with tile " + this.tile.toString() + ".";
  		} else {
-
  	 		return "Empty BoardSquare on position X:" + this.x + " Y:" + this.y + ".";
  		}
  	}
