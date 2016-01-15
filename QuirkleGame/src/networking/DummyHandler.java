@@ -1,5 +1,7 @@
 package networking;
 
+import java.net.Socket;
+
 /**
  * A dummy ConnectionHandler for testing purposes.
  * 
@@ -9,7 +11,7 @@ package networking;
 public class DummyHandler extends ConnectionHandler {
 
 	public DummyHandler() {
-		super(null);
+		super(new Socket());
 	}
 
 	@Override
