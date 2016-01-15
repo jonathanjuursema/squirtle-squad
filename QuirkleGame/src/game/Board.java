@@ -113,9 +113,8 @@ public class Board {
 			 * to the new column in boardCopy.
 			 */
 			for (int j = 0; j < this.board[i].length; j++) {
-				boardCopy[i][j] = new BoardSquare(
-								this, i - (board.length / 2), j - (board[0].length / 2));
-				boardCopy[i][j].placeTile(board[i][j].getTile());
+				boardCopy[i][j] = new BoardSquare(this, 
+								board[i][j].getX(), board[i][j].getY(), board[i][j].getTile());
 			}
 		}
 		// Finally, we construct a new Board using this copy of the board.
