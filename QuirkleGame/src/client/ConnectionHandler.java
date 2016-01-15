@@ -1,16 +1,20 @@
-package server;
+package client;
 
 import java.net.Socket;
 
-import game.Player;
-
+/**
+ * TODO File header.
+ * 
+ * @author Jonathan Juursema & Peter Wessels
+ *
+ */
 public class ConnectionHandler extends networking.ConnectionHandler {
 	
-	private Player player;
+	private Client client;
 
-	public ConnectionHandler(Socket socket, Player player) {
+	public ConnectionHandler(Socket socket, Client client) {
 		super(socket);
-		this.player = player;
+		this.client = client;
 	}
 
 	@Override

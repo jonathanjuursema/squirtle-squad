@@ -2,7 +2,7 @@ package game;
 
 import java.util.List;
 
-import server.ConnectionHandler;
+import networking.ConnectionHandler;
 import server.Server;
 
 /**

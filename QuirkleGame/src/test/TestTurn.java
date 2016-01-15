@@ -13,13 +13,14 @@ import game.Move;
 import game.Player;
 import game.Tile;
 import game.Turn;
-import server.ConnectionHandler;
+import networking.ConnectionHandler;
+import networking.DummyHandler;
 
 public class TestTurn {
 
 	public static void main(String[] args) throws TooFewTilesInBagException, TileNotInBagException, SquareOutOfBoundsException {
 		// TODO Auto-generated method stub
-		ConnectionHandler connectionHandler = new ConnectionHandler();
+		ConnectionHandler connectionHandler = new DummyHandler();
 		Game game = new Game(connectionHandler);
 		Board board = new Board(game);
 		
