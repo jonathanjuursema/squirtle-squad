@@ -128,7 +128,7 @@ public class Board {
 	 * 
 	 * @return A copy of the game board.
 	 */
-	public Board copy() {
+	public BoardSquare[][] copy() {
 		// We make a new 2D-array of board squares of the same size as our
 		// current board.
 		BoardSquare[][] boardCopy = new BoardSquare[this.board.length][this.board[0].length];
@@ -145,7 +145,7 @@ public class Board {
 			}
 		}
 		// Finally, we construct a new Board using this copy of the board.
-		return new Board(this.game, boardCopy);
+		return boardCopy;
 	}
 
 	/**
