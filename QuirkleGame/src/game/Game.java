@@ -22,7 +22,7 @@ public class Game {
 	
 	private int playerCount;
 	private List<Player> players;
-	private int currentPlayer;
+	private Player currentPlayer;
 	
 	private Server parentServer;
 	private ConnectionHandler remoteServer;
@@ -105,6 +105,13 @@ public class Game {
 	 */
 	public int getTilesPerType() {
 		return this.tilesPerType;
+	}
+	
+	/**
+	 * Get the current player for this game.
+	 */
+	public Player getCurrentPlayer() {
+		return this.currentPlayer;
 	}
 
 }
