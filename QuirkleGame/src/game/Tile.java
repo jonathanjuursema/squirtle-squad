@@ -60,44 +60,41 @@ public class Tile {
 	}
 	
 	/**
-	 * Returns a textual representation of the tile in format [COLOR SHAPE].
+	 * Returns a textual representation of the tile.
 	 * @return The textual representation.
 	 */
 	public String toString() {
 		
-		String response = "[";
+		String response = "";
 		
 		if (this.getColor() == Tile.RED) {
-			response += "RED";
+			response += "R";
 		} else if (this.getColor() == Tile.ORANGE) {
-			response += "ORANGE";
+			response += "O";
 		} else if (this.getColor() == Tile.YELLOW) {
-			response += "YELLOW";
+			response += "Y";
 		} else if (this.getColor() == Tile.GREEN) {
-			response += "GREEN";
+			response += "G";
 		} else if (this.getColor() == Tile.BLUE) {
-			response += "BLUE";
+			response += "B";
 		} else if (this.getColor() == Tile.PURPLE) {
-			response += "PURPLE";
+			response += "P";
 		}
 		
-		response += " ";
 		// Editted getColor to getShape
 		if (this.getShape() == Tile.CIRCLE) {
-			response += "CIRCLE";
+			response += "@";
 		} else if (this.getShape() == Tile.CROSS) {
-			response += "CROSS";
+			response += "!";
 		} else if (this.getShape() == Tile.DIAMOND) {
-			response += "DIAMOND";
+			response += "#";
 		} else if (this.getShape() == Tile.SQUARE) {
-			response += "SQUARE";
+			response += "%";
 		} else if (this.getShape() == Tile.STAR) {
-			response += "STAR";
+			response += "&";
 		} else if (this.getShape() == Tile.PLUS) {
-			response += "PLUS";
+			response += "+";
 		}
-		
-		response += "]";
 		
 		return response;
 		
