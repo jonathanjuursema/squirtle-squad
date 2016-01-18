@@ -75,9 +75,12 @@ public class Turn {
 	 * 
 	 * @param swap
 	 *            object with the tiles that needs to be swapped.
+	 * @throws IllegalTurnException 
 	 */
-	public void addSwapRequest(Swap swap) {
-		// TODO: implement further
+	public void addSwapRequest(Swap swap) throws IllegalTurnException {
+		if (this.getMoves().size() != 0) {
+			throw new IllegalTurnException();
+		}
 	}
 
 	/**
@@ -95,11 +98,6 @@ public class Turn {
 
 		// Check if an swapRequest has been added
 		if (this.swapRequest != null) {
-			// If an swap request has been added then no moves can be added
-			if (this.getMoves().size() != 0) {
-				throw new IllegalTurnException();
-			}
-			
 			// TODO: check swapRequest
 		}
 
@@ -242,6 +240,10 @@ public class Turn {
 	
 	public boolean isReady() {
 		return this.isReady;
+	}
+	
+	public Player getPlayer() {
+		return this.assignedPlayer;
 	}
 
 	public String toString() {
