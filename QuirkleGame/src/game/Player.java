@@ -7,10 +7,11 @@ package game;
  *
  */
 public class Player {
-	public Hand hand;
-	public String name;
-	public String colour;
-	public Game game;
+	private Hand hand;
+	private String name;
+	private String colour;
+	private Game game;
+	private Turn turn;
 	
 	public int score;
 	
@@ -21,13 +22,19 @@ public class Player {
 		this.name = name;
 	}
 	
+	public void giveTurn(Turn turn) {
+		this.turn = turn;
+	}
+	
 	/**
 	 * Submit the turn to the game.
 	 * @param turn the turn that needs passed through the game.
 	 */
 	
-	public void playTurn(Turn turn) {
+	public void playTurn() {
 		// TODO: implement body
+		this.turn.setReady();
+		this.turn = null;
 	}
 	
 	/**
