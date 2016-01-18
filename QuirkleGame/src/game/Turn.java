@@ -2,6 +2,7 @@ package game;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.Condition;
 
 import exceptions.IllegalMoveException;
 import exceptions.IllegalTurnException;
@@ -22,6 +23,10 @@ public class Turn {
 
 	private Swap swapRequest = null;
 	private Player assignedPlayer;
+	
+	private Condition readySignal;
+	
+	private boolean isReady;
 
 	private int score;
 
@@ -32,10 +37,11 @@ public class Turn {
 	 * @param player
 	 */
 
-	public Turn(Board board, Game game, Player currentPlayer) {
-		this.boardCopy = new Board(game);
+	public Turn(Board board, Player currentPlayer, Condition readySignal) {
+		this.boardCopy = new Board(board.getGame());
 		this.boardCopy.setBoard(board.copy(this.boardCopy));		
 		this.assignedPlayer = currentPlayer;
+		this.isReady = false;
 		// TODO: implement body
 	}
 
@@ -227,6 +233,15 @@ public class Turn {
 
 	public void setBoardCopy(Board boardCopy) {
 		this.boardCopy = boardCopy;
+	}
+	
+	public void setReady() {
+		this.isReady = true;
+		this.readySignal.notifyAll();
+	}
+	
+	public boolean isReady() {
+		return this.isReady;
 	}
 
 	public String toString() {
