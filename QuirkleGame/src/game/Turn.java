@@ -25,10 +25,6 @@ public class Turn {
 	private Swap swapRequest = null;
 	private Player assignedPlayer;
 
-	private Condition readySignal;
-
-	private boolean isReady;
-
 	private int score;
 
 	/**
@@ -38,13 +34,12 @@ public class Turn {
 	 * @param player
 	 */
 
-	public Turn(Board board, Player currentPlayer, Condition readySignal) {
+	public Turn(Board board, Player currentPlayer) {
 		this.boardCopy = new Board(board.getGame());
 		this.boardCopy.setBoard(board.copy(this.boardCopy));
 		this.assignedPlayer = currentPlayer;
-		this.isReady = false;
+		this.assignedPlayer.giveTurn(this);
 		this.boardOriginal = board;
-		// TODO: implement body
 	}
 
 	/**
@@ -217,15 +212,6 @@ public class Turn {
 
 	public void setBoardCopy(Board boardCopy) {
 		this.boardCopy = boardCopy;
-	}
-
-	public void setReady() {
-		this.isReady = true;
-		this.readySignal.notifyAll();
-	}
-
-	public boolean isReady() {
-		return this.isReady;
 	}
 
 	public Player getPlayer() {

@@ -30,12 +30,34 @@ public class GameServer extends Game {
 		this.start();
 	}
 	
-	private boolean gameOver() {
+	/**
+	 * Disqualify a player. Diqualification removes a player from the game,
+	 * puts their stones back in the bag and continues normal gameplay. When one player 
+	 * remains they win the game.
+	 * @param player The player to be disqualified.
+	 */
+	public void disqualify(Player player) {
+		// TODO Implement body.
+	}
+	
+	/**
+	 * If the game has a winner, finish the game. This will make up the final score,
+	 * inform all clients and puts the game in a final state.
+	 */
+	public void finish() {
+		// TODO Implement body.
+	}
+	
+	/**
+	 * Check if the game is over and has a winner.
+	 * @return True if the game is over, false otherwise.
+	 */
+	public boolean gameOver() {
 		return false;
 		// TODO Implement
 	}
 
-	public void run() {
+	public void start() {
 		
 		// Initialise the game.
 		this.setGameState(Game.GameState.INITIAL);
@@ -43,46 +65,10 @@ public class GameServer extends Game {
 		// Make a new bag and fill it.
 		this.setBag(new Bag(this));
 		this.getBag().fill();
-		
-		final Lock waitForTurn = new ReentrantLock();
-		final Condition turnReady = waitForTurn.newCondition();
-		
+				
 		List<Turn> beginturns = new ArrayList<Turn>();
 
-		// Assign hands to players and request first moves
-		for (Player p : this.getPlayers()) {
-			p.assignHand(new Hand(p));
-			try {
-				
-				this.getBag().takeFromBag(p.getHand(), 6);
-				// TODO Send hand
-				
-				beginturns.add(new Turn(this.getBoard(), p, turnReady));
-				// TODO Send request for first move
-				
-			} catch (TooFewTilesInBagException | TileNotInBagException e) {
-				ConnectionHandler.log("error", "Could not initialize player hands.");
-			}
-		}
-				
-		// Wait for all turns to be ready.
-		boolean allTurnsReady = false;
-
-		while (!allTurnsReady) {
-			try {
-				// We get a notify from another thread.
-				turnReady.await();
-				// See if all turns are ready.
-				for (Turn t : beginturns) {
-					if (t.isReady()) {
-						allTurnsReady = true;
-					} else {
-						allTurnsReady = false;
-						break;
-					}
-				}
-			} catch (InterruptedException e) { /* TODO */ }
-		}
+		// TODO Implement initial turns
 		
 		// We want to find the highest scoring move.
 		Turn highestScoring = beginturns.get(0);
@@ -98,20 +84,16 @@ public class GameServer extends Game {
 		// Applying first move!
 		try {
 			highestScoring.applyTurn();
-		} catch (IllegalTurnException e) { /* TODO */ }
+		} catch (SquareOutOfBoundsException e) {
+			// TODO Auto-generated catch block
+		}
 		
 		this.setCurrentPlayer(this.getPlayers().indexOf(highestScoring.getPlayer()));
 		
 		// Start the real game.
 		this.setGameState(Game.GameState.NORMAL);
-		while(!this.gameOver()) {
-			this.nextTurn();
-		}
 		
-		// Game is over
-		this.setGameState(Game.GameState.FINISHED);
-		
-		// TODO Implement
+		this.nextTurn(1);
 		
 	}
 
