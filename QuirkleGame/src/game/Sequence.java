@@ -39,12 +39,13 @@ public class Sequence {
 	 */
 	
 	public void addTile(Tile tile) {
+		// Always add the tile to the sequence
+		this.sequence.add(tile);
 		
 		// If the sequence has 2 tiles, the type of the sequence
 		// can be determined.
 		
-		if(this.sequence.size() == 1) {
-			System.out.println("Bepalen van de identity");
+		if(this.sequence.size() == 2) {
 			// If the first and second tile got the same color
 			// the sequence resembles in the same color.
 			// If the first and second tile got the same shape
@@ -63,8 +64,7 @@ public class Sequence {
 			// which is not desirable.
 		}
 		
-		// Always add the tile to the sequence
-		this.sequence.add(tile);
+		
 	}
 	
 	/**
@@ -111,6 +111,15 @@ public class Sequence {
 		}	
 		
 		return true;
+	}
+	
+	public boolean checkIfTileIsInSequence(Tile checkTile) {
+		for(Tile tile : this.sequence){
+			if(checkTile.getColor() == tile.getColor() && checkTile.getShape() == tile.getShape()){
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public String toString() {
