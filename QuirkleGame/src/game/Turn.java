@@ -32,9 +32,10 @@ public class Turn {
 	 * @param player
 	 */
 
-	public Turn(Player player, Board board) {
-		this.boardCopy = board.copy();
-		this.assignedPlayer = player;
+	public Turn(Board board, Game game, Player currentPlayer) {
+		this.boardCopy = new Board(game);
+		this.boardCopy.setBoard(board.copy(this.boardCopy));		
+		this.assignedPlayer = currentPlayer;
 		// TODO: implement body
 	}
 
@@ -43,30 +44,24 @@ public class Turn {
 	 * 
 	 * @param move
 	 *            the move that needs to
+	 * @throws SquareOutOfBoundsException 
 	 */
 
-	public void addMove(Move move) {
-		this.moves.add(move);
-		
-		System.out.println("---------- PLACE TILE -----------");
-		try {
-			System.out.println("[debug] Tile " + move.getTile() + " placed on " + move.getPosition().getX() + ", " + move.getPosition().getY());
+	public void addMove(Move move) throws SquareOutOfBoundsException, IllegalMoveException {
+				
+		if(move.isValidMove(this.getBoardCopy())) {
+			this.moves.add(move);
 			this.boardCopy.placeTile(move.getTile(), move.getPosition().getX(), move.getPosition().getY());
-			
-			BoardSquare editedSquare = this.boardCopy.getSquare(move.getPosition().getX(), move.getPosition().getY());
-			System.out.println("[debug] Status after placement: " + editedSquare.toString());
-		} catch (SquareOutOfBoundsException e1) {
-			// TODO Auto-generated catch block
-			System.out.println(" ! [error] Tile " + move.getTile() + " is not placed on " + move.getPosition().getX() + ", " + move.getPosition().getY());
-			e1.printStackTrace();
-		}
-		System.out.println("---------- END PLACE TILE -----------\n");
-		
-		if(!this.isValidMove(move)){
-			System.out.println("[debug] Is not valid move");
+		} else {
+			throw new IllegalMoveException(move);
 		}
 	
 		// TODO: implement further
+	}
+	
+	public void removeMove(Move move) throws SquareOutOfBoundsException {
+		this.boardCopy.removeTile(move.getPosition().getX(), move.getPosition().getY());
+		this.moves.remove(move);
 	}
 
 	/**
@@ -80,7 +75,9 @@ public class Turn {
 	}
 
 	/**
-	 * Private function to check if current turn is possible.
+	 * Function to check if current turn is possible. It is for
+	 * example not possible to do a swap request and a set of 
+	 * moves.
 	 * 
 	 * @return true if turn is according to the game rules.
 	 * @throws SquareOutOfBoundsException
@@ -88,7 +85,7 @@ public class Turn {
 	 * @throws IllegalMoveException
 	 */
 
-	private boolean isPossibleTurn() throws IllegalTurnException, IllegalMoveException {
+	public void applyTurn() throws IllegalTurnException {
 
 		// Check if an swapRequest has been added
 		if (this.swapRequest != null) {
@@ -96,7 +93,7 @@ public class Turn {
 			if (this.getMoves().size() != 0) {
 				throw new IllegalTurnException();
 			}
-
+			
 			// TODO: check swapRequest
 		}
 
@@ -106,80 +103,20 @@ public class Turn {
 			if (this.swapRequest != null) {
 				throw new IllegalTurnException();
 			}
-
-			// Loop over the moves
-			for (Move m : this.getMoves()) {
-				System.out.println("---------------------");
-				System.out.println("[start debug] Checking move " + m.toString());
-				// Check if every move is according to the game rules
-				if (!this.isValidMove(m)) {
-					throw new IllegalMoveException(m);
-				} else {
-					System.out.println("[debug] Not illegal move");
-				}
-				System.out.println("---------------------\n");
-			}
-		}
-
-		return true;
-	}
-
-	private boolean isValidMove(Move m) {
-		// We first create 2 sequences to
-		// represent the horizontal line, the row
-		// and the vertical line, the column
-		Sequence row = new Sequence();
-		Sequence column = new Sequence();
-		
-		// Then we loop over the 4 directions
-		// to check the tiles on both 4 directions.
-		for (int i = 0; i < 4; i++) {
-			System.out.println("[debug] Checking direction " + i);
 			
-			try {
-				// The initial BoardSquare is set here
-				BoardSquare currentSquare = this.boardCopy.getSquare(m.getPosition().getX(), m.getPosition().getY());
-				System.out.println("[debug] Initial square " + currentSquare.toString());
-				
-				// The while loop checks if the current move
-				// has an neighbour in the current direction.
-				System.out.println("[debug] Trying to find neighbours.");
-				System.out.println("[debug] Status of neighbour: " + currentSquare.getNeighbour(i).toString());
-
-				while (!currentSquare.getNeighbour(i).isEmpty()) {
-
-					System.out.println("[debug] Neighbour found: \n " + currentSquare.getNeighbour(i).toString());
-					// If the neighbour is not empty,
-					// the tile will be added to the
-					// corresponding row or column.
-					if ((i & 1) == 0) {
-						row.addTile(currentSquare.getNeighbour(i).getTile());
-						System.out.println("[debug] Neighbour added to row");
-					} else {
-						column.addTile(currentSquare.getNeighbour(i).getTile());
-						System.out.println("[debug] Neighbour added to column");
-					}
-					// Setting the next currentMove
-					currentSquare = currentSquare.getNeighbour(i);
-					System.out.println("[debug] New current move is assigned");
+			for(Move m : this.getMoves()) {
+				/*
+				try {
+					this.boardOriginal.placeTile(m.getTile(), m.getPosition().getX(), m.getPosition().getY());
+				} catch (SquareOutOfBoundsException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-			} catch (SquareOutOfBoundsException e) {
-				// If the neighbour is not existing the
-				// next direction will be checked by i++;
-				System.out.println(e.getMessage());
+				*/
 			}
-
-			System.out.println("[debug] Direction ended. \n");
+			
 		}
-
-		// When all four the directions are checked,
-		// both the row and column will be checked
-		// if the move is legal.
-		if (!row.checkSequence() || !column.checkSequence()) {
-			return false;
-		} else {
-			return true;
-		}
+		
 	}
 
 	/**
@@ -189,70 +126,85 @@ public class Turn {
 	 * row, the columns and viceversa) will be counted.
 	 * 
 	 * @return The score of the whole turn.
+	 * @throws SquareOutOfBoundsException 
 	 */
 
-	public int getScore() {
-		// Determine if moves are in same row or column
-		List<Integer> directions = new ArrayList<Integer>();
-		if (this.getMoves().get(0).getPosition().getX() == this.getMoves().get(1).getPosition().getX()) {
-			// If the sequence is a row, then the columns needs to be checked
-			directions.add(BoardSquare.NORTH);
-			directions.add(BoardSquare.SOUTH);
-		} else if (this.getMoves().get(0).getPosition().getY() == this.getMoves().get(1).getPosition().getY()) {
-			// If the sequence is a column, then the rows needs to be checked
-			directions.add(BoardSquare.EAST);
-			directions.add(BoardSquare.WEST);
-		} else {
-			// Error
+	public int calculateScore() throws SquareOutOfBoundsException {
+		// We first create 2 sequences to
+		// represent the horizontal line, the row
+		// and the vertical line, the column
+		List<Sequence> rows = new ArrayList<Sequence>();
+		List<Sequence> columns = new ArrayList<Sequence>();
+		
+		boolean baseIsRow = true;
+		int returnScore = 0;
+		
+		if(this.moves.size() == 1) {
+			return 1;
 		}
-
-		// The score of the moves will be determined by
-		// checking the neighbours in opposite directions.
-		// In a row, the score of all columns will be counted.
-		// In a column, the score of all the rows will be counted.
-
-		// Setting the score to 0;
-		int score = 0;
-
-		// Loop over the moves that needs to be placed
-		for (Move m : this.getMoves()) {
-
-			// Loop over the directions
-			for (Integer oppositeDirection : directions) {
-
-				// Initialize the sequence
-				Sequence sequence = new Sequence();
-
-				// Get the initial BoardSquare
-				BoardSquare currentSquare = m.getPosition();
-
-				// Add move to sequence
-				sequence.addTile(m.getTile());
-
-				try {
-					// Loop over the neighbours in opposite directions
-					while (!this.getBoardCopy().getSquare(currentSquare.getX(), currentSquare.getY())
-							.getNeighbour(oppositeDirection).isEmpty()) {
-						// Add the tile to the sequence
-						sequence.addTile(this.getBoardCopy().getSquare(currentSquare.getX(), currentSquare.getY())
-								.getNeighbour(oppositeDirection).getTile());
-
-						// Set the new currentSquare
-						currentSquare = this.getBoardCopy().getSquare(currentSquare.getX(), currentSquare.getY())
-								.getNeighbour(oppositeDirection);
-					}
-
-				} catch (SquareOutOfBoundsException e) {
-					continue;
+		
+		if (this.getMoves().get(0).getPosition().getX() == this.getMoves().get(1).getPosition().getX()) {
+			// If the sequence is a column, then the row needs to be checked
+			baseIsRow = false;
+		} else if (this.getMoves().get(0).getPosition().getY() == this.getMoves().get(1).getPosition().getY()) {
+			// If the sequence is a row, then the columns needs to be checked
+			//System.out.println("[debug] Base sequence is row");
+			baseIsRow = true;
+		}
+		
+		for(Move move : this.getMoves()) {
+			BoardSquare currentSquare;
+			
+			for (int i = 0; i < 4; i++) {
+				Sequence currentSequence = new Sequence();
+				currentSquare = this.getBoardCopy().getSquare(move.getPosition().getX(), move.getPosition().getY());
+				
+				while (!currentSquare.getNeighbour(i).isEmpty()) {
+					currentSequence.addTile(currentSquare.getNeighbour(i).getTile());
+					currentSquare = currentSquare.getNeighbour(i);
 				}
-
-				// adding the score of the sequence to the total score
-				score += sequence.getScore();
+				
+				if ((i & 1) == 0) {
+					// Sequence is column
+					columns.add(currentSequence);				
+				} else {
+					// Sequence is row
+					rows.add(currentSequence);				
+				}
 			}
 		}
 
-		// TODO: Add score of column/row of sequence
-		return score;
+		int counter = 0;
+		for(Sequence row : rows) {
+			counter++;
+			if(baseIsRow && counter <= 2) {
+				returnScore += row.getScore();
+			} else if (!baseIsRow) {
+				returnScore += row.getScore();
+			}
+			
+		}
+		
+		counter = 0;
+		for(Sequence column : columns) {
+			counter++;
+			if(!baseIsRow && counter <= 2) {
+				returnScore += column.getScore();
+			} else if (baseIsRow) {
+				returnScore += column.getScore();
+			}
+		}
+		
+		// Because in the base sequence 1 tile is never added so the score must be increased with 1
+		returnScore += 1;
+		
+		// Ugly, yes very ugly
+		// TODO: make clever
+		if(returnScore == 6) {
+			return 12;
+		}
+
+		return returnScore;
 	}
 
 	/**
