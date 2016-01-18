@@ -9,6 +9,7 @@ import game.Tile;
  * @author Jonathan Juursema & Peter Wessels
  *
  */
+@SuppressWarnings("serial")
 public class TileNotInBagException extends QwirkleException {
 	
 	private Tile tile;
