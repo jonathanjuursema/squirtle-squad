@@ -1,7 +1,9 @@
 package game;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.Condition;
 
 import exceptions.IllegalMoveException;
@@ -29,7 +31,6 @@ public class Turn {
 
 	private boolean isReady;
 
-	private int score;
 
 	/**
 	 * Creates a turn with assigned Player and the board. This functions creates
@@ -122,11 +123,8 @@ public class Turn {
 		// We first create 2 sequences to
 		// represent the horizontal line, the row
 		// and the vertical line, the column
-		List<Sequence> rows = new ArrayList<Sequence>();
-		List<Sequence> columns = new ArrayList<Sequence>();
 
 		boolean baseIsRow = true;
-		int returnScore = 0;
 
 		if (this.getMoves().size() > 1) {
 			if (this.getMoves().get(0).getPosition().getX() == this.getMoves().get(1).getPosition().getX()) {
@@ -140,63 +138,87 @@ public class Turn {
 			}
 		}
 
-		for (Move move : this.getMoves()) {
-			BoardSquare currentSquare;
+		int returnScore = 0;
+		
+		Map<Move, Map<Integer, List<Tile>>> cleanedMap = getSequencesByMovesAndBoard(this.boardCopy, this.getMoves());
 
-			for (int i = 0; i < 4; i++) {
-				Sequence currentSequence = new Sequence();
-				currentSquare = this.getBoardCopy().getSquare(move.getPosition().getX(), move.getPosition().getY());
-				System.out.println("[NEXT SQUARE]: " + currentSquare);
-				while (!currentSquare.getNeighbour(i).isEmpty()) {
-					currentSequence.addTile(currentSquare.getNeighbour(i).getTile());
-					currentSquare = currentSquare.getNeighbour(i);
-					System.out.println("Neighbour found: " + currentSquare);
-				}
+		int rowScore = 0;
+		int columnScore = 0;
 
-				if ((i & 1) == 0) {
-					// Sequence is column
-					columns.add(currentSequence);
-				} else {
-					// Sequence is row
-					rows.add(currentSequence);
-				}
+		for (Move m : this.getMoves()) {
+			int rowScoreTemp = cleanedMap.get(m).get(1).size();
+			int columnScoreTemp = cleanedMap.get(m).get(0).size();
+			
+			if(rowScoreTemp == 1) { rowScoreTemp = 0; }
+			if(columnScoreTemp == 1) { columnScoreTemp = 0; }
+			if(rowScoreTemp == 6) { rowScoreTemp = 12; }
+			if(columnScoreTemp == 6) { columnScoreTemp = 12; }
+			
+			if (baseIsRow) {
+				rowScore = rowScoreTemp;
+				columnScore += columnScoreTemp;
+			} else {
+				rowScore += rowScoreTemp;
+				columnScore = columnScoreTemp;
 			}
 		}
-
-		int counter = 0;
-		for (Sequence row : rows) {
-			counter++;
-			if (baseIsRow && counter <= 2) {
-				returnScore += row.getScore();
-			} else if (!baseIsRow) {
-				returnScore += row.getScore();
-			}
-
-		}
-
-		counter = 0;
-		for (Sequence column : columns) {
-			counter++;
-			if (!baseIsRow && counter <= 2) {
-				returnScore += column.getScore();
-			} else if (baseIsRow) {
-				returnScore += column.getScore();
-			}
-		}
-
-		// Because in the base sequence 1 tile is never added so the score must
-		// be increased with 1
-		returnScore += 1;
-
-		// Ugly, yes very ugly
-		// TODO: make clever
-		if (returnScore == 6) {
-			return 12;
-		}
+		
+		returnScore = rowScore + columnScore;
 
 		return returnScore;
 	}
 
+	/**
+	 * @return
+	 * @throws SquareOutOfBoundsException
+	 */
+	public static Map<Move, Map<Integer, List<Tile>>> getSequencesByMovesAndBoard(Board board, List<Move> moves) throws SquareOutOfBoundsException {
+		Map<Move, Map<Integer, List<Tile>>> sequences = new HashMap<Move, Map<Integer, List<Tile>>>();
+
+		for (Move move : moves) {
+			BoardSquare currentSquare;
+
+			Map<Integer, List<Tile>> directionMap = new HashMap<Integer, List<Tile>>();
+			for (int i = 0; i < 4; i++) {
+				List<Tile> currentList = new ArrayList<Tile>();
+
+				currentSquare = board.getSquare(move.getPosition().getX(), move.getPosition().getY());
+
+				currentList.add(currentSquare.getTile());
+
+				while (!currentSquare.getNeighbour(i).isEmpty()) {
+					currentList.add(currentSquare.getNeighbour(i).getTile());
+					currentSquare = currentSquare.getNeighbour(i);
+
+				}
+
+				directionMap.put(i, currentList);
+			}
+
+			sequences.put(move, directionMap);
+		}
+
+		Map<Move, Map<Integer, List<Tile>>> cleanedMap = new HashMap<Move, Map<Integer, List<Tile>>>();
+
+		for (Map.Entry<Move, Map<Integer, List<Tile>>> entry : sequences.entrySet()) {
+
+			Move key = entry.getKey();
+
+			entry.getValue().get(0).removeAll(entry.getValue().get(2));
+			entry.getValue().get(1).removeAll(entry.getValue().get(3));
+
+			entry.getValue().get(0).addAll(entry.getValue().get(2));
+			entry.getValue().get(1).addAll(entry.getValue().get(3));
+
+			Map<Integer, List<Tile>> rowAndColumn = new HashMap<Integer, List<Tile>>();
+			rowAndColumn.put(0, entry.getValue().get(0));
+			rowAndColumn.put(1, entry.getValue().get(1));
+
+			cleanedMap.put(key, rowAndColumn);
+		}
+		return cleanedMap;
+	}
+	
 	/**
 	 * Get current moves of the turn.
 	 * 
