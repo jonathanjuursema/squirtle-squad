@@ -1,117 +1,186 @@
 package game;
 
 import java.util.List;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-import networking.ConnectionHandler;
-import server.Server;
+import exceptions.IllegalTurnException;
 
 /**
- * This class manages an entire game, including their players. It is instantiated by the
- * server several clients are put in it.
+ * This class manages an entire game, including their players. It is
+ * instantiated by the server several clients are put in it.
  * 
  * @author Jonathan Juursema & Peter Wessels
  *
  */
-public class Game {
-	
+public abstract class Game extends Thread {
+
 	public final static int DIFFERENTSHAPES = 6;
 	public final static int DIFFERENTCOLORS = 6;
-	
+
 	public final static int DEFAULTTILESPERTYPE = 3;
 	private int tilesPerType = Game.DEFAULTTILESPERTYPE;
-	
-	private int playerCount;
+
 	private List<Player> players;
-	private Player currentPlayer;
-	
-	private Server parentServer;
-	private ConnectionHandler remoteServer;
-	
-	public static enum GameType { CLIENT, SERVER };
-	private GameType gameType;
-	
-	public static enum GameState { WAITING, INITIAL, NORMAL, FINISHED };
+	private int currentPlayer;
+
+	public static enum GameState {
+		WAITING, INITIAL, NORMAL, FINISHED
+	};
+
 	private GameState gameState;
-	
-	/**
-	 * Initializes a new client-side game, with a conncetion to a server.
-	 * @param server The ConnectionHandler to the server.
-	 */
-	public Game(ConnectionHandler server) {
-		// TODO Implement constructor.
-	}
-	/**
-	 * Initializes a new server-side game, attached to a Server.
-	 * @param server
-	 */
-	public Game(Server server) {
-		// TODO Implement constructor.
-	}
-	
+
+	private Board board;
+	private Bag bag;
+
 	/**
 	 * Adds a player to the game.
-	 * @param player The player to be added.
+	 * 
+	 * @param player
+	 *            The player to be added.
 	 */
 	public void addPlayer(Player player) {
-		// TODO Implement body.
+		players.add(player);
 	}
-	
+
 	/**
 	 * Removes a player from the game. This will also disqualify the player.
-	 * @param player The player to be removed.
+	 * 
+	 * @param player
+	 *            The player to be removed.
 	 */
 	public void removePlayer(Player player) {
-		// TODO Implement body.
+		players.remove(player);
 	}
-	
+
 	/**
 	 * Start the game!
 	 */
-	private void start() {
-		// TODO Implement body.
-	}
-	
+	public abstract void run();
+
 	/**
-	 * Hands the current turn to a Player, awaiting their moves.
-	 * Game tournament rules impose a 15 second timeout for submitting a move.
-	 * If this function times out, the player is disqualified.
-	 * @param player The player whose turn it is.
+	 * Hands the current turn to a Player, awaiting their moves. Game tournament
+	 * rules impose a 15 second timeout for submitting a move. If this function
+	 * times out, the player is disqualified.
 	 */
-	private void turn(Player player) {
-		// TODO Implement body.
+	public void nextTurn() {
+
+		this.setGameState(Game.GameState.WAITING);
+
+		// TODO Implement timeout.
+
+		final Lock waitForTurn = new ReentrantLock();
+		final Condition turnReady = waitForTurn.newCondition();
+
+		this.currentPlayer = (this.currentPlayer + 1) % this.players.size();
+		Turn turn = new Turn(this.board, this.players.get(this.currentPlayer), turnReady);
+
+		while (!turn.isReady()) {
+			try {
+				turnReady.await();
+			} catch (InterruptedException e) {
+				/* TODO */ }
+		}
+		try {
+			turn.applyTurn();
+		} catch (IllegalTurnException e) {
+			/* TODO */ }
+		
+		this.setGameState(Game.GameState.NORMAL);
+
 	}
-	
-	/**
-	 * Disqualify a player. Diqualification removes a player from the game,
-	 * puts their stones back in the bag and continues normal gameplay. When one player 
-	 * remains they win the game.
-	 * @param player The player to be disqualified.
-	 */
-	private void disqualify(Player player) {
-		// TODO Implement body.
-	}
-	
-	/**
-	 * If the game has a winner, finish the game. This will make up the final score,
-	 * inform all clients and puts the game in a final state.
-	 */
-	private void finish() {
-		// TODO Implement body.
-	}
-	
+
 	/**
 	 * Returns the amount of tiles per type for this game. Usually 3.
+	 * 
 	 * @return The amount of tiles per type.
 	 */
 	public int getTilesPerType() {
 		return this.tilesPerType;
 	}
-	
+
 	/**
 	 * Get the current player for this game.
 	 */
 	public Player getCurrentPlayer() {
-		return this.currentPlayer;
+		return this.players.get(this.currentPlayer);
+	}
+
+	/**
+	 * @return the players
+	 */
+	public List<Player> getPlayers() {
+		return players;
+	}
+
+	/**
+	 * @param players
+	 *            the players to set
+	 */
+	public void setPlayers(List<Player> players) {
+		this.players = players;
+	}
+
+	/**
+	 * @return the gameState
+	 */
+	public GameState getGameState() {
+		return gameState;
+	}
+
+	/**
+	 * @param gameState
+	 *            the gameState to set
+	 */
+	public void setGameState(GameState gameState) {
+		this.gameState = gameState;
+	}
+
+	/**
+	 * @return the board
+	 */
+	public Board getBoard() {
+		return board;
+	}
+
+	/**
+	 * @param board
+	 *            the board to set
+	 */
+	public void setBoard(Board board) {
+		this.board = board;
+	}
+
+	/**
+	 * @return the bag
+	 */
+	public Bag getBag() {
+		return bag;
+	}
+
+	/**
+	 * @param bag
+	 *            the bag to set
+	 */
+	public void setBag(Bag bag) {
+		this.bag = bag;
+	}
+
+	/**
+	 * @param tilesPerType
+	 *            the tilesPerType to set
+	 */
+	public void setTilesPerType(int tilesPerType) {
+		this.tilesPerType = tilesPerType;
+	}
+
+	/**
+	 * @param currentPlayer
+	 *            the currentPlayer to set
+	 */
+	public void setCurrentPlayer(int currentPlayer) {
+		this.currentPlayer = currentPlayer;
 	}
 
 }
