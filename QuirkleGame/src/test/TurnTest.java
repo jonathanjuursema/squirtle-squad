@@ -10,7 +10,7 @@ import exceptions.IllegalMoveException;
 import exceptions.IllegalTurnException;
 import exceptions.SquareOutOfBoundsException;
 import game.Board;
-
+import game.BoardSquare;
 import game.Move;
 import game.Tile;
 import game.Turn;
@@ -196,7 +196,13 @@ public class TurnTest {
 
 		turn.applyTurn();
 		
+		for(BoardSquare b : board.getPossiblePlaces()) {
+			turn.getBoardCopy().placeTile(new Tile(Tile.BLACK, Tile.DUMMY), b.getX(), b.getY());
+		}
+		
 		System.out.println(turn.getBoardCopy());
+		
+		System.out.println("Amount of possible places: " + board.getPossiblePlaces().size());
 	}
 	
 	@Test
