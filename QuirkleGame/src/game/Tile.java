@@ -83,17 +83,17 @@ public class Tile {
 		
 		// Editted getColor to getShape
 		if (this.getShape() == Tile.CIRCLE) {
-			response += "@";
+			response += "0";
 		} else if (this.getShape() == Tile.CROSS) {
-			response += "!";
+			response += "1";
 		} else if (this.getShape() == Tile.DIAMOND) {
-			response += "#";
+			response += "5";
 		} else if (this.getShape() == Tile.SQUARE) {
-			response += "%";
+			response += "2";
 		} else if (this.getShape() == Tile.STAR) {
-			response += "&";
+			response += "3";
 		} else if (this.getShape() == Tile.PLUS) {
-			response += "+";
+			response += "4";
 		}
 		
 		return response;
