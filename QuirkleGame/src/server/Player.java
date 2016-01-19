@@ -26,7 +26,8 @@ public class Player {
 		IN_LOBBY, IN_GAME
 	};
 
-	public Player() {
+	public Player(String name) {
+		this.name = name;
 	}
 
 	/**
@@ -119,14 +120,6 @@ public class Player {
 	 */
 	public String getName() {
 		return this.name;
-	}
-
-	/**
-	 * @param name
-	 *            the name to set
-	 */
-	public void setName(String name) {
-		this.name = name;
 	}
 
 }
