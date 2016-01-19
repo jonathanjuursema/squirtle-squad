@@ -84,6 +84,15 @@ public class BoardSquare {
 		}
 	}
 	
+	public boolean hasNeighbour() throws SquareOutOfBoundsException {
+		for(int i = 0; i < 4; i++){
+			if(!this.getNeighbour(i).isEmpty()) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * Returns whether or not there is a Tile placed in this BoardSquare.
 	 * @return True when there is a Tile placed, false otherwise.

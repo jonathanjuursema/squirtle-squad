@@ -48,11 +48,19 @@ public class Move {
 	public String toString() {
 		return "Move with Tile " + this.tileToPlay.toString() + " on " + this.position.toString();
 	}
-
+	
 	public boolean isValidMove(Board board) throws SquareOutOfBoundsException {
+		return this.isValidMove(board, false);
+	}
+
+	public boolean isValidMove(Board board, boolean firstMove) throws SquareOutOfBoundsException {
 		// Check move in relation with the board
 		board.placeTile(this.getTile(), this.getPosition().getX(), this.getPosition().getY());
-
+		
+		if(!this.getPosition().hasNeighbour() && !firstMove){
+			return false;
+		}
+		
 		Move tempMove = new Move(this.getTile(), this.getPosition());
 		List<Move> tempList = new ArrayList<Move>();
 		tempList.add(tempMove);

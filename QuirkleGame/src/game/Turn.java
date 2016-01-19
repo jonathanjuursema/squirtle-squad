@@ -54,8 +54,17 @@ public class Turn {
 		if (this.swapRequest != null) {
 			throw new IllegalTurnException();
 		}
-
-		if (move.isValidMove(this.getBoardCopy())) {
+		
+		boolean firstMove = false;
+		
+		if (this.boardCopy.getSquare(0,0).isEmpty()){
+			if(move.getPosition().getX() != 0 || move.getPosition().getY() != 0){
+				throw new IllegalTurnException();
+			}
+			firstMove = true;
+		}
+		
+		if (move.isValidMove(this.getBoardCopy(), firstMove)) {
 			this.moves.add(move);
 			this.boardCopy.placeTile(move.getTile(), move.getPosition().getX(), move.getPosition().getY());
 		} else {
