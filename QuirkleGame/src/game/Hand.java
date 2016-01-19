@@ -27,25 +27,25 @@ public class Hand {
 
 	/**
 	 * Check if the tile is currently in hand.
-	 * 
 	 * @param tile
 	 * @return true if tile is in hand.
 	 */
 
 	public boolean hasInHand(Tile tile) {
-		return this.tilesInHand.contains(tile);
+		return this.getTilesInHand().contains(tile);
 	}
 
 	/**
-	 * Check if the tiles is currently in hand.
-	 * 
-	 * @param tiles
-	 * @return true if tile is in hand.
+	 * Check if the list of tiles are currently in hand.
+	 * Returns false if even 1 of the tiles in the list is
+	 * not in hand.
+	 * @param tiles The list of tiles to be checked
+	 * @return true if all tiles are in hand.
 	 */
 
 	public boolean hasInHand(List<Tile> tiles) {
 		for (Tile t : tiles) {
-			if (!this.tilesInHand.contains(t)) {
+			if (!this.getTilesInHand().contains(t)) {
 				return false;
 			}
 		}
@@ -56,13 +56,12 @@ public class Hand {
 	 * Reset the hand: it removes all the tiles an ensures that current hand is
 	 * empty. Returns the tiles that are removed so that a bag of board can pick
 	 * them.
-	 * 
 	 * @return tiles that are removed for hand.
 	 */
 	public List<Tile> hardResetHand() {
 		List<Tile> returnList = new ArrayList<Tile>();
 		returnList.addAll(this.tilesInHand);
-		this.removeFromHand(this.tilesInHand);
+		this.tilesInHand.clear();
 		return returnList;
 	}
 
@@ -120,7 +119,7 @@ public class Hand {
 	public void removeFromHand(List<Tile> tileList) {
 		for (Tile t : tileList) {
 			if (this.hasInHand(t)) {
-				this.tilesInHand.remove(t);
+				this.removeFromHand(t);
 			}
 		}
 	}
@@ -158,11 +157,28 @@ public class Hand {
 	 */
 
 	public String toString() {
-		String returnMessage = "Displaying hand from player " + this.getOwnerOfHand().getName() + ": \n";
-		for (Tile t : this.getTilesInHand()) {
-			returnMessage += t.toString();
+		String returnMessage = "Displaying hand (" + this.getAmountOfTiles() + ") from " + this.getOwnerOfHand().getName() + ": \n";
+		
+		returnMessage += "+";
+		for(int i = 0; i < this.getAmountOfTiles() - 1; i++){
+			returnMessage += "----|";
 		}
-
+		returnMessage += "----+";
+		returnMessage += "\n|";
+		int count = this.getAmountOfTiles() - 1;
+		for (Tile t : this.getTilesInHand()) {
+			returnMessage += " "+t.toString()+" ";
+			if(count != 0){
+				returnMessage += "|";
+			}
+			count--;
+		}
+		returnMessage += "|";
+		returnMessage += "\n+";
+		for(int i = 0; i < this.getAmountOfTiles() - 1; i++){
+			returnMessage += "----|";
+		}
+		returnMessage += "----+";
 		return returnMessage;
 	}
 
