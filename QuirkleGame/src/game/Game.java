@@ -20,9 +20,7 @@ public abstract class Game {
 	public final static int DIFFERENTSHAPES = 6;
 	public final static int DIFFERENTCOLORS = 6;
 
-	public final static int DEFAULTTILESPERTYPE = 3;
-	public final int tilesPerType = Game.DEFAULTTILESPERTYPE;
-
+	public final static int TILESPERTYPE = 3;
 	public final int TURNTIMEOUT = 60;
 
 	private List<Player> players;
@@ -38,17 +36,17 @@ public abstract class Game {
 	private Bag bag;
 
 	/**
-	 * Adds a player to the game.
+	 * Initialises the game with the given players.
 	 * 
-	 * @param player
-	 *            The player to be added.
+	 * @param players
+	 *            The players.
 	 */
-	public void addPlayer(Player player) {
-		players.add(player);
+	public Game(List<Player> players) {
+		this.players = players;
 	}
 
 	/**
-	 * Removes a player from the game. This will also disqualify the player.
+	 * Removes a player from the game.
 	 * 
 	 * @param player
 	 *            The player to be removed.
@@ -58,28 +56,33 @@ public abstract class Game {
 	}
 
 	/**
-	 * Start the game!
+	 * Start the game.
 	 */
 	public abstract void start();
 
-	public abstract void disqualify(Player player);
-
+	/**
+	 * Clean-up the game.
+	 */
 	public abstract void finish();
 
+	/**
+	 * Checks whether the game is over (1 player left or tiles empty).
+	 * 
+	 * @return True if the game is over, false otherwise.
+	 */
 	public abstract boolean gameOver();
+
+	/**
+	 * Shuts the game down prematurely for a defined reason.
+	 * 
+	 * @param message
+	 *            The reason.
+	 */
+	public abstract void shutdown(String message);
 
 	/*
 	 * Getters and setters below.
 	 */
-
-	/**
-	 * Returns the amount of tiles per type for this game. Usually 3.
-	 * 
-	 * @return The amount of tiles per type.
-	 */
-	public int getTilesPerType() {
-		return this.tilesPerType;
-	}
 
 	/**
 	 * Get the current player for this game.

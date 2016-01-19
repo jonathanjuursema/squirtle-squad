@@ -34,7 +34,7 @@ public class Turn {
 	 */
 
 	public Turn(Board board, Player currentPlayer) {
-		this.boardCopy = new Board(board.getGame());
+		this.boardCopy = new Board();
 		this.boardCopy.setBoard(board.copy(this.boardCopy));
 		this.assignedPlayer = currentPlayer;
 		this.assignedPlayer.giveTurn(this);

@@ -24,7 +24,7 @@ import game.Player;
 import game.Tile;
 import game.Turn;
 
-public class GameServer extends Game implements ActionListener {
+public class ServerGame extends Game implements ActionListener {
 
 	private Map<Player, Turn> initialMoves;
 
@@ -37,43 +37,13 @@ public class GameServer extends Game implements ActionListener {
 	 * 
 	 * @param server
 	 */
-	public GameServer(Server server) {
+	public ServerGame(Server server, List<Player> players) {
+		super(players);
 		this.parentServer = server;
 		this.start();
 	}
 
-	/**
-	 * Disqualify a player. Diqualification removes a player from the game, puts
-	 * their stones back in the bag and continues normal gameplay. When one
-	 * player remains they win the game.
-	 * 
-	 * @param player
-	 *            The player to be disqualified.
-	 */
-	public void disqualify(Player player) {
-		List<Tile> tiles = player.getHand().hardResetHand();
-		this.getBag().addToBag(tiles);
-		this.removePlayer(player);
-	}
-
-	/**
-	 * If the game has a winner, finish the game. This will make up the final
-	 * score, inform all clients and puts the game in a final state.
-	 */
-	public void finish() {
-		// TODO Implement body.
-	}
-
-	/**
-	 * Check if the game is over and has a winner.
-	 * 
-	 * @return True if the game is over, false otherwise.
-	 */
-	public boolean gameOver() {
-		return false;
-		// TODO Implement
-	}
-
+	@Override
 	public void start() {
 
 		// Initialise the game.
@@ -106,13 +76,17 @@ public class GameServer extends Game implements ActionListener {
 	}
 
 	public void receiveInitialMove(Turn turn, Player player) {
+		
 		this.initialMoves.put(player, turn);
 		for (Turn t : this.initialMoves.values()) {
 			if (t == null) {
 				return;
 			}
 		}
+
+		this.timeout.stop();
 		this.initialMove();
+		
 	}
 
 	public void initialMove() {
@@ -121,16 +95,20 @@ public class GameServer extends Game implements ActionListener {
 		Player highestScoring = null;
 
 		for (Player p : this.initialMoves.keySet()) {
-			if (highestScoring == null) {
-				highestScoring = p;
+			if (this.initialMoves.get(p) != null) {
+				if (highestScoring == null) {
+					highestScoring = p;
+				} else {
+					try {
+						if (this.initialMoves.get(p).calculateScore() > this.initialMoves
+										.get(highestScoring).calculateScore()) {
+							highestScoring = p;
+						}
+					} catch (SquareOutOfBoundsException e) {
+						/* TODO */ }
+				}
 			} else {
-				try {
-					if (this.initialMoves.get(p).calculateScore() > this.initialMoves
-									.get(highestScoring).calculateScore()) {
-						highestScoring = p;
-					}
-				} catch (SquareOutOfBoundsException e) {
-					/* TODO */ }
+				this.disqualify(p);
 			}
 		}
 
@@ -140,8 +118,6 @@ public class GameServer extends Game implements ActionListener {
 		} catch (SquareOutOfBoundsException e) {
 			/* TODO */ }
 
-		// TODO Set right player to start next.
-
 		// Start the real game.
 		this.setGameState(Game.GameState.NORMAL);
 
@@ -149,6 +125,25 @@ public class GameServer extends Game implements ActionListener {
 
 		this.nextTurn(1);
 
+	}
+
+	@Override
+	public boolean gameOver() {
+		
+		if (this.getPlayers().size() == 1) {
+			return true;
+		}
+		
+		if (this.getBag().getNumberOfTiles() == 0) {
+			for (Player p : this.getPlayers()) {
+				if (p.getHand().getTilesInHand().size() == 0) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
+		
 	}
 
 	/**
@@ -186,8 +181,27 @@ public class GameServer extends Game implements ActionListener {
 			turn.applyTurn();
 			this.nextTurn(1);
 		} catch (SquareOutOfBoundsException e) {
-			// TODO Afvangen foutieve turn
+			// TODO
 		}
+	}
+
+	/**
+	 * Disqualify a player. Diqualification removes a player from the game, puts
+	 * their stones back in the bag and continues normal gameplay. When one
+	 * player remains they win the game.
+	 * 
+	 * @param player
+	 *            The player to be disqualified.
+	 */
+	public void disqualify(Player player) {
+		List<Tile> tiles = player.getHand().hardResetHand();
+		this.getBag().addToBag(tiles);
+		this.removePlayer(player);
+	}
+
+	@Override
+	public void finish() {
+		// TODO Implement body.
 	}
 
 	/**
@@ -205,6 +219,17 @@ public class GameServer extends Game implements ActionListener {
 			this.nextTurn(0);
 		}
 
+	}
+
+	@Override
+	public void shutdown(String message) {
+		for (Player p : this.getPlayers()) {
+			p.getHand().hardResetHand();
+			this.removePlayer(p);
+			this.parentServer.playerToLobby(p);
+			// TODO Message player.
+			this.parentServer.endGame(this);
+		}
 	}
 
 }

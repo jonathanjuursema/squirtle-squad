@@ -8,11 +8,11 @@ import java.net.Socket;
  * @author Jonathan Juursema & Peter Wessels
  *
  */
-public class ConnectionHandler extends networking.ConnectionHandler {
+public class ClientConnectionHandler extends networking.ConnectionHandler {
 	
 	private Client client;
 
-	public ConnectionHandler(Socket socket, Client client) {
+	public ClientConnectionHandler(Socket socket, Client client) {
 		super(socket);
 		this.client = client;
 	}

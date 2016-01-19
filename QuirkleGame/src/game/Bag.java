@@ -51,7 +51,7 @@ public class Bag {
 	public synchronized void fill() {
 		for (char i = Tile.FIRSTCOLOR; i <= Tile.LASTCOLOR; i++) {
 			for (char j = Tile.FIRSTSHAPE; j <= Tile.LASTSHAPE; j++) {
-				for (char k = 0; k < this.game.getTilesPerType(); k++) {
+				for (char k = 0; k < Game.TILESPERTYPE; k++) {
 					this.content.add(new Tile(i, j));
 				}
 			}

@@ -4,11 +4,11 @@ import java.net.Socket;
 
 import game.Player;
 
-public class ConnectionHandler extends networking.ConnectionHandler {
+public class ServerConnectionHandler extends networking.ConnectionHandler {
 	
 	private Player player;
 
-	public ConnectionHandler(Socket socket, Player player) {
+	public ServerConnectionHandler(Socket socket, Player player) {
 		super(socket);
 		this.player = player;
 	}

@@ -14,8 +14,7 @@ import exceptions.SquareOutOfBoundsException;
  *
  */
 public class Board {
-
-	private Game game;
+	
 	private BoardSquare[][] board;
 
 	/**
@@ -24,9 +23,8 @@ public class Board {
 	 * @param game
 	 *            The game. You lost it.
 	 */
-	public Board(Game game) {
-		this.game = game;
-		int arraySize = 2 * this.game.getTilesPerType() * Game.DIFFERENTCOLORS
+	public Board() {
+		int arraySize = 2 * Game.TILESPERTYPE * Game.DIFFERENTCOLORS
 						* Game.DIFFERENTSHAPES;
 		this.board = new BoardSquare[arraySize][arraySize];
 		for (int i = 0; i < arraySize; i++) {
@@ -145,15 +143,6 @@ public class Board {
 		}
 		// Finally, we construct a new Board using this copy of the board.
 		return boardCopy;
-	}
-
-	/**
-	 * Returns the game associated with the board.
-	 * 
-	 * @return The Game. You lost it.
-	 */
-	public Game getGame() {
-		return this.game;
 	}
 
 	/**
