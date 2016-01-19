@@ -19,7 +19,6 @@ public class Player {
 
 	private Hand hand;
 	private String name;
-	private String colour;
 
 	private int score;
 
@@ -85,21 +84,6 @@ public class Player {
 	 */
 	public Hand getHand() {
 		return hand;
-	}
-
-	/**
-	 * @return the colour
-	 */
-	public String getColour() {
-		return colour;
-	}
-
-	/**
-	 * @param colour
-	 *            the colour to set
-	 */
-	public void setColour(String colour) {
-		this.colour = colour;
 	}
 
 	/**
