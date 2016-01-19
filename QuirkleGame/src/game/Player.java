@@ -27,7 +27,7 @@ public class Player {
 		IN_LOBBY, IN_GAME
 	};
 
-	public Player(Game game, String name, String colour) {
+	public Player(Game game, String name) {
 		// TODO: implement body
 		this.name = name;
 	}
