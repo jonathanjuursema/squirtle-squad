@@ -1,5 +1,8 @@
 package server;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,18 +12,29 @@ import java.util.List;
  * @author Jonathan Juursema & Peter Wessels
  *
  */
-public class Server {
+public class Server extends Thread {
 	
 	private List<Player> lobby;
 	private List<Game> games;
 	
-	public Server() {
+	private ServerSocket socket;
+	
+	public Server(int port) throws IOException {
 		this.lobby = new ArrayList<Player>();
+		this.socket = new ServerSocket(port);
+		this.start();
 	}
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
+	/**
+	 * The main functionality of the server.
+	 */
+	public void run() {
+		boolean running = true;
+		while (running) {
+			try {
+				new ServerConnectionHandler(this.socket.accept());
+			} catch (IOException e) { /* TODO */ }
+		}
 	}
 	
 	/**

@@ -4,11 +4,11 @@ import java.net.Socket;
 
 public class ServerConnectionHandler extends networking.ConnectionHandler {
 	
-	private Player player;
+	private Player player = null;
 
-	public ServerConnectionHandler(Socket socket, Player player) {
+	public ServerConnectionHandler(Socket socket) {
 		super(socket);
-		this.player = player;
+		this.run();
 	}
 
 	@Override

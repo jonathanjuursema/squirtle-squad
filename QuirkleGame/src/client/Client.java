@@ -6,11 +6,17 @@ package client;
  * @author Jonathan Juursema & Peter Wessels
  *
  */
-public class Client {
+public class Client extends Thread {
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
+	public Client() {
+		
+	}
+	
+	/**
+	 * Main functionality of the client.
+	 */
+	public void run() {
+		
 	}
 
 }
