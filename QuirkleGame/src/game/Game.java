@@ -1,13 +1,9 @@
 package game;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import javax.swing.Timer;
 
 import exceptions.IllegalTurnException;
 import exceptions.SquareOutOfBoundsException;
@@ -19,18 +15,18 @@ import exceptions.SquareOutOfBoundsException;
  * @author Jonathan Juursema & Peter Wessels
  *
  */
-public abstract class Game implements ActionListener {
+public abstract class Game {
 
 	public final static int DIFFERENTSHAPES = 6;
 	public final static int DIFFERENTCOLORS = 6;
 
 	public final static int DEFAULTTILESPERTYPE = 3;
-	private int tilesPerType = Game.DEFAULTTILESPERTYPE;
+	public final int tilesPerType = Game.DEFAULTTILESPERTYPE;
+
+	public final int TURNTIMEOUT = 60;
 
 	private List<Player> players;
 	private int currentPlayer;
-
-	private Timer timeout;
 
 	public static enum GameState {
 		WAITING, INITIAL, NORMAL, FINISHED
@@ -66,59 +62,12 @@ public abstract class Game implements ActionListener {
 	 */
 	public abstract void start();
 
-	/**
-	 * Hands the current turn to a Player, awaiting their moves. Game tournament
-	 * rules impose a 15 second timeout for submitting a move. If this function
-	 * times out, the player is disqualified.
-	 * 
-	 * @param playerModifier
-	 *            The next player to be selected. This modifies the
-	 *            currentPlayer field, so we have to think about what value to
-	 *            put here. Example: 0 doesn't change the player, unless the a
-	 *            player has been removed from the list in which case the next
-	 *            player is selected. 1 picks the next player from the list in
-	 *            normal situations.
-	 */
-	public void nextTurn(int playerModifier) {
-
-		this.currentPlayer = (this.currentPlayer + playerModifier) % this.players.size();
-		new Turn(this.board, this.players.get(this.currentPlayer));
-
-		timeout = new Timer(15000, this);
-
-		this.setGameState(Game.GameState.WAITING);
-
-	}
-
-	/**
-	 * Timeout function that is called after 15 seconds.
-	 */
-	public void actionPerformed(ActionEvent e) {
-		timeout.stop();
-		this.disqualify(this.players.get(currentPlayer));
-		this.removePlayer(this.players.get(currentPlayer));
-		this.nextTurn(0);
-	}
-
-	/**
-	 * Entry function which player can use to signal their turn is done.
-	 * 
-	 * @param turn
-	 */
-	public void receiveTurn(Turn turn) {
-		timeout.stop();
-		try {
-			turn.applyTurn();
-			this.nextTurn(1);
-		} catch (SquareOutOfBoundsException e) {
-			// TODO Afvangen foutieve turn
-		}
-	}
-
 	public abstract void disqualify(Player player);
+
 	public abstract void finish();
+
 	public abstract boolean gameOver();
-	
+
 	/*
 	 * Getters and setters below.
 	 */
@@ -137,6 +86,21 @@ public abstract class Game implements ActionListener {
 	 */
 	public Player getCurrentPlayer() {
 		return this.players.get(this.currentPlayer);
+	}
+
+	/**
+	 * Get the next player for this game.
+	 * 
+	 * @param mod
+	 *            The next player to be selected. This modifies the
+	 *            currentPlayer field, so we have to think about what value to
+	 *            put here. Example: 0 doesn't change the player, unless the a
+	 *            player has been removed from the list in which case the next
+	 *            player is selected. 1 picks the next player from the list in
+	 *            normal situations.
+	 */
+	public Player getNextPlayer(int mod) {
+		return this.players.get((this.currentPlayer + mod) % this.players.size());
 	}
 
 	/**
@@ -187,8 +151,8 @@ public abstract class Game implements ActionListener {
 	 * @param currentPlayer
 	 *            the currentPlayer to set
 	 */
-	public void setCurrentPlayer(int currentPlayer) {
-		this.currentPlayer = currentPlayer;
+	public void setCurrentPlayer(Player p) {
+		this.currentPlayer = this.players.indexOf(p);
 	}
 
 }
