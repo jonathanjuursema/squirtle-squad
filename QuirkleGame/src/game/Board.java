@@ -194,7 +194,7 @@ public class Board {
 		representation = representation
 						.concat(System.lineSeparator() + linesep + System.lineSeparator());
 
-		for (int y = minY; y <= maxY; y++) {
+		for (int y = maxY; y >= minY; y--) {
 			representation = representation.concat(" " + String.format("% 3d ", y) + "|");
 			for (int x = minX; x <= maxX; x++) {
 				try {
