@@ -3,6 +3,8 @@ package game;
 import java.util.ArrayList;
 import java.util.List;
 
+import server.Player;
+
 /**
  * This hand represents the 'hand' of a player in real life. A hand contains a
  * player's tiles and the contents of the hand can be manipulated through

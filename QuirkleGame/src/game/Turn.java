@@ -8,6 +8,7 @@ import java.util.Map;
 import exceptions.IllegalMoveException;
 import exceptions.IllegalTurnException;
 import exceptions.SquareOutOfBoundsException;
+import server.Player;
 
 /**
  * The class represents the turn. During a turn the assignPlayer have the choice

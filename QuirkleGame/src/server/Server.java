@@ -3,8 +3,6 @@ package server;
 import java.util.ArrayList;
 import java.util.List;
 
-import game.Player;
-
 /**
  * TODO Write file header.
  * 

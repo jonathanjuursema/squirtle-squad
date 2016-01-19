@@ -2,8 +2,6 @@ package server;
 
 import java.net.Socket;
 
-import game.Player;
-
 public class ServerConnectionHandler extends networking.ConnectionHandler {
 	
 	private Player player;

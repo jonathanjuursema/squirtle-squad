@@ -12,9 +12,9 @@ import exceptions.SquareOutOfBoundsException;
 import game.Board;
 
 import game.Move;
-import game.Player;
 import game.Tile;
 import game.Turn;
+import server.Player;
 
 
 public class TurnTest {

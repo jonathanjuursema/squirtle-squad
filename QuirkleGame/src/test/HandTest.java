@@ -10,8 +10,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import game.Hand;
-import game.Player;
 import game.Tile;
+import server.Player;
 
 public class HandTest {
 	public Player player;

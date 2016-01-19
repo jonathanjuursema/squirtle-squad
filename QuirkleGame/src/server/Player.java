@@ -1,9 +1,9 @@
-package game;
+package server;
 
 import exceptions.IllegalTurnException;
 import exceptions.SquareOutOfBoundsException;
-import server.Game;
-import server.ServerConnectionHandler;
+import game.Hand;
+import game.Turn;
 
 /**
  * TODO Write file header.
