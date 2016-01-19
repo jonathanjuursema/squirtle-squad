@@ -1,5 +1,8 @@
 package game;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import exceptions.SquareOutOfBoundsException;
 import server.Game;
 
@@ -15,7 +18,7 @@ import server.Game;
  *
  */
 public class Board {
-	
+
 	private BoardSquare[][] board;
 
 	/**
@@ -25,13 +28,11 @@ public class Board {
 	 *            The game. You lost it.
 	 */
 	public Board() {
-		int arraySize = 2 * Game.TILESPERTYPE * Game.DIFFERENTCOLORS
-						* Game.DIFFERENTSHAPES;
+		int arraySize = 2 * Game.TILESPERTYPE * Game.DIFFERENTCOLORS * Game.DIFFERENTSHAPES;
 		this.board = new BoardSquare[arraySize][arraySize];
 		for (int i = 0; i < arraySize; i++) {
 			for (int j = 0; j < arraySize; j++) {
-				this.board[i][j] = new BoardSquare(this, i - (board.length / 2),
-								j - (board[0].length / 2));
+				this.board[i][j] = new BoardSquare(this, i - (board.length / 2), j - (board[0].length / 2));
 			}
 		}
 	}
@@ -138,12 +139,43 @@ public class Board {
 			 * and assign this copy to the new column in boardCopy.
 			 */
 			for (int j = 0; j < this.board[i].length; j++) {
-				boardCopy[i][j] = new BoardSquare(board, this.board[i][j].getX(),
-								this.board[i][j].getY(), this.board[i][j].getTile());
+				boardCopy[i][j] = new BoardSquare(board, this.board[i][j].getX(), this.board[i][j].getY(),
+						this.board[i][j].getTile());
 			}
 		}
 		// Finally, we construct a new Board using this copy of the board.
 		return boardCopy;
+	}
+
+	public List<BoardSquare> getPossiblePlaces() throws SquareOutOfBoundsException {
+		return getPossiblePlaces(this.getSquare(0, 0), 0);
+	}
+
+	private List<BoardSquare> possiblePlaces = new ArrayList<BoardSquare>();
+	private List<BoardSquare> checkedPlaces = new ArrayList<BoardSquare>();
+
+	public List<BoardSquare> getPossiblePlaces(BoardSquare currentSquare, Integer direction)
+			throws SquareOutOfBoundsException {
+		List<Integer> directionsChecked = new ArrayList<Integer>();
+
+		while (!directionsChecked.contains(direction) && directionsChecked.size() <= 4) {
+			if (currentSquare.getNeighbour(direction).isEmpty()
+					&& !possiblePlaces.contains(currentSquare.getNeighbour(direction))) {
+				possiblePlaces.add(currentSquare.getNeighbour(direction));
+
+			} else if (!currentSquare.getNeighbour(direction).isEmpty()
+					&& !checkedPlaces.contains(currentSquare.getNeighbour(direction))) {
+				checkedPlaces.add(currentSquare);
+
+				this.getPossiblePlaces(currentSquare.getNeighbour(direction), direction);
+			}
+			directionsChecked.add(direction);
+			direction++;
+			direction = direction % 4;
+		}
+
+		return possiblePlaces;
+
 	}
 
 	/**
@@ -170,8 +202,8 @@ public class Board {
 			}
 		}
 
-		String representation = "Displaying board from (" + minX + "," + minY + ") to (" + maxX
-						+ "," + maxY + ")." + System.lineSeparator() + System.lineSeparator();
+		String representation = "Displaying board from (" + minX + "," + minY + ") to (" + maxX + "," + maxY + ")."
+				+ System.lineSeparator() + System.lineSeparator();
 
 		representation = representation.concat("     |");
 
@@ -181,8 +213,7 @@ public class Board {
 			linesep = linesep.concat("----+");
 		}
 
-		representation = representation
-						.concat(System.lineSeparator() + linesep + System.lineSeparator());
+		representation = representation.concat(System.lineSeparator() + linesep + System.lineSeparator());
 
 		for (int y = maxY; y >= minY; y--) {
 			representation = representation.concat(" " + String.format("% 3d ", y) + "|");
@@ -197,8 +228,7 @@ public class Board {
 				} catch (SquareOutOfBoundsException e) {
 				}
 			}
-			representation = representation
-							.concat(System.lineSeparator() + linesep + System.lineSeparator());
+			representation = representation.concat(System.lineSeparator() + linesep + System.lineSeparator());
 		}
 
 		return representation;
