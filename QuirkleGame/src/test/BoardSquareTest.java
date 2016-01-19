@@ -7,14 +7,12 @@ import org.junit.Test;
 
 import game.Board;
 import game.BoardSquare;
-import game.Game;
 import game.Tile;
 import server.Server;
 
 public class BoardSquareTest {
 	
 	Server server;
-	Game game;
 	Board board;
 	
 	BoardSquare bs1, bs2, bs3;
@@ -23,9 +21,7 @@ public class BoardSquareTest {
 	@Before
 	public void setUp() throws Exception {
 		
-		server = new Server();
-		game = new DummyGame();
-		board = new Board(game);
+		board = new Board();
 		
 		t1 = new Tile(Tile.ORANGE, Tile.CROSS);
 		t2 = new Tile(Tile.PURPLE, Tile.DIAMOND);

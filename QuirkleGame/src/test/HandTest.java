@@ -19,7 +19,7 @@ public class HandTest {
 
 	@Before
 	public void setUp() throws Exception {
-		player = new Player("Peter", "");
+		player = new Player(null,"Peter");
 	}
 
 	@Test

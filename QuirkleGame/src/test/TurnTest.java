@@ -10,26 +10,23 @@ import exceptions.IllegalMoveException;
 import exceptions.IllegalTurnException;
 import exceptions.SquareOutOfBoundsException;
 import game.Board;
-import game.Game;
+
 import game.Move;
 import game.Player;
 import game.Tile;
 import game.Turn;
-import server.Server;
+
 
 public class TurnTest {
-	public static Server server;
-	public static Game game;
+
 	public Turn turn;
 	public static Board board;
 	public static Player player;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		server = new Server();
-		game = new DummyGame();
-		player = new Player("Peter", "");
-		board = new Board(game);
+		player = new Player(null,"Peter");
+		board = new Board();
 	}
 
 	@Before
@@ -40,7 +37,7 @@ public class TurnTest {
 	@Test
 	public void testInitialScore() throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException {
 
-		board = new Board(game);
+		board = new Board();
 		turn = new Turn(board, player);
 
 		Tile redCircle = new Tile(Tile.RED, Tile.CIRCLE);
@@ -81,7 +78,7 @@ public class TurnTest {
 	@Test
 	public void testMultipleTurnes() throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException {
 
-		board = new Board(game);
+		board = new Board();
 		turn = new Turn(board, player);
 
 		Move move1 = new Move(new Tile(Tile.RED, Tile.CIRCLE), turn.getBoardCopy().getSquare(0, 0));
@@ -110,8 +107,6 @@ public class TurnTest {
 
 		turn.calculateScore();
 		turn.applyTurn();
-		
-		System.out.println(board);
 		
 		turn = new Turn(board, player);
 
@@ -162,7 +157,6 @@ public class TurnTest {
 		assertEquals(7, turn.calculateScore());
 		
 		turn.applyTurn();
-		System.out.println(board);
 		turn = new Turn(board, player);
 
 		Move newMove5 = new Move(new Tile(Tile.YELLOW, Tile.CIRCLE), turn.getBoardCopy().getSquare(4, 2));
@@ -199,14 +193,16 @@ public class TurnTest {
 		turn.addMove(newMove11);
 		
 		assertEquals(12, turn.calculateScore());
-		
+
 		turn.applyTurn();
+		
+		System.out.println(turn.getBoardCopy());
 	}
 	
 	@Test
 	public void testFalseTurns() throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException {
 
-		board = new Board(game);
+		board = new Board();
 		turn = new Turn(board, player);
 
 		Move move1 = new Move(new Tile(Tile.RED, Tile.CIRCLE), turn.getBoardCopy().getSquare(0, 0));
@@ -234,8 +230,6 @@ public class TurnTest {
 
 		turn.calculateScore();
 		turn.applyTurn();
-		
-		System.out.println(turn.getBoardCopy());
 	}
 
 }

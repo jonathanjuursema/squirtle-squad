@@ -17,9 +17,7 @@ public class BoardTest {
 
 	@Before
 	public void setUp() throws Exception {
-		server = new Server();
-		game = new DummyGame();
-		board = new Board(game);
+		board = new Board();
 	}
 
 	@Test
@@ -81,15 +79,25 @@ public class BoardTest {
 		
 		System.out.println(board.toString());
 		
-		Board board2 = new Board(game);
+		Board board2 = new Board();
 		board2.setBoard(board.copy(board2));
 		
 		System.out.println(board2.toString());
 	}
 	
+	
 	@Test
-	public void testGeneral() {
-		assertEquals(game, board.getGame());
+	public void testPossiblePlayes() throws SquareOutOfBoundsException{
+		board.placeTile(new Tile(Tile.BLUE, Tile.CIRCLE), 0, 0);
+		board.placeTile(new Tile(Tile.RED, Tile.SQUARE), 0, -1);
+		board.placeTile(new Tile(Tile.ORANGE, Tile.DIAMOND), 0, -2);
+		board.placeTile(new Tile(Tile.PURPLE, Tile.STAR), 0, -3);
+		board.placeTile(new Tile(Tile.GREEN, Tile.CROSS), 0, -4);
+		board.placeTile(new Tile(Tile.ORANGE, Tile.PLUS), 0, -5);
+		System.out.println(board);
+		
+		System.out.println(board.getPossiblePlaces());
+		System.out.println("Amount of possible places: " + board.getPossiblePlaces().size());
 	}
 
 }
