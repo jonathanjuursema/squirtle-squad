@@ -2,7 +2,7 @@ package game;
 
 import exceptions.IllegalTurnException;
 import exceptions.SquareOutOfBoundsException;
-import server.ServerGame;
+import server.Game;
 import server.ServerConnectionHandler;
 
 /**
@@ -13,7 +13,7 @@ import server.ServerConnectionHandler;
  */
 public class Player {
 
-	private ServerGame game;
+	private Game game;
 	private Turn turn;
 	private ServerConnectionHandler connection;
 
@@ -27,7 +27,7 @@ public class Player {
 		IN_LOBBY, IN_GAME
 	};
 
-	public Player(ServerGame game, String name, String colour) {
+	public Player(Game game, String name, String colour) {
 		// TODO: implement body
 		this.name = name;
 	}
@@ -113,7 +113,7 @@ public class Player {
 	 * @param game
 	 *            the game to set
 	 */
-	public void setGame(ServerGame game) {
+	public void setGame(Game game) {
 		this.game = game;
 	}
 

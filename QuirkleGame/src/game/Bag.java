@@ -5,6 +5,7 @@ import java.util.Random;
 
 import exceptions.TileNotInBagException;
 import exceptions.TooFewTilesInBagException;
+import server.Game;
 
 import java.util.ArrayList;
 

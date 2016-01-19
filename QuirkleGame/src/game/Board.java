@@ -1,6 +1,7 @@
 package game;
 
 import exceptions.SquareOutOfBoundsException;
+import server.Game;
 
 /**
  * A class representing a game board, used by the Game class. The board is

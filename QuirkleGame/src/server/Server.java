@@ -14,7 +14,7 @@ import game.Player;
 public class Server {
 	
 	private List<Player> lobby;
-	private List<ServerGame> games;
+	private List<Game> games;
 	
 	public Server() {
 		this.lobby = new ArrayList<Player>();
@@ -41,7 +41,7 @@ public class Server {
 		lobby.remove(player);
 	}
 	
-	public void endGame(ServerGame game) {
+	public void endGame(Game game) {
 		games.remove(game);
 	}
 
