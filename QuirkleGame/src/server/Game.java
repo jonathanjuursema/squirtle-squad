@@ -72,35 +72,25 @@ public abstract class Game implements ActionListener {
 	}
 
 	/**
-	 * Removes a player from the game.
-	 * 
-	 * @param player
-	 *            The player to be removed.
-	 */
-	public void removePlayer(Player player) {
-		players.remove(player);
-	}
-
-	/**
 	 * Start the game.
 	 */
 	public void start() {
 
 		// Initialise the game.
-		this.setGameState(Game.GameState.INITIAL);
+		this.gameState = Game.GameState.INITIAL;
 
 		// Make a new bag and fill it.
-		this.setBag(new Bag(this));
-		this.getBag().fill();
+		this.bag = new Bag(this);
+		this.bag.fill();
 
 		Map<Player, Turn> beginturns = new HashMap<Player, Turn>();
 
 		// Initialise player hands, send them, and request first turn.
-		for (Player p : this.getPlayers()) {
+		for (Player p : this.players) {
 			// Initialise hand
 			p.assignHand(new Hand(p));
 			try {
-				this.getBag().takeFromBag(p.getHand(), 6);
+				this.bag.takeFromBag(p.getHand(), 6);
 			} catch (TooFewTilesInBagException | TileNotInBagException e) {
 				/* TODO */ }
 
@@ -108,7 +98,7 @@ public abstract class Game implements ActionListener {
 
 			// Request initial turn
 			beginturns.put(p, null);
-			new Turn(this.getBoard(), p);
+			new Turn(this.board, p);
 		}
 
 		this.timeout = new Timer(this.TURNTIMEOUT * 1000, this);
@@ -159,7 +149,7 @@ public abstract class Game implements ActionListener {
 			/* TODO */ }
 
 		// Start the real game.
-		this.setGameState(Game.GameState.NORMAL);
+		this.gameState = Game.GameState.NORMAL;
 
 		this.setCurrentPlayer(highestScoring);
 
@@ -173,12 +163,12 @@ public abstract class Game implements ActionListener {
 	 */
 	public boolean gameOver() {
 		
-		if (this.getPlayers().size() == 1) {
+		if (this.players.size() == 1) {
 			return true;
 		}
 		
-		if (this.getBag().getNumberOfTiles() == 0) {
-			for (Player p : this.getPlayers()) {
+		if (this.bag.getNumberOfTiles() == 0) {
+			for (Player p : this.players) {
 				if (p.getHand().getTilesInHand().size() == 0) {
 					return true;
 				}
@@ -205,11 +195,11 @@ public abstract class Game implements ActionListener {
 	public void nextTurn(int mod) {
 
 		this.setCurrentPlayer(this.getNextPlayer(mod));
-		new Turn(this.getBoard(), this.getCurrentPlayer());
+		new Turn(this.board, this.getCurrentPlayer());
 
 		timeout = new Timer(this.TURNTIMEOUT * 1000, this);
 
-		this.setGameState(Game.GameState.WAITING);
+		this.gameState = Game.GameState.WAITING;
 
 	}
 
@@ -238,8 +228,18 @@ public abstract class Game implements ActionListener {
 	 */
 	public void disqualify(Player player) {
 		List<Tile> tiles = player.getHand().hardResetHand();
-		this.getBag().addToBag(tiles);
+		this.bag.addToBag(tiles);
 		this.removePlayer(player);
+	}
+
+	/**
+	 * Removes a player from the game.
+	 * 
+	 * @param player
+	 *            The player to be removed.
+	 */
+	public void removePlayer(Player player) {
+		players.remove(player);
 	}
 
 	/**
@@ -257,9 +257,9 @@ public abstract class Game implements ActionListener {
 
 		timeout.stop();
 
-		if (this.getGameState() == Game.GameState.INITIAL) {
+		if (this.gameState == Game.GameState.INITIAL) {
 			this.initialMove();
-		} else if (this.getGameState() == Game.GameState.WAITING) {
+		} else if (this.gameState == Game.GameState.WAITING) {
 			this.disqualify(this.getCurrentPlayer());
 			this.nextTurn(0);
 		}
@@ -271,7 +271,7 @@ public abstract class Game implements ActionListener {
 	 * @param message The reason.
 	 */
 	public void shutdown(String message) {
-		for (Player p : this.getPlayers()) {
+		for (Player p : this.players) {
 			p.getHand().hardResetHand();
 			this.removePlayer(p);
 			this.parentServer.playerToLobby(p);
@@ -304,50 +304,6 @@ public abstract class Game implements ActionListener {
 	 */
 	public Player getNextPlayer(int mod) {
 		return this.players.get((this.currentPlayer + mod) % this.players.size());
-	}
-
-	/**
-	 * @return the players
-	 */
-	public List<Player> getPlayers() {
-		return players;
-	}
-
-	/**
-	 * @return the gameState
-	 */
-	public GameState getGameState() {
-		return gameState;
-	}
-
-	/**
-	 * @param gameState
-	 *            the gameState to set
-	 */
-	public void setGameState(GameState gameState) {
-		this.gameState = gameState;
-	}
-
-	/**
-	 * @return the board
-	 */
-	public Board getBoard() {
-		return board;
-	}
-
-	/**
-	 * @return the bag
-	 */
-	public Bag getBag() {
-		return bag;
-	}
-
-	/**
-	 * @param bag
-	 *            the bag to set
-	 */
-	public void setBag(Bag bag) {
-		this.bag = bag;
 	}
 
 	/**
