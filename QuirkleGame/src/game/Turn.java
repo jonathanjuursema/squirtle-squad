@@ -27,11 +27,6 @@ public class Turn {
 	private Swap swapRequest = null;
 	private Player assignedPlayer;
 
-	private Condition readySignal;
-
-	private boolean isReady;
-
-
 	/**
 	 * Creates a turn with assigned Player and the board. This functions creates
 	 * a deepcopy of the board.
@@ -39,7 +34,7 @@ public class Turn {
 	 * @param player
 	 */
 
-	public Turn(Board board, Player currentPlayer, Condition readySignal) {
+	public Turn(Board board, Player currentPlayer) {
 		this.boardCopy = new Board(board.getGame());
 		this.boardCopy.setBoard(board.copy(this.boardCopy));
 		this.assignedPlayer = currentPlayer;
