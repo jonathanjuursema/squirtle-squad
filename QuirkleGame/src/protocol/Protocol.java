@@ -1,16 +1,28 @@
 package protocol;
 
 /*
- * Protocol file downloaded on January 12 from:
+ * Protocol file downloaded on January 19 from:
  * https://github.com/mmmcompany/QuirkleInterfaceRepository/blob/master/src/protocol_v1.3/Protocol.java
  */
 
 /**
- * <!-- Versie 1.2
+ * <!-- Versie 1.3.2
  *
  * -------------
  * - CHANGELOG -
  * -------------
+ * 
+ * Versie 1.3.2
+ * 
+ * + fixed verkeerde delimitter MAKEMOVE - Rosalyn
+ * + general errorcode 8 - JasperGerth & StephanMB
+ *
+ * 
+ * Versie 1.3
+ * + hallo commando overbodige tekst verwijderd
+ * + error messages functionaliteit toegevoegd
+ * + OKwaitfor functionaliteit uitgelegd
+ * 
  * 
  * Versie 1.2
  * 	+ Chat commando updated 
@@ -97,9 +109,26 @@ package protocol;
  * <p>
  * het is mogelijk om een negatieve positie op het bord te hebben
  * </p>
+ * 
+ * <h3 id="Eerste Beurt">Eerste Beurt</h3>
  *
+ * <p>
+ * Bij de eerste beurt wordt de volgende volgorde doorlopen
+ * <p>
  *
+ * <ul>
+ * <li>1. server stuurt addtohand naar alle spelers met hun eerste set stenen
+ * </li>
+ * <li>2. server stuurt naar elke speler individueel dat hij/zij aan de beurt is
+ * </li>
+ * <li>3. spelers sturen allemaal hun move naar de server</li>
+ * <li>4. server legt de beste move neer en geeft de beurt aan de op een na
+ * beste move.</li>
+ * <li>5. het is in de normale spelstaat gekomen</li>
+ * </ul>
+ * bij een gelijke score wordt er een willekeurige speler gekozen.
  * <h3 id="player-names">Player Names</h3>
+ * 
  *
  * <p>
  * Vanwege gebruiksgemak en het vergemakkelijken van het renderen heb ik
@@ -227,33 +256,10 @@ public class Protocol {
 		 * Name: <code>HALLO</code> <br>
 		 * Descriptie: Commando dat verstuurd wordt om te identificeren bij de
 		 * server <br>
-		 * Content: <code>Player Name_</code> <code>modulesSupported_</code>
+		 * Content: <code>HALLO_PlayerName_modulesSupported</code>
 		 * </p>
 		 *
-		 * <ul>
-		 * <li><code>HALLO_playername_features\n\n</code> (15) - De naam van de
-		 * speler die wil connecten.</li> Een lijst van ondersteunde
-		 * <code>modules</code>s, met standaard delimitter van elkaar
-		 * gescheiden. <br>
-		 * <code>Feature</code>: <code>String</code> (15) - Een unieke naam voor
-		 * een feature. De volgende features zijn afgesproken:
-		 * <p>
-		 * chat_
-		 * </p>
-		 * <p>
-		 * challenge_
-		 * </p>
-		 * <p>
-		 * security_
-		 * </p>
-		 * <p>
-		 * leaderboard_
-		 * </p>
-		 * <p>
-		 * elk van deze features wordt los toegelicht.
-		 * </p>
-		 * </li>
-		 * </ul>
+		 * 
 		 */
 
 		public static final String HALLO = "HALLO";
@@ -331,11 +337,11 @@ public class Protocol {
 		 * elke steen wordt bescheven als volgt:
 		 * </p>
 		 * <p>
-		 * charchar*int*int
+		 * charchar_int*int
 		 * </p>
-		 * \ voorbeeld: Content: <code>charchar*int*int\n\n</code>
+		 * \ voorbeeld: Content: <code>charchar_int*int\n\n</code>
 		 * </p>
-		 * <code>MAKEMOVE_AF*11*6_BF*11*7\n\n<code>
+		 * <code>MAKEMOVE_AF_11*6_BF_11*7\n\n<code>
 		 * 
 		 */
 
@@ -436,13 +442,19 @@ public class Protocol {
 		 * Error <br>
 		 * Name: <code>ERROR</code> <br>
 		 * Descriptie: Een errormessage <br>
-		 * Content: <code>ERROR_integer\n\n</code>
+		 * Content: <code>ERROR_integer_message\n\n</code>
 		 * </p>
 		 * <ul>
-		 * 
+		 * <li><code>Error Code</code>: <code>String</code> - De code is de
+		 * header van het bericht waar de fout door is ontstaan.</li>
+		 * <li><code>Message</code>: <code>String</code> (255) - Het bericht dat
+		 * je aan je error hangt. Hierin kan je extra info tonen over wat er
+		 * precies is foutgegaan.</li>
+		 * </ul>
+		 *
 		 * errorcodes die beschikbaar zijn: 1: notyourturn 2: notyourstone 3:
 		 * notthatmanystonesavailable 4: nameexists 5: notchallengable 6:
-		 * challengerefused 7: invalidmove
+		 * challengerefused 7: invalidmove 8: generalerror
 		 */
 
 		public static final String ERROR = "ERROR";
@@ -451,11 +463,11 @@ public class Protocol {
 		 * <p>
 		 * OKWAITFOR <br>
 		 * Name: <code>OKWAITFOR</code> <br>
-		 * Descriptie: Een lijst met mensen die zich op het moment in de lobby
-		 * bevinden. Wordt door de server verstuurd bij Connect/Disconnect van
-		 * een speler, en wanneer aangevraagd. <br>
+		 * Descriptie: Geeft met de integer aan op hoeveel mensen de speler nog
+		 * moet wachten tot het spel begint <br>
 		 * Content: <code>OKWAITFOR_integer\n\n</code>
 		 * </p>
+		 * Op het moment dat een speler zich heeft aangemeld bij de server
 		 * 
 		 */
 
@@ -586,7 +598,8 @@ public class Protocol {
 			 *
 			 * <p>
 			 * Let op! Het protocol voor <code>SECURITY</code> is nog niet
-			 * vastgelegd.
+			 * vastgelegd. Dit wordt een SSL certificaat implementatie. Het
+			 * certificaat wordt later bijgevoegd aan het protocol op github.
 			 */
 			public static final String CHAT = "CHAT";
 			public static final String LEADERBOARD = "LEADERBOARD";

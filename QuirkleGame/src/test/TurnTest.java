@@ -25,7 +25,7 @@ public class TurnTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		player = new Player(null,"Peter");
+		player = new Player("Test");
 		board = new Board();
 	}
 
