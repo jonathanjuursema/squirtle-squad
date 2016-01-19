@@ -67,6 +67,10 @@ public class Sequence {
 		
 	}
 	
+	public int size() {
+		return this.sequence.size();
+	}
+	
 	/**
 	 * Checks if the current sequence is according to the game rules.
 	 * The function checks the sequence according to the identity.

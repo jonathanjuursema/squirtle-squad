@@ -1,5 +1,8 @@
 package game;
 
+import exceptions.IllegalTurnException;
+import exceptions.SquareOutOfBoundsException;
+
 /**
  * TODO Write file header.
  * 
@@ -32,8 +35,7 @@ public class Player {
 	 */
 	
 	public void playTurn() {
-		// TODO: implement body
-		this.turn.setReady();
+		this.game.receiveTurn(this.turn);
 		this.turn = null;
 	}
 	

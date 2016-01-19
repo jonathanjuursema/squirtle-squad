@@ -41,7 +41,7 @@ public class TurnTest {
 	public void testInitialScore() throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException {
 
 		board = new Board(game);
-		turn = new Turn(board, player, null);
+		turn = new Turn(board, player);
 
 		Tile redCircle = new Tile(Tile.RED, Tile.CIRCLE);
 		Tile yellowCircle = new Tile(Tile.YELLOW, Tile.CIRCLE);
@@ -82,7 +82,7 @@ public class TurnTest {
 	public void testMultipleTurnes() throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException {
 
 		board = new Board(game);
-		turn = new Turn(board, player, null);
+		turn = new Turn(board, player);
 
 		Move move1 = new Move(new Tile(Tile.RED, Tile.CIRCLE), turn.getBoardCopy().getSquare(0, 1));
 		Move move2 = new Move(new Tile(Tile.YELLOW, Tile.CIRCLE), turn.getBoardCopy().getSquare(0, 2));
@@ -111,7 +111,7 @@ public class TurnTest {
 		turn.calculateScore();
 		turn.applyTurn();
 
-		turn = new Turn(board, player, null);
+		turn = new Turn(board, player);
 
 		Move move_1 = new Move(new Tile(Tile.RED, Tile.SQUARE), turn.getBoardCopy().getSquare(1, 1));
 		Move move_2 = new Move(new Tile(Tile.RED, Tile.CROSS), turn.getBoardCopy().getSquare(2, 1));
@@ -137,7 +137,7 @@ public class TurnTest {
 		turn.calculateScore();
 		turn.applyTurn();
 		
-		turn = new Turn(board, player, null);
+		turn = new Turn(board, player);
 
 		Move newMove1 = new Move(new Tile(Tile.RED, Tile.STAR), turn.getBoardCopy().getSquare(3, 2));
 		turn.addMove(newMove1);
@@ -147,7 +147,7 @@ public class TurnTest {
 		
 		turn.applyTurn();
 		
-		turn = new Turn(board, player, null);
+		turn = new Turn(board, player);
 
 		Move newMove2 = new Move(new Tile(Tile.GREEN, Tile.CIRCLE), turn.getBoardCopy().getSquare(1, 3));
 		turn.addMove(newMove2);
@@ -163,7 +163,7 @@ public class TurnTest {
 		
 		turn.applyTurn();
 		
-		turn = new Turn(board, player, null);
+		turn = new Turn(board, player);
 
 		Move newMove5 = new Move(new Tile(Tile.RED, Tile.CIRCLE), turn.getBoardCopy().getSquare(4, 2));
 		turn.addMove(newMove5);
@@ -173,6 +173,35 @@ public class TurnTest {
 		
 		System.out.println(turn.getBoardCopy());
 		assertEquals(7, turn.calculateScore());
+		
+		turn.applyTurn();
+		
+		turn = new Turn(board, player);
+
+		Move newMove7 = new Move(new Tile(Tile.YELLOW, Tile.SQUARE), turn.getBoardCopy().getSquare(-1, 2));
+		turn.addMove(newMove7);
+		
+		Move newMove8 = new Move(new Tile(Tile.YELLOW, Tile.STAR), turn.getBoardCopy().getSquare(-2, 2));
+		turn.addMove(newMove8);
+		
+		System.out.println(turn.getBoardCopy());
+		assertEquals(3, turn.calculateScore());
+		
+		turn.applyTurn();
+		
+		turn = new Turn(board, player);
+
+		Move newMove9 = new Move(new Tile(Tile.RED, Tile.CROSS), turn.getBoardCopy().getSquare(3, 0));
+		turn.addMove(newMove9);
+		
+		Move newMove10 = new Move(new Tile(Tile.RED, Tile.SQUARE), turn.getBoardCopy().getSquare(3, -1));
+		turn.addMove(newMove10);
+		
+		Move newMove11 = new Move(new Tile(Tile.RED, Tile.PLUS), turn.getBoardCopy().getSquare(3, -2));
+		turn.addMove(newMove11);
+		
+		System.out.println(turn.getBoardCopy());
+		assertEquals(12, turn.calculateScore());
 		
 		turn.applyTurn();
 	}

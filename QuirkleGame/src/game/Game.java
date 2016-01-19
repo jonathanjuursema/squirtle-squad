@@ -1,11 +1,16 @@
 package game;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.swing.Timer;
+
 import exceptions.IllegalTurnException;
+import exceptions.SquareOutOfBoundsException;
 
 /**
  * This class manages an entire game, including their players. It is
@@ -14,7 +19,7 @@ import exceptions.IllegalTurnException;
  * @author Jonathan Juursema & Peter Wessels
  *
  */
-public abstract class Game extends Thread {
+public abstract class Game implements ActionListener {
 
 	public final static int DIFFERENTSHAPES = 6;
 	public final static int DIFFERENTCOLORS = 6;
@@ -24,6 +29,8 @@ public abstract class Game extends Thread {
 
 	private List<Player> players;
 	private int currentPlayer;
+
+	private Timer timeout;
 
 	public static enum GameState {
 		WAITING, INITIAL, NORMAL, FINISHED
@@ -57,39 +64,64 @@ public abstract class Game extends Thread {
 	/**
 	 * Start the game!
 	 */
-	public abstract void run();
+	public abstract void start();
 
 	/**
 	 * Hands the current turn to a Player, awaiting their moves. Game tournament
 	 * rules impose a 15 second timeout for submitting a move. If this function
 	 * times out, the player is disqualified.
+	 * 
+	 * @param playerModifier
+	 *            The next player to be selected. This modifies the
+	 *            currentPlayer field, so we have to think about what value to
+	 *            put here. Example: 0 doesn't change the player, unless the a
+	 *            player has been removed from the list in which case the next
+	 *            player is selected. 1 picks the next player from the list in
+	 *            normal situations.
 	 */
-	public void nextTurn() {
+	public void nextTurn(int playerModifier) {
+
+		this.currentPlayer = (this.currentPlayer + playerModifier) % this.players.size();
+		new Turn(this.board, this.players.get(this.currentPlayer));
+
+		timeout = new Timer(15000, this);
 
 		this.setGameState(Game.GameState.WAITING);
 
-		// TODO Implement timeout.
+	}
 
-		final Lock waitForTurn = new ReentrantLock();
-		final Condition turnReady = waitForTurn.newCondition();
+	/**
+	 * Timeout function that is called after 15 seconds.
+	 */
+	public void actionPerformed(ActionEvent e) {
+		timeout.stop();
+		this.disqualify(this.players.get(currentPlayer));
+		this.removePlayer(this.players.get(currentPlayer));
+		this.nextTurn(0);
+	}
 
-		this.currentPlayer = (this.currentPlayer + 1) % this.players.size();
-		Turn turn = new Turn(this.board, this.players.get(this.currentPlayer), turnReady);
-
-		while (!turn.isReady()) {
-			try {
-				turnReady.await();
-			} catch (InterruptedException e) {
-				/* TODO */ }
-		}
+	/**
+	 * Entry function which player can use to signal their turn is done.
+	 * 
+	 * @param turn
+	 */
+	public void receiveTurn(Turn turn) {
+		timeout.stop();
 		try {
 			turn.applyTurn();
-		} catch (IllegalTurnException e) {
-			/* TODO */ }
-		
-		this.setGameState(Game.GameState.NORMAL);
-
+			this.nextTurn(1);
+		} catch (SquareOutOfBoundsException e) {
+			// TODO Afvangen foutieve turn
+		}
 	}
+
+	public abstract void disqualify(Player player);
+	public abstract void finish();
+	public abstract boolean gameOver();
+	
+	/*
+	 * Getters and setters below.
+	 */
 
 	/**
 	 * Returns the amount of tiles per type for this game. Usually 3.
@@ -115,14 +147,6 @@ public abstract class Game extends Thread {
 	}
 
 	/**
-	 * @param players
-	 *            the players to set
-	 */
-	public void setPlayers(List<Player> players) {
-		this.players = players;
-	}
-
-	/**
 	 * @return the gameState
 	 */
 	public GameState getGameState() {
@@ -145,14 +169,6 @@ public abstract class Game extends Thread {
 	}
 
 	/**
-	 * @param board
-	 *            the board to set
-	 */
-	public void setBoard(Board board) {
-		this.board = board;
-	}
-
-	/**
 	 * @return the bag
 	 */
 	public Bag getBag() {
@@ -165,14 +181,6 @@ public abstract class Game extends Thread {
 	 */
 	public void setBag(Bag bag) {
 		this.bag = bag;
-	}
-
-	/**
-	 * @param tilesPerType
-	 *            the tilesPerType to set
-	 */
-	public void setTilesPerType(int tilesPerType) {
-		this.tilesPerType = tilesPerType;
 	}
 
 	/**

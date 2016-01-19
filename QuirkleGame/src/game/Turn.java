@@ -43,9 +43,8 @@ public class Turn {
 		this.boardCopy = new Board(board.getGame());
 		this.boardCopy.setBoard(board.copy(this.boardCopy));
 		this.assignedPlayer = currentPlayer;
-		this.isReady = false;
+		this.assignedPlayer.giveTurn(this);
 		this.boardOriginal = board;
-		// TODO: implement body
 	}
 
 	/**
@@ -239,15 +238,6 @@ public class Turn {
 
 	public void setBoardCopy(Board boardCopy) {
 		this.boardCopy = boardCopy;
-	}
-
-	public void setReady() {
-		this.isReady = true;
-		this.readySignal.notifyAll();
-	}
-
-	public boolean isReady() {
-		return this.isReady;
 	}
 
 	public Player getPlayer() {
