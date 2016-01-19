@@ -26,9 +26,7 @@ public class Player {
 		IN_LOBBY, IN_GAME
 	};
 
-	public Player(Game game, String name) {
-		// TODO: implement body
-		this.name = name;
+	public Player() {
 	}
 
 	/**
@@ -73,13 +71,6 @@ public class Player {
 	// Getters & setters.
 
 	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
 	 * @return the hand
 	 */
 	public Hand getHand() {
@@ -121,6 +112,21 @@ public class Player {
 	 */
 	public int getScore() {
 		return score;
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return this.name;
+	}
+
+	/**
+	 * @param name
+	 *            the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }
