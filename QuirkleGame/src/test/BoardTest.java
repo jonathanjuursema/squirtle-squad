@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import server.*;
 import game.*;
-import client.*;
 import exceptions.*;
 
 public class BoardTest {
@@ -19,7 +18,7 @@ public class BoardTest {
 	@Before
 	public void setUp() throws Exception {
 		server = new Server();
-		game = new Game(server);
+		game = new DummyGame();
 		board = new Board(game);
 	}
 

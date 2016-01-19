@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import exceptions.IllegalMoveException;
+import exceptions.IllegalTurnException;
 import exceptions.SquareOutOfBoundsException;
 import game.Board;
 import game.Game;
@@ -21,18 +22,18 @@ public class TestMove {
 	Game game;
 	Turn turn;
 	
-	@Before
+	@Before 
 	public void setUp() throws Exception {
 		server = new Server();
-		game = new Game(server);
+		game = new DummyGame();
 		Player player = new Player("Peter", "");
 		game.addPlayer(player);
 		Board board = new Board(game);
-		turn = new Turn(board, game);
+		turn = new Turn(board, player);
 	}
 	
 	@Test
-	public void testValidMove() throws SquareOutOfBoundsException, IllegalMoveException {
+	public void testValidMove() throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException {
 		Tile redCircle = new Tile(Tile.RED,Tile.CIRCLE);
 		Tile yellowCircle = new Tile(Tile.YELLOW,Tile.CIRCLE);
 		Tile blueCircle = new Tile(Tile.BLUE,Tile.CIRCLE);
@@ -59,7 +60,7 @@ public class TestMove {
 	}
 	
 	@Test
-	public void testUnValidMove() throws SquareOutOfBoundsException, IllegalMoveException {
+	public void testUnValidMove() throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException {
 		Tile redCircle = new Tile(Tile.RED,Tile.CIRCLE);
 		Tile yellowCircle = new Tile(Tile.YELLOW,Tile.CIRCLE);
 		Tile blueCircle = new Tile(Tile.BLUE,Tile.CIRCLE);

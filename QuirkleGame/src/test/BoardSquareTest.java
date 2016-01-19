@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import exceptions.SquareOutOfBoundsException;
 import game.Board;
 import game.BoardSquare;
 import game.Game;
@@ -25,7 +24,7 @@ public class BoardSquareTest {
 	public void setUp() throws Exception {
 		
 		server = new Server();
-		game = new Game(server);
+		game = new DummyGame();
 		board = new Board(game);
 		
 		t1 = new Tile(Tile.ORANGE, Tile.CROSS);
