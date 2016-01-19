@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
+import application.Util;
 import protocol.Protocol;
 
 /**
@@ -39,32 +40,17 @@ public abstract class ConnectionHandler extends Thread {
 							Charset.forName(Protocol.Server.Settings.ENCODING)));
 			this.tx = new BufferedWriter(new OutputStreamWriter(this.socket.getOutputStream()));
 		} catch (IOException e) {
-			ConnectionHandler.log("error",
+			Util.log("error",
 							"IOException caught while setting up rx and tx: " + e.getMessage());
 			this.shutdown("Unrecoverable IOException.");
 		}
 	}
 
 	/**
-	 * A general log method for connection related issues. Policy is to keep
-	 * loggin to a minimal. Only critical logging should occur. Messages are
-	 * displayed as follows: [type] message
-	 * 
-	 * @param type
-	 *            The type of message. The developer is free to choose their own
-	 *            type.
-	 * @param message
-	 *            The message.
-	 */
-	public static void log(String type, String message) {
-		System.out.println("[" + type + "] " + message);
-	}
-
-	/**
 	 * The threaded code for listening to server commands.
 	 */
 	public void run() {
-		ConnectionHandler.log("info", "Ready to receive commands from server.");
+		Util.log("info", "Ready to receive commands from server.");
 		boolean running = true;
 		while (running) {
 			try {
@@ -72,7 +58,7 @@ public abstract class ConnectionHandler extends Thread {
 								.split(String.valueOf(Protocol.Server.Settings.DELIMITER));
 				this.parse(command[0], Arrays.copyOfRange(command, 1, command.length));
 			} catch (IOException e) {
-				ConnectionHandler.log("error",
+				Util.log("error",
 								"IOException caught while reading commands: " + e.getMessage());
 				this.shutdown("Unrecoverable IOException.");
 			}
@@ -100,7 +86,7 @@ public abstract class ConnectionHandler extends Thread {
 			this.tx.newLine();
 			this.tx.flush();
 		} catch (IOException e) {
-			ConnectionHandler.log("error",
+			Util.log("error",
 							"IOException caught while sending commands: " + e.getMessage());
 			this.shutdown("Unrecoverable IOException.");
 		}
