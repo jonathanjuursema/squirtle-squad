@@ -57,9 +57,15 @@ public abstract class ConnectionHandler extends Thread {
 		while (running) {
 			try {
 				String command = this.rx.readLine();
-				Util.log("rx", command);
-				String[] args = command.split(String.valueOf(Protocol.Server.Settings.DELIMITER));
-				this.parse(args[0], Arrays.copyOfRange(args, 1, args.length));
+				if (command.length() > 2) { // WHY ON EARTH DO WE SEPERATE COMMANDS
+										// WITH TWO NEWLINES???
+					Util.log("rx", command);
+					// Split command in arguments
+					String[] args = command
+									.split(String.valueOf(Protocol.Server.Settings.DELIMITER));
+					// Send command and arguments to the parser
+					this.parse(args[0], Arrays.copyOfRange(args, 1, args.length));
+				}
 			} catch (IOException e) {
 				Util.log("error", "IOException caught while reading commands: " + e.getMessage());
 				this.shutdown("Unrecoverable IOException.");
@@ -81,14 +87,19 @@ public abstract class ConnectionHandler extends Thread {
 	 */
 	public void send(String command, String[] args) {
 		String message = "";
+		// Initialise message
 		message = message.concat(command)
 						.concat(String.valueOf(Protocol.Server.Settings.DELIMITER));
+		// Append arguments to command
 		for (String arg : args) {
 			message = message.concat(arg)
 							.concat(String.valueOf(Protocol.Server.Settings.DELIMITER));
 		}
+		// Trim last seperator
+		message = message.substring(0, message.length()-1);
+		// Write
 		try {
-			this.tx.write(message + System.lineSeparator());
+			this.tx.write(message + Protocol.Server.Settings.COMMAND_END);
 			this.tx.flush();
 			Util.log("tx", message);
 		} catch (IOException e) {

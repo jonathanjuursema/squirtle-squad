@@ -33,14 +33,20 @@ public class ServerConnectionHandler extends ConnectionHandler {
 	public void parse(String command, String[] args) {
 		switch (command) {
 		case Protocol.Client.ERROR:
-			Util.log("protocol", "Recevied an error message from the client.");
+			switch (args[1]) {
+			default:
+				Util.log("protocol", "Recevied an generic error from the server: " + args[2]);
+				break;
+			}
 		case Protocol.Client.HALLO:
 			if (args.length < 1) {
 				this.send(Protocol.Server.ERROR, new String[] { "8", "Too few arguments." });
 			}
 			registerClient(args[0]);
+			break;
 		default:
-			Util.log("protocol", "Received an unknown command from the server: " + command);
+			Util.log("protocol", "Received an unknown command from the client: " + command);
+			break;
 		}
 	}
 
@@ -58,6 +64,7 @@ public class ServerConnectionHandler extends ConnectionHandler {
 		}
 		this.send(Protocol.Server.HALLO, new String[] { "SquirtleSquade", Server.FUNCTIONS });
 		this.player = new Player(name);
+		this.server.addPlayer(this.player);
 		this.server.playerToLobby(this.player);
 		Util.log("info", "New player connected: " + this.player.getName());
 	}
@@ -69,7 +76,7 @@ public class ServerConnectionHandler extends ConnectionHandler {
 			if (this.player.getStatus() == Player.Status.IN_GAME) {
 				this.player.getGame().disqualify(this.player);
 			}
-			this.server.playerFromLobby(this.player);
+			this.server.removePlayer(this.player);
 		}
 		try {
 			this.getSocket().close();

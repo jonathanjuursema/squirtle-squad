@@ -14,7 +14,7 @@ import application.Util;
  *
  */
 public class Server extends Thread {
-	
+
 	public static final String FUNCTIONS = "";
 
 	private List<Player> lobby;
@@ -66,6 +66,16 @@ public class Server extends Thread {
 	 */
 	public void playerFromLobby(Player player) {
 		lobby.remove(player);
+	}
+
+	/**
+	 * Adds a player to the player list.
+	 * 
+	 * @param player
+	 *            The player.
+	 */
+	public void addPlayer(Player player) {
+		players.add(player);
 	}
 
 	/**

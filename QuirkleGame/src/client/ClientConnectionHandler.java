@@ -14,14 +14,14 @@ import protocol.Protocol;
  *
  */
 public class ClientConnectionHandler extends ConnectionHandler {
-	
+
 	private Client client;
 
 	public ClientConnectionHandler(Socket socket, Client client) {
 		super(socket);
 		this.client = client;
 	}
-	
+
 	public void run() {
 		super.run();
 	}
@@ -29,10 +29,37 @@ public class ClientConnectionHandler extends ConnectionHandler {
 	@Override
 	public void parse(String command, String[] args) {
 		switch (command) {
-		case Protocol.Client.ERROR:
-			Util.log("protocol", "Recevied an error message from the client.");
+		case Protocol.Server.ERROR:
+			switch (args[0]) {
+			case "1": // not your turn
+				
+				break;
+			case "2": // not your stone
+				
+				break;
+			case "3": // not that many stones available
+				
+				break;
+			case "4": // name exists
+				this.client.register();
+				break;
+			case "5": // not challengable
+				
+				break;
+			case "6": // challenge refused
+				
+				break;
+			case "7": // invalid move
+				
+				break;
+			default:
+				Util.log("protocol", "Recevied an generic error from the server: " + args[1]);
+				break;
+			}
+			break;
 		default:
 			Util.log("protocol", "Received an unknown command from the server: " + command);
+			break;
 		}
 
 	}
@@ -46,7 +73,7 @@ public class ClientConnectionHandler extends ConnectionHandler {
 			Util.log("exception",
 							"An IOException was thrown while closing socket: " + e.getMessage());
 		}
-		
+
 	}
 
 }

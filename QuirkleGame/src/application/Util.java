@@ -14,17 +14,27 @@ public class Util {
 	 *            The message.
 	 */
 	public static void log(String type, String message) {
-		Console.println("[" + type + "] " + message);
+		switch (type) {
+		case "rx":
+			//Console.println("[" + type + "] " + message);
+			break;
+		case "tx":
+			//Console.println("[" + type + "] " + message);
+			break;
+		default:
+			Console.println("[" + type + "] " + message);
+			break;
+		}
 	}
-	
+
 	/**
 	 * A command that (tries to) clear the terminal.
 	 */
 	public static void clearScreen() {
 		final String ANSI_CLS = "\u001b[2J";
-        final String ANSI_HOME = "\u001b[H";
-        System.out.print(ANSI_CLS + ANSI_HOME);
-        System.out.flush();
+		final String ANSI_HOME = "\u001b[H";
+		System.out.print(ANSI_CLS + ANSI_HOME);
+		System.out.flush();
 	}
 
 }
