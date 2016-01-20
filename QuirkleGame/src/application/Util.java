@@ -14,7 +14,17 @@ public class Util {
 	 *            The message.
 	 */
 	public static void log(String type, String message) {
-		System.out.println("[" + type + "] " + message);
+		Console.println("[" + type + "] " + message);
+	}
+	
+	/**
+	 * A command that (tries to) clear the terminal.
+	 */
+	public static void clearScreen() {
+		final String ANSI_CLS = "\u001b[2J";
+        final String ANSI_HOME = "\u001b[H";
+        System.out.print(ANSI_CLS + ANSI_HOME);
+        System.out.flush();
 	}
 
 }

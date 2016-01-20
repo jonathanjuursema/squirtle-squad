@@ -2,9 +2,10 @@ package server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+
+import application.Util;
 
 /**
  * TODO Write file header.
@@ -13,6 +14,8 @@ import java.util.List;
  *
  */
 public class Server extends Thread {
+	
+	public static final String FUNCTIONS = "";
 
 	private List<Player> lobby;
 	private List<Player> players;
@@ -31,12 +34,17 @@ public class Server extends Thread {
 	 * The main functionality of the server.
 	 */
 	public void run() {
+		Util.log("debug", "Server thread has started.");
 		boolean running = true;
 		while (running) {
 			try {
-				new ServerConnectionHandler(this, this.socket.accept());
+				Util.log("debug", "Server is now waiting for a connection.");
+				(new ServerConnectionHandler(this, this.socket.accept())).start();
+				Util.log("debug", "A new client has connected.");
 			} catch (IOException e) {
-				/* TODO */ }
+				Util.log("exception", "IOException caught whil listening for connections: "
+								+ e.getMessage());
+			}
 		}
 	}
 

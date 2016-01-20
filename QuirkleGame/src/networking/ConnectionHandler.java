@@ -35,40 +35,44 @@ public abstract class ConnectionHandler extends Thread {
 	 */
 	public ConnectionHandler(Socket socket) {
 		this.socket = socket;
+		Util.log("debug", "A new connection has been established to "
+						+ this.socket.getRemoteSocketAddress() + ".");
 		try {
 			this.rx = new BufferedReader(new InputStreamReader(this.socket.getInputStream(),
 							Charset.forName(Protocol.Server.Settings.ENCODING)));
-			this.tx = new BufferedWriter(new OutputStreamWriter(this.socket.getOutputStream()));
+			this.tx = new BufferedWriter(new OutputStreamWriter(this.socket.getOutputStream(),
+							Charset.forName(Protocol.Server.Settings.ENCODING)));
 		} catch (IOException e) {
-			Util.log("error",
-							"IOException caught while setting up rx and tx: " + e.getMessage());
+			Util.log("error", "IOException caught while setting up rx and tx: " + e.getMessage());
 			this.shutdown("Unrecoverable IOException.");
 		}
 	}
 
 	/**
-	 * The threaded code for listening to server commands.
+	 * The threaded code for listening to remote host commands.
 	 */
 	public void run() {
-		Util.log("info", "Ready to receive commands from server.");
+		Util.log("debug", "Ready to receive commands from remote.");
 		boolean running = true;
 		while (running) {
 			try {
-				String[] command = this.rx.readLine()
-								.split(String.valueOf(Protocol.Server.Settings.DELIMITER));
-				this.parse(command[0], Arrays.copyOfRange(command, 1, command.length));
+				String command = this.rx.readLine();
+				Util.log("rx", command);
+				String[] args = command.split(String.valueOf(Protocol.Server.Settings.DELIMITER));
+				this.parse(args[0], Arrays.copyOfRange(args, 1, args.length));
 			} catch (IOException e) {
-				Util.log("error",
-								"IOException caught while reading commands: " + e.getMessage());
+				Util.log("error", "IOException caught while reading commands: " + e.getMessage());
 				this.shutdown("Unrecoverable IOException.");
+				running = false;
 			}
 
 		}
+		Util.log("debug", "Socket closed.");
 	}
 
 	/**
-	 * Send a command to the server. This function takes care of all formatting
-	 * and protocols.
+	 * Send a command to the remote host. This function takes care of all
+	 * formatting and protocols.
 	 * 
 	 * @param command
 	 *            The command.
@@ -77,17 +81,18 @@ public abstract class ConnectionHandler extends Thread {
 	 */
 	public void send(String command, String[] args) {
 		String message = "";
-		message.concat(command).concat(String.valueOf(Protocol.Server.Settings.DELIMITER));
+		message = message.concat(command)
+						.concat(String.valueOf(Protocol.Server.Settings.DELIMITER));
 		for (String arg : args) {
-			message.concat(arg).concat(String.valueOf(Protocol.Server.Settings.DELIMITER));
+			message = message.concat(arg)
+							.concat(String.valueOf(Protocol.Server.Settings.DELIMITER));
 		}
 		try {
-			this.tx.write(message);
-			this.tx.newLine();
+			this.tx.write(message + System.lineSeparator());
 			this.tx.flush();
+			Util.log("tx", message);
 		} catch (IOException e) {
-			Util.log("error",
-							"IOException caught while sending commands: " + e.getMessage());
+			Util.log("error", "IOException caught while sending commands: " + e.getMessage());
 			this.shutdown("Unrecoverable IOException.");
 		}
 	}
@@ -107,7 +112,15 @@ public abstract class ConnectionHandler extends Thread {
 	 * 
 	 * @param reason
 	 *            The reason.
+	 * @throws UnrecoverableErrorException
 	 */
 	public abstract void shutdown(String reason);
+
+	/**
+	 * @return the socket
+	 */
+	public Socket getSocket() {
+		return socket;
+	}
 
 }

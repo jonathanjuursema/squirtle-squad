@@ -25,6 +25,7 @@ public class Player {
 	public static enum Status {
 		IN_LOBBY, IN_GAME
 	};
+	private Status status;
 
 	public Player(String name) {
 		this.name = name;
@@ -120,6 +121,20 @@ public class Player {
 	 */
 	public String getName() {
 		return this.name;
+	}
+
+	/**
+	 * @return the status
+	 */
+	public Status getStatus() {
+		return status;
+	}
+
+	/**
+	 * @param status the status to set
+	 */
+	public void setStatus(Status status) {
+		this.status = status;
 	}
 
 }
