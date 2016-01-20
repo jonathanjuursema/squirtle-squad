@@ -15,7 +15,6 @@ import server.Player;
  */
 public class Hand {
 	private List<Tile> tilesInHand = new ArrayList<Tile>();
-	private Player ownerPlayer;
 	private static final int LIMIT = 6;
 
 	/**
@@ -23,8 +22,8 @@ public class Hand {
 	 * 
 	 * @param ownerPlayer
 	 */
-	public Hand(Player ownerPlayer) {
-		this.ownerPlayer = ownerPlayer;
+	public Hand() {
+		
 	}
 
 	/**
@@ -137,15 +136,6 @@ public class Hand {
 	}
 
 	/**
-	 * Get the owner of the hand
-	 * 
-	 * @return Player object
-	 */
-	public Player getOwnerOfHand() {
-		return this.ownerPlayer;
-	}
-
-	/**
 	 * 
 	 * @return Returns the amount of tiles that are currently in hand.
 	 */
@@ -159,7 +149,7 @@ public class Hand {
 	 */
 
 	public String toString() {
-		String returnMessage = "Displaying hand (" + this.getAmountOfTiles() + ") from " + this.getOwnerOfHand().getName() + ": \n";
+		String returnMessage = "Displaying hand (" + this.getAmountOfTiles() + ") : \n";
 		
 		returnMessage += "+";
 		for(int i = 0; i < this.getAmountOfTiles() - 1; i++){
