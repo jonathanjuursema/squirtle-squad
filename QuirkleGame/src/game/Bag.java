@@ -11,41 +11,49 @@ import server.Game;
 import java.util.ArrayList;
 
 /**
- * A Bag represents a bag of tiles in the game, with several methods to put stuff in and
- * take stuff out of the bag. Internally, tiles are not place randomly in an array, 
- * but rather added at the end all the time. Only when invoking the swapTiles and takeFromBag
- * methods involving hand mutations query random tiles from the bag, to simulate randomly
- * drawing from a bag in real life.
+ * A Bag represents a bag of tiles in the game, with several methods to put
+ * stuff in and take stuff out of the bag. Internally, tiles are not place
+ * randomly in an array, but rather added at the end all the time. Only when
+ * invoking the swapTiles and takeFromBag methods involving hand mutations query
+ * random tiles from the bag, to simulate randomly drawing from a bag in real
+ * life.
  * 
  * @author Jonathan Juursema & Peter Wessels
  *
  */
 public class Bag {
-	
+
 	private Random randomGenerator;
-	
+
 	private List<Tile> content;
 
 	/**
 	 * Initializes a new, empty, bag.
-	 * @param game The game to which this bag should be assigned.
+	 * 
+	 * @param game
+	 *            The game to which this bag should be assigned.
 	 */
 	public Bag() {
 		this.content = new ArrayList<Tile>();
 	}
+
 	/**
 	 * Initializes a new bag, and fills it with any number of existing tiles.
-	 * @param game The game to which this bag should be assigned.
-	 * @param tiles A List<Tile> of tiles. This List will be copied directly into the bag.
+	 * 
+	 * @param game
+	 *            The game to which this bag should be assigned.
+	 * @param tiles
+	 *            A List<Tile> of tiles. This List will be copied directly into
+	 *            the bag.
 	 */
 	public Bag(List<Tile> tiles) {
 		this.content = tiles;
 	}
-	
+
 	/**
-	 * Fills the bag with a complete set of tiles.
-	 * For each color/shape combination, Game.tilesPerType tiles will be added.
-	 * See protocol documentation for explaination of the characters.
+	 * Fills the bag with a complete set of tiles. For each color/shape
+	 * combination, Game.tilesPerType tiles will be added. See protocol
+	 * documentation for explaination of the characters.
 	 */
 	public synchronized void fill() {
 		for (char i = Tile.FIRSTCOLOR; i <= Tile.LASTCOLOR; i++) {
@@ -56,7 +64,7 @@ public class Bag {
 			}
 		}
 	}
-	
+
 	/**
 	 * Empties the bag.
 	 */
@@ -65,24 +73,28 @@ public class Bag {
 			this.content.remove(t);
 		}
 	}
-	
+
 	/**
 	 * Returns the current number of tiles in a bag.
+	 * 
 	 * @return The number of tiles.
 	 */
 	public int getNumberOfTiles() {
 		return this.content.size();
 	}
-	
+
 	/**
 	 * Swaps the given Tiles from a given Hand with random Tiles from the Bag.
-	 * @param hand The hand which would like to swap.
-	 * @param tiles The tiles that should be put back into the bag.
+	 * 
+	 * @param hand
+	 *            The hand which would like to swap.
+	 * @param tiles
+	 *            The tiles that should be put back into the bag.
 	 * @return True if the swap succeeded, false otherwise.
-	 * @throws TooManyTilesInBag 
+	 * @throws TooManyTilesInBag
 	 */
 	public synchronized void swapTiles(Hand hand, List<Tile> tiles)
-			throws TooFewTilesInBagException, TileNotInBagException, TooManyTilesInBag {
+					throws TooFewTilesInBagException, TileNotInBagException, TooManyTilesInBag {
 		if (tiles.size() > this.getNumberOfTiles()) {
 			throw new TooFewTilesInBagException(tiles.size(), this.getNumberOfTiles());
 		}
@@ -90,14 +102,18 @@ public class Bag {
 		this.takeFromBag(hand, tiles.size());
 		this.addToBag(tiles);
 	}
-	
+
 	/**
 	 * Move amount Tiles from the Bag into the given Hand.
-	 * @param hand The Hand to which drawn Tiles should be added.
-	 * @param amount The amount of Tiles that should be added.
+	 * 
+	 * @param hand
+	 *            The Hand to which drawn Tiles should be added.
+	 * @param amount
+	 *            The amount of Tiles that should be added.
 	 * @throws TooFewTilesInBagException
 	 */
-	public synchronized void takeFromBag(Hand hand, int amount) throws TooFewTilesInBagException, TileNotInBagException {
+	public synchronized void takeFromBag(Hand hand, int amount)
+					throws TooFewTilesInBagException, TileNotInBagException {
 		if (amount > this.getNumberOfTiles()) {
 			throw new TooFewTilesInBagException(amount, this.getNumberOfTiles());
 		}
@@ -106,39 +122,48 @@ public class Bag {
 			hand.addToHand(tile);
 			this.removeFromBag(tile);
 		}
- 	}
-	
+	}
+
 	/**
 	 * Adds the given Tile to the Bag.
-	 * @param tile The Tile to be added.
-	 * @throws TooManyTilesInBag 
+	 * 
+	 * @param tile
+	 *            The Tile to be added.
+	 * @throws TooManyTilesInBag
 	 */
 	public synchronized void addToBag(Tile tile) throws TooManyTilesInBag {
-		if(this.getNumberOfTiles() + 1 <= Game.DIFFERENTCOLORS * Game.DIFFERENTSHAPES * Game.TILESPERTYPE) {
+		if (this.getNumberOfTiles() + 1 <= Game.DIFFERENTCOLORS * Game.DIFFERENTSHAPES
+						* Game.TILESPERTYPE) {
 			this.content.add(tile);
-		} else { 
+		} else {
 			throw new TooManyTilesInBag(this.getNumberOfTiles(), 1);
 		}
 	}
+
 	/**
 	 * Adds the given Tiles to the Bag.
-	 * @param tiles The Tiles to be added.
-	 * @throws TooManyTilesInBag 
+	 * 
+	 * @param tiles
+	 *            The Tiles to be added.
+	 * @throws TooManyTilesInBag
 	 */
 	public synchronized void addToBag(List<Tile> tiles) throws TooManyTilesInBag {
-		if(this.getNumberOfTiles() + tiles.size() <= Game.DIFFERENTCOLORS * Game.DIFFERENTSHAPES * Game.TILESPERTYPE) {
+		if (this.getNumberOfTiles() + tiles.size() <= Game.DIFFERENTCOLORS * Game.DIFFERENTSHAPES
+						* Game.TILESPERTYPE) {
 			for (Tile t : tiles) {
 				this.addToBag(t);
 			}
-		} else { 
+		} else {
 			throw new TooManyTilesInBag(this.getNumberOfTiles(), tiles.size());
 		}
 	}
-	
+
 	/**
 	 * Remove the given Tile from the Bag.
-	 * @param tile The Tile to be removed.
-	 * @throws TileNotInBagException 
+	 * 
+	 * @param tile
+	 *            The Tile to be removed.
+	 * @throws TileNotInBagException
 	 */
 	public synchronized void removeFromBag(Tile tile) throws TileNotInBagException {
 		if (!this.content.contains(tile)) {
@@ -146,10 +171,13 @@ public class Bag {
 		}
 		this.content.remove(tile);
 	}
+
 	/**
 	 * Remove the given Tiles from the Bag.
-	 * @param tiles The Tiles to be removed.
-	 * @throws TileNotInBagException 
+	 * 
+	 * @param tiles
+	 *            The Tiles to be removed.
+	 * @throws TileNotInBagException
 	 */
 	public synchronized void removeFromBag(List<Tile> tiles) throws TileNotInBagException {
 		for (Tile t : tiles) {
@@ -158,11 +186,11 @@ public class Bag {
 	}
 
 	/**
-	 * Returns a string representation of the bag, showing the amount of tiles left.
+	 * Returns a string representation of the bag, showing the amount of tiles
+	 * left.
 	 */
 	public String toString() {
 		return "Bag containing " + this.getNumberOfTiles() + " tiles.";
 	}
-	
-	
+
 }

@@ -115,4 +115,13 @@ public class Server extends Thread {
 		games.remove(game);
 	}
 
+	/**
+	 * Returns a list of all current games.
+	 * 
+	 * @return The list.
+	 */
+	public List<Game> getGames() {
+		return this.games;
+	}
+
 }
