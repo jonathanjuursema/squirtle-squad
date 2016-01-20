@@ -5,6 +5,7 @@ import java.util.Random;
 
 import exceptions.TileNotInBagException;
 import exceptions.TooFewTilesInBagException;
+import exceptions.TooManyTilesInBag;
 import server.Game;
 
 import java.util.ArrayList;
@@ -78,9 +79,10 @@ public class Bag {
 	 * @param hand The hand which would like to swap.
 	 * @param tiles The tiles that should be put back into the bag.
 	 * @return True if the swap succeeded, false otherwise.
+	 * @throws TooManyTilesInBag 
 	 */
 	public synchronized void swapTiles(Hand hand, List<Tile> tiles)
-			throws TooFewTilesInBagException, TileNotInBagException {
+			throws TooFewTilesInBagException, TileNotInBagException, TooManyTilesInBag {
 		if (tiles.size() > this.getNumberOfTiles()) {
 			throw new TooFewTilesInBagException(tiles.size(), this.getNumberOfTiles());
 		}
@@ -102,24 +104,34 @@ public class Bag {
 		for (int i = 0; i < amount; i++) {
 			Tile tile = this.content.get(randomGenerator.nextInt(this.getNumberOfTiles()));
 			hand.addToHand(tile);
-			this.takeFromBag(tile);
+			this.removeFromBag(tile);
 		}
  	}
 	
 	/**
 	 * Adds the given Tile to the Bag.
 	 * @param tile The Tile to be added.
+	 * @throws TooManyTilesInBag 
 	 */
-	public synchronized void addToBag(Tile tile) {
-		this.content.add(tile);
+	public synchronized void addToBag(Tile tile) throws TooManyTilesInBag {
+		if(this.getNumberOfTiles() + 1 <= Game.DIFFERENTCOLORS * Game.DIFFERENTSHAPES * Game.TILESPERTYPE) {
+			this.content.add(tile);
+		} else { 
+			throw new TooManyTilesInBag(this.getNumberOfTiles(), 1);
+		}
 	}
 	/**
 	 * Adds the given Tiles to the Bag.
 	 * @param tiles The Tiles to be added.
+	 * @throws TooManyTilesInBag 
 	 */
-	public synchronized void addToBag(List<Tile> tiles) {
-		for (Tile t : tiles) {
-			this.addToBag(t);
+	public synchronized void addToBag(List<Tile> tiles) throws TooManyTilesInBag {
+		if(this.getNumberOfTiles() + tiles.size() <= Game.DIFFERENTCOLORS * Game.DIFFERENTSHAPES * Game.TILESPERTYPE) {
+			for (Tile t : tiles) {
+				this.addToBag(t);
+			}
+		} else { 
+			throw new TooManyTilesInBag(this.getNumberOfTiles(), tiles.size());
 		}
 	}
 	
@@ -128,7 +140,7 @@ public class Bag {
 	 * @param tile The Tile to be removed.
 	 * @throws TileNotInBagException 
 	 */
-	public synchronized void takeFromBag(Tile tile) throws TileNotInBagException {
+	public synchronized void removeFromBag(Tile tile) throws TileNotInBagException {
 		if (!this.content.contains(tile)) {
 			throw new TileNotInBagException(tile);
 		}
@@ -139,9 +151,9 @@ public class Bag {
 	 * @param tiles The Tiles to be removed.
 	 * @throws TileNotInBagException 
 	 */
-	public synchronized void takeFromBag(List<Tile> tiles) throws TileNotInBagException {
+	public synchronized void removeFromBag(List<Tile> tiles) throws TileNotInBagException {
 		for (Tile t : tiles) {
-			this.takeFromBag(t);
+			this.removeFromBag(t);
 		}
 	}
 
