@@ -94,10 +94,8 @@ public class BoardTest {
 		board.placeTile(new Tile(Tile.PURPLE, Tile.STAR), 0, -3);
 		board.placeTile(new Tile(Tile.GREEN, Tile.CROSS), 0, -4);
 		board.placeTile(new Tile(Tile.ORANGE, Tile.PLUS), 0, -5);
-		System.out.println(board);
 		
-		System.out.println(board.getPossiblePlaces());
-		System.out.println("Amount of possible places: " + board.getPossiblePlaces().size());
+		assertEquals(12,board.getPossiblePlaces().size());
 	}
 
 }
