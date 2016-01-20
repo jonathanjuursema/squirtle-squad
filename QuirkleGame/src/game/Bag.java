@@ -24,14 +24,12 @@ public class Bag {
 	private Random randomGenerator;
 	
 	private List<Tile> content;
-	private Game game;
 
 	/**
 	 * Initializes a new, empty, bag.
 	 * @param game The game to which this bag should be assigned.
 	 */
 	public Bag(Game game) {
-		this.game = game;
 		this.content = new ArrayList<Tile>();
 	}
 	/**
@@ -40,7 +38,6 @@ public class Bag {
 	 * @param tiles A List<Tile> of tiles. This List will be copied directly into the bag.
 	 */
 	public Bag(Game game, List<Tile> tiles) {
-		this.game = game;
 		this.content = tiles;
 	}
 	
@@ -147,15 +144,7 @@ public class Bag {
 			this.takeFromBag(t);
 		}
 	}
-	
-	/**
-	 * Returns the game this bag is for.
-	 * @return The game. You lost it.
-	 */
-	public Game getGame() {
-		return this.game;
-	}
-	
+
 	/**
 	 * Returns a string representation of the bag, showing the amount of tiles left.
 	 */
