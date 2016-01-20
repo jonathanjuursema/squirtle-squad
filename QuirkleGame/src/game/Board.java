@@ -32,7 +32,8 @@ public class Board {
 		this.board = new BoardSquare[arraySize][arraySize];
 		for (int i = 0; i < arraySize; i++) {
 			for (int j = 0; j < arraySize; j++) {
-				this.board[i][j] = new BoardSquare(this, i - (board.length / 2), j - (board[0].length / 2));
+				this.board[i][j] = new BoardSquare(this, i - (board.length / 2),
+								j - (board[0].length / 2));
 			}
 		}
 	}
@@ -139,8 +140,8 @@ public class Board {
 			 * and assign this copy to the new column in boardCopy.
 			 */
 			for (int j = 0; j < this.board[i].length; j++) {
-				boardCopy[i][j] = new BoardSquare(board, this.board[i][j].getX(), this.board[i][j].getY(),
-						this.board[i][j].getTile());
+				boardCopy[i][j] = new BoardSquare(board, this.board[i][j].getX(),
+								this.board[i][j].getY(), this.board[i][j].getTile());
 			}
 		}
 		// Finally, we construct a new Board using this copy of the board.
@@ -155,16 +156,16 @@ public class Board {
 	private List<BoardSquare> checkedPlaces = new ArrayList<BoardSquare>();
 
 	public List<BoardSquare> getPossiblePlaces(BoardSquare currentSquare, Integer direction)
-			throws SquareOutOfBoundsException {
+					throws SquareOutOfBoundsException {
 		List<Integer> directionsChecked = new ArrayList<Integer>();
 
 		while (!directionsChecked.contains(direction) && directionsChecked.size() <= 4) {
 			if (currentSquare.getNeighbour(direction).isEmpty()
-					&& !possiblePlaces.contains(currentSquare.getNeighbour(direction))) {
+							&& !possiblePlaces.contains(currentSquare.getNeighbour(direction))) {
 				possiblePlaces.add(currentSquare.getNeighbour(direction));
 
 			} else if (!currentSquare.getNeighbour(direction).isEmpty()
-					&& !checkedPlaces.contains(currentSquare.getNeighbour(direction))) {
+							&& !checkedPlaces.contains(currentSquare.getNeighbour(direction))) {
 				checkedPlaces.add(currentSquare);
 
 				this.getPossiblePlaces(currentSquare.getNeighbour(direction), direction);
@@ -179,45 +180,64 @@ public class Board {
 	}
 
 	/**
-	 * Returns a textual representation of the board.
+	 * Returns the minimal and maximal X and Y values that are occupied on the
+	 * board.
+	 * 
+	 * @return An array of integers, where the indexes map the values as
+	 *         follows: 
+	 *         0 > smallest X 
+	 *         1 > largest X 
+	 *         2 > smallest Y 
+	 *         3 > largest Y
 	 */
-	public String toString() {
-		int minX = 0, maxX = 0, minY = 0, maxY = 0;
-
+	public int[] getMinMax() {
+		int minmax[] = new int[4];
+	
 		for (int i = 0; i < this.board.length; i++) {
 			for (int j = 0; j < this.board[i].length; j++) {
 				BoardSquare s = this.board[i][j];
 				if (!s.isEmpty()) {
-					if (s.getX() > maxX) {
-						maxX = s.getX();
-					} else if (s.getX() < minX) {
-						minX = s.getX();
+					if (s.getX() > minmax[1]) {
+						minmax[1] = s.getX();
+					} else if (s.getX() < minmax[0]) {
+						minmax[0] = s.getX();
 					}
-					if (s.getY() > maxY) {
-						maxY = s.getY();
-					} else if (s.getY() < minY) {
-						minY = s.getY();
+					if (s.getY() > minmax[3]) {
+						minmax[3] = s.getY();
+					} else if (s.getY() < minmax[2]) {
+						minmax[2] = s.getY();
 					}
 				}
 			}
 		}
+	
+		return minmax;
+	}
 
-		String representation = "Displaying board from (" + minX + "," + minY + ") to (" + maxX + "," + maxY + ")."
-				+ System.lineSeparator() + System.lineSeparator();
+	/**
+	 * Returns a textual representation of the board.
+	 */
+	public String toString() {
+		int[] minmax = getMinMax();
+
+		String representation = "Displaying board from (" + minmax[0] + "," + minmax[2] + ") to ("
+						+ minmax[1] + "," + minmax[3] + ")." + System.lineSeparator()
+						+ System.lineSeparator();
 
 		representation = representation.concat("     |");
 
 		String linesep = " ----+";
-		for (int x = minX; x <= maxX; x++) {
+		for (int x = minmax[0]; x <= minmax[1]; x++) {
 			representation = representation.concat(String.format("% 3d ", x) + "|");
 			linesep = linesep.concat("----+");
 		}
 
-		representation = representation.concat(System.lineSeparator() + linesep + System.lineSeparator());
+		representation = representation
+						.concat(System.lineSeparator() + linesep + System.lineSeparator());
 
-		for (int y = maxY; y >= minY; y--) {
+		for (int y = minmax[3]; y >= minmax[2]; y--) {
 			representation = representation.concat(" " + String.format("% 3d ", y) + "|");
-			for (int x = minX; x <= maxX; x++) {
+			for (int x = minmax[0]; x <= minmax[1]; x++) {
 				try {
 					BoardSquare s = this.getSquare(x, y);
 					if (s.isEmpty()) {
@@ -228,7 +248,8 @@ public class Board {
 				} catch (SquareOutOfBoundsException e) {
 				}
 			}
-			representation = representation.concat(System.lineSeparator() + linesep + System.lineSeparator());
+			representation = representation
+							.concat(System.lineSeparator() + linesep + System.lineSeparator());
 		}
 
 		return representation;
