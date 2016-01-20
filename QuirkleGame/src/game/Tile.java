@@ -16,6 +16,8 @@ public class Tile {
 	public static final char GREEN = 'D';
 	public static final char BLUE = 'E';
 	public static final char PURPLE = 'F'; 
+	
+	public static final char BLACK = 'Z'; 
 
 	public static final char FIRSTCOLOR = 'A';
 	public static final char LASTCOLOR = 'F';
@@ -26,6 +28,8 @@ public class Tile {
 	public static final char SQUARE = 'D';
 	public static final char STAR = 'E';
 	public static final char PLUS = 'F'; 
+	
+	public static final char DUMMY = 'Z'; 
 	
 	public static final char FIRSTSHAPE = 'A';
 	public static final char LASTSHAPE = 'F';
@@ -79,7 +83,9 @@ public class Tile {
 			response += "B";
 		} else if (this.getColor() == Tile.PURPLE) {
 			response += "P";
-		}
+		} else if (this.getColor() == Tile.BLACK) {
+			response += " ";
+		} 
 		
 		// Editted getColor to getShape
 		if (this.getShape() == Tile.CIRCLE) {
@@ -94,6 +100,8 @@ public class Tile {
 			response += "3";
 		} else if (this.getShape() == Tile.PLUS) {
 			response += "4";
+		} else if (this.getShape() == Tile.DUMMY) {
+			response += "x";
 		}
 		
 		return response;

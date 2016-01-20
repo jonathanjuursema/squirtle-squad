@@ -55,11 +55,12 @@ public class Move {
 
 	public boolean isValidMove(Board board, boolean firstMove) throws SquareOutOfBoundsException {
 		// Check move in relation with the board
-		board.placeTile(this.getTile(), this.getPosition().getX(), this.getPosition().getY());
 		
-		if(!this.getPosition().hasNeighbour() && !firstMove){
+		if(!board.getPossiblePlaces().contains(this.getPosition())) {
 			return false;
 		}
+		
+		board.placeTile(this.getTile(), this.getPosition().getX(), this.getPosition().getY());
 		
 		Move tempMove = new Move(this.getTile(), this.getPosition());
 		List<Move> tempList = new ArrayList<Move>();

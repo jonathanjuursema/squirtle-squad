@@ -163,9 +163,9 @@ public class Hand {
 		
 		returnMessage += "+";
 		for(int i = 0; i < this.getAmountOfTiles() - 1; i++){
-			returnMessage += "----|";
+			returnMessage += "--" + (i + 1) + "-|";
 		}
-		returnMessage += "----+";
+		returnMessage += "--6-+";
 		returnMessage += "\n|";
 		int count = this.getAmountOfTiles() - 1;
 		for (Tile t : this.getTilesInHand()) {

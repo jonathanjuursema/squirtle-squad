@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.rmi.CORBA.Util;
+
 import exceptions.IllegalMoveException;
 import exceptions.IllegalTurnException;
 import exceptions.SquareOutOfBoundsException;
@@ -21,10 +23,11 @@ import server.Player;
 public class Turn {
 
 	private List<Move> moves = new ArrayList<Move>();
+	private List<Tile> swap = new ArrayList<Tile>();
+
 	private Board boardCopy;
 	private Board boardOriginal;
 
-	private Swap swapRequest = null;
 	private Player assignedPlayer;
 
 	/**
@@ -52,20 +55,71 @@ public class Turn {
 	 */
 
 	public void addMove(Move move) throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException {
-		if (this.swapRequest != null) {
+		if (this.swap.size() != 0) {
 			throw new IllegalTurnException();
 		}
-		
-		boolean firstMove = false;
-		
-		if (this.boardCopy.getSquare(0,0).isEmpty()){
-			if(move.getPosition().getX() != 0 || move.getPosition().getY() != 0){
-				throw new IllegalTurnException();
+
+		boolean unvalid = true;
+
+		if (this.getMoves().size() > 0) {
+
+			Move lastMove = this.getMoves().get(0);
+
+			if (lastMove.getPosition().getX() == move.getPosition().getX()) {
+
+				if (move.getPosition().getY() > lastMove.getPosition().getY()) {
+
+					BoardSquare temp = move.getPosition();
+					unvalid = false;
+					while (!temp.getNeighbour(2).isEmpty()) {
+						if (temp.getNeighbour(2) == lastMove.getPosition()) {
+							unvalid = true;
+						}
+						temp = temp.getNeighbour(2);
+					}
+				}
+
+				if (move.getPosition().getY() < lastMove.getPosition().getY()) {
+					BoardSquare temp = move.getPosition();
+					unvalid = false;
+					while (!temp.getNeighbour(0).isEmpty()) {
+						if (temp.getNeighbour(0) == lastMove.getPosition()) {
+							unvalid = true;
+						}
+						temp = temp.getNeighbour(0);
+					}
+				}
 			}
-			firstMove = true;
+
+			if (lastMove.getPosition().getY() == move.getPosition().getY()) {
+
+				if (move.getPosition().getX() > lastMove.getPosition().getX()) {
+
+					BoardSquare temp = move.getPosition();
+					unvalid = false;
+					while (!temp.getNeighbour(3).isEmpty()) {
+						if (temp.getNeighbour(3) == lastMove.getPosition()) {
+							unvalid = true;
+						}
+						temp = temp.getNeighbour(3);
+					}
+				}
+
+				if (move.getPosition().getX() < lastMove.getPosition().getX()) {
+
+					BoardSquare temp = move.getPosition();
+					unvalid = false;
+					while (!temp.getNeighbour(1).isEmpty()) {
+						if (temp.getNeighbour(1) == lastMove.getPosition()) {
+							unvalid = true;
+						}
+						temp = temp.getNeighbour(1);
+					}
+				}
+			}
 		}
-		
-		if (move.isValidMove(this.getBoardCopy(), firstMove)) {
+
+		if (move.isValidMove(this.getBoardCopy()) && unvalid) {
 			this.moves.add(move);
 			this.boardCopy.placeTile(move.getTile(), move.getPosition().getX(), move.getPosition().getY());
 		} else {
@@ -87,9 +141,13 @@ public class Turn {
 	 *            object with the tiles that needs to be swapped.
 	 * @throws IllegalTurnException
 	 */
-	public void addSwapRequest(Swap swap) throws IllegalTurnException {
+	public void addSwapRequest(Tile t) throws IllegalTurnException {
 		if (this.getMoves().size() != 0) {
 			throw new IllegalTurnException();
+		}
+		
+		if(!this.swap.contains(t)){
+			this.swap.add(t);
 		}
 	}
 
@@ -103,13 +161,26 @@ public class Turn {
 
 	public void applyTurn() throws SquareOutOfBoundsException {
 		// Check if an swapRequest has been added
-		if (this.swapRequest != null) {
-			// TODO: implement apply swap
+		if (this.swap.size() != 0) {
+			Hand playerHand = this.assignedPlayer.getHand();
+			
 		} else if (this.getMoves().size() != 0) {
 			for (Move m : this.getMoves()) {
 				this.boardOriginal.placeTile(m.getTile(), m.getPosition().getX(), m.getPosition().getY());
 			}
 		}
+	}
+	
+	public List<Tile> getSwap() {
+		return this.swap;
+	}
+	
+	public boolean isSwapRequest() {
+		return this.swap.size() > 0;
+	}
+	
+	public boolean isMoveRequest() {
+		return this.getMoves().size() > 0;
 	}
 
 	/**
@@ -142,7 +213,7 @@ public class Turn {
 		}
 
 		int returnScore = 0;
-		
+
 		Map<Move, Map<Integer, List<Tile>>> cleanedMap = getSequencesByMovesAndBoard(this.boardCopy, this.getMoves());
 
 		int rowScore = 0;
@@ -151,12 +222,20 @@ public class Turn {
 		for (Move m : this.getMoves()) {
 			int rowScoreTemp = cleanedMap.get(m).get(1).size();
 			int columnScoreTemp = cleanedMap.get(m).get(0).size();
-			
-			if(rowScoreTemp == 1) { rowScoreTemp = 0; }
-			if(columnScoreTemp == 1) { columnScoreTemp = 0; }
-			if(rowScoreTemp == 6) { rowScoreTemp = 12; }
-			if(columnScoreTemp == 6) { columnScoreTemp = 12; }
-			
+
+			if (rowScoreTemp == 1) {
+				rowScoreTemp = 0;
+			}
+			if (columnScoreTemp == 1) {
+				columnScoreTemp = 0;
+			}
+			if (rowScoreTemp == 6) {
+				rowScoreTemp = 12;
+			}
+			if (columnScoreTemp == 6) {
+				columnScoreTemp = 12;
+			}
+
 			if (baseIsRow) {
 				rowScore = rowScoreTemp;
 				columnScore += columnScoreTemp;
@@ -165,7 +244,7 @@ public class Turn {
 				columnScore = columnScoreTemp;
 			}
 		}
-		
+
 		returnScore = rowScore + columnScore;
 
 		return returnScore;
@@ -175,7 +254,8 @@ public class Turn {
 	 * @return
 	 * @throws SquareOutOfBoundsException
 	 */
-	public static Map<Move, Map<Integer, List<Tile>>> getSequencesByMovesAndBoard(Board board, List<Move> moves) throws SquareOutOfBoundsException {
+	public static Map<Move, Map<Integer, List<Tile>>> getSequencesByMovesAndBoard(Board board, List<Move> moves)
+			throws SquareOutOfBoundsException {
 		Map<Move, Map<Integer, List<Tile>>> sequences = new HashMap<Move, Map<Integer, List<Tile>>>();
 
 		for (Move move : moves) {
@@ -221,7 +301,7 @@ public class Turn {
 		}
 		return cleanedMap;
 	}
-	
+
 	/**
 	 * Get current moves of the turn.
 	 * 
