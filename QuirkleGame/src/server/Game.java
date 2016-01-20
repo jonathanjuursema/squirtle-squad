@@ -17,6 +17,7 @@ import exceptions.IllegalTurnException;
 import exceptions.SquareOutOfBoundsException;
 import exceptions.TileNotInBagException;
 import exceptions.TooFewTilesInBagException;
+import exceptions.TooManyPlayersException;
 import game.Bag;
 import game.Board;
 import game.Hand;
@@ -38,9 +39,11 @@ public abstract class Game implements ActionListener {
 	public final static int DIFFERENTCOLORS = 6;
 
 	public final static int TILESPERTYPE = 3;
+	public final static int MAXPLAYERS = 4;
 	public final int TURNTIMEOUT = 60;
 
-	private List<Player> players;
+	private int noOfPlayers;
+	private List<Player> players = new ArrayList<Player>();
 	private int currentPlayer;
 
 	private Map<Player, Turn> initialMoves;
@@ -50,7 +53,7 @@ public abstract class Game implements ActionListener {
 	private Timer timeout;
 
 	public static enum GameState {
-		WAITING, INITIAL, NORMAL, FINISHED
+		NOTSTARTED, WAITING, INITIAL, NORMAL, FINISHED
 	};
 
 	private GameState gameState;
@@ -63,11 +66,15 @@ public abstract class Game implements ActionListener {
 	 * 
 	 * @param players
 	 *            The players.
+	 * @throws TooManyPlayersException
 	 */
-	public Game(Server server, List<Player> players) {
-		this.players = players;
+	public Game(Server server, int noOfPlayers) throws TooManyPlayersException {
 		this.parentServer = server;
-		this.start();
+		if (noOfPlayers > 1 && noOfPlayers < Game.MAXPLAYERS) {
+			this.noOfPlayers = noOfPlayers;
+		} else {
+			throw new TooManyPlayersException(noOfPlayers);
+		}
 	}
 
 	/**
@@ -79,7 +86,7 @@ public abstract class Game implements ActionListener {
 		this.gameState = Game.GameState.INITIAL;
 
 		// Make a new bag and fill it.
-		this.bag = new Bag(this);
+		this.bag = new Bag();
 		this.bag.fill();
 
 		Map<Player, Turn> beginturns = new HashMap<Player, Turn>();
@@ -105,7 +112,7 @@ public abstract class Game implements ActionListener {
 	}
 
 	public void receiveInitialMove(Turn turn, Player player) {
-		
+
 		this.initialMoves.put(player, turn);
 		for (Turn t : this.initialMoves.values()) {
 			if (t == null) {
@@ -115,7 +122,7 @@ public abstract class Game implements ActionListener {
 
 		this.timeout.stop();
 		this.initialMove();
-		
+
 	}
 
 	public void initialMove() {
@@ -158,14 +165,15 @@ public abstract class Game implements ActionListener {
 
 	/**
 	 * Check if the game is over.
+	 * 
 	 * @return True if any of the win conditions is met. False otherwise.
 	 */
 	public boolean gameOver() {
-		
+
 		if (this.players.size() == 1) {
 			return true;
 		}
-		
+
 		if (this.bag.getNumberOfTiles() == 0) {
 			for (Player p : this.players) {
 				if (p.getHand().getTilesInHand().size() == 0) {
@@ -173,9 +181,9 @@ public abstract class Game implements ActionListener {
 				}
 			}
 		}
-		
+
 		return false;
-		
+
 	}
 
 	/**
@@ -242,6 +250,18 @@ public abstract class Game implements ActionListener {
 	}
 
 	/**
+	 * Adds a player to the game.
+	 * 
+	 * @param player
+	 *            The player to be added.
+	 */
+	public void addPlayer(Player player) {
+		if (!players.contains(player)) {
+			players.add(player);
+		}
+	}
+
+	/**
 	 * Clean-up the game.
 	 */
 	public void finish() {
@@ -267,7 +287,9 @@ public abstract class Game implements ActionListener {
 
 	/**
 	 * Exit the game for a specified reason.
-	 * @param message The reason.
+	 * 
+	 * @param message
+	 *            The reason.
 	 */
 	public void shutdown(String message) {
 		for (Player p : this.players) {
@@ -311,6 +333,15 @@ public abstract class Game implements ActionListener {
 	 */
 	public void setCurrentPlayer(Player p) {
 		this.currentPlayer = this.players.indexOf(p);
+	}
+
+	/**
+	 * Get the number of players for this game.
+	 * 
+	 * @return The number of players.
+	 */
+	public int getNoOfPlayers() {
+		return this.noOfPlayers;
 	}
 
 }

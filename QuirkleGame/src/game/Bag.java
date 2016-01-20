@@ -29,7 +29,7 @@ public class Bag {
 	 * Initializes a new, empty, bag.
 	 * @param game The game to which this bag should be assigned.
 	 */
-	public Bag(Game game) {
+	public Bag() {
 		this.content = new ArrayList<Tile>();
 	}
 	/**
@@ -37,7 +37,7 @@ public class Bag {
 	 * @param game The game to which this bag should be assigned.
 	 * @param tiles A List<Tile> of tiles. This List will be copied directly into the bag.
 	 */
-	public Bag(Game game, List<Tile> tiles) {
+	public Bag(List<Tile> tiles) {
 		this.content = tiles;
 	}
 	
