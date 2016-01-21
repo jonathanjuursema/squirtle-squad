@@ -2,6 +2,8 @@ package game;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
+
 import exceptions.SquareOutOfBoundsException;
 import server.Game;
 
@@ -16,7 +18,7 @@ import server.Game;
  * @author Jonathan Juursema & Peter Wessels
  *
  */
-public class Board {
+public class Board extends Observable {
 
 	private BoardSquare[][] board;
 
@@ -74,6 +76,9 @@ public class Board {
 	public void placeTile(Tile tile, int x, int y) throws SquareOutOfBoundsException {
 		// TODO Should throw exception when there is already a tile.
 		this.getSquare(x, y).placeTile(tile);
+		
+		setChanged();
+		notifyObservers("board");
 	}
 
 	/**

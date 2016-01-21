@@ -2,6 +2,7 @@ package game;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
 
 import exceptions.HandLimitReachedExeption;
 import exceptions.TileNotInHandException;
@@ -15,7 +16,7 @@ import server.Player;
  * @author Jonathan Juursema & Peter Wessels
  * TODO: make exceptions
  */
-public class Hand {
+public class Hand extends Observable {
 	private List<Tile> tilesInHand = new ArrayList<Tile>();
 	public static final int LIMIT = 6;
 
@@ -65,6 +66,8 @@ public class Hand {
 		List<Tile> returnList = new ArrayList<Tile>();
 		returnList.addAll(this.tilesInHand);
 		this.tilesInHand.clear();
+		setChanged();
+		notifyObservers("hand");
 		return returnList;
 	}
 
@@ -83,6 +86,9 @@ public class Hand {
 		} else { 
 			throw new HandLimitReachedExeption(this);
 		}
+		
+		setChanged();
+		notifyObservers("hand");
 	}
 
 	/**
@@ -98,7 +104,9 @@ public class Hand {
 		for (Tile t : tileList) {
 			this.addToHand(t);
 		}
-
+		
+		setChanged();
+		notifyObservers("hand");
 	}
 
 	/**
@@ -116,6 +124,9 @@ public class Hand {
 		} else {
 			throw new TileNotInHandException(tile, this);
 		}
+		
+		setChanged();
+		notifyObservers("hand");
 	}
 
 	/**
@@ -133,6 +144,8 @@ public class Hand {
 				throw new TileNotInHandException(t, this);
 			}
 		}
+		setChanged();
+		notifyObservers("hand");
 		this.tilesInHand.removeAll(tileList);
 	}
 
