@@ -26,6 +26,17 @@ public class Util {
 			break;
 		}
 	}
+	/**
+	 * The specified log function which logs exception message. The 
+	 * message is consist of the type of exception and the message 
+	 * of the Exception.
+	 * 
+	 * @param e
+	 */
+	
+	public static void log(Exception e) {
+		Console.println("["+ e.getClass().getSimpleName() + "] " + e.getMessage());
+	}
 
 	/**
 	 * A command that (tries to) clear the terminal.
