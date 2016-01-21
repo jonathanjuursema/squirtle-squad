@@ -13,8 +13,7 @@ import server.Player;
  * player's tiles and the contents of the hand can be manipulated through
  * various functions.
  * 
- * @author Jonathan Juursema & Peter Wessels
- * TODO: make exceptions
+ * @author Jonathan Juursema & Peter Wessels TODO: make exceptions
  */
 public class Hand extends Observable {
 	private List<Tile> tilesInHand = new ArrayList<Tile>();
@@ -26,11 +25,12 @@ public class Hand extends Observable {
 	 * @param ownerPlayer
 	 */
 	public Hand() {
-		
+
 	}
 
 	/**
 	 * Check if the tile is currently in hand.
+	 * 
 	 * @param tile
 	 * @return true if tile is in hand.
 	 */
@@ -40,10 +40,11 @@ public class Hand extends Observable {
 	}
 
 	/**
-	 * Check if the list of tiles are currently in hand.
-	 * Returns false if even 1 of the tiles in the list is
-	 * not in hand.
-	 * @param tiles The list of tiles to be checked
+	 * Check if the list of tiles are currently in hand. Returns false if even 1
+	 * of the tiles in the list is not in hand.
+	 * 
+	 * @param tiles
+	 *            The list of tiles to be checked
 	 * @return true if all tiles are in hand.
 	 */
 
@@ -60,6 +61,7 @@ public class Hand extends Observable {
 	 * Reset the hand: it removes all the tiles an ensures that current hand is
 	 * empty. Returns the tiles that are removed so that a bag of board can pick
 	 * them.
+	 * 
 	 * @return tiles that are removed for hand.
 	 */
 	public List<Tile> hardResetHand() {
@@ -77,16 +79,16 @@ public class Hand extends Observable {
 	 * @param tile
 	 *            The tile-object that needs to be added to the hand.
 	 * @return boolean True if succesful added.
-	 * @throws HandLimitReachedExeption 
+	 * @throws HandLimitReachedExeption
 	 */
 
 	public void addToHand(Tile tile) throws HandLimitReachedExeption {
 		if (this.getAmountOfTiles() + 1 <= Hand.LIMIT) {
 			this.tilesInHand.add(tile);
-		} else { 
+		} else {
 			throw new HandLimitReachedExeption(this);
 		}
-		
+
 		setChanged();
 		notifyObservers("hand");
 	}
@@ -97,14 +99,14 @@ public class Hand extends Observable {
 	 * @param tileArray
 	 *            An array with tile-object that needs to be added to the hand.
 	 * @return boolean True if succesful
-	 * @throws HandLimitReachedExeption 
+	 * @throws HandLimitReachedExeption
 	 */
 
 	public void addTohand(List<Tile> tileList) throws HandLimitReachedExeption {
 		for (Tile t : tileList) {
 			this.addToHand(t);
 		}
-		
+
 		setChanged();
 		notifyObservers("hand");
 	}
@@ -115,7 +117,7 @@ public class Hand extends Observable {
 	 * @param The
 	 *            tile-object that needs to be removed from the hand.
 	 * @return true if succesful
-	 * @throws TileNotInHandException 
+	 * @throws TileNotInHandException
 	 */
 
 	public void removeFromHand(Tile tile) throws TileNotInHandException {
@@ -124,7 +126,7 @@ public class Hand extends Observable {
 		} else {
 			throw new TileNotInHandException(tile, this);
 		}
-		
+
 		setChanged();
 		notifyObservers("hand");
 	}
@@ -135,7 +137,7 @@ public class Hand extends Observable {
 	 * @param tileList
 	 *            The list of tiles that needs to be removed.
 	 * @return true if succesful
-	 * @throws TileNotInHandException 
+	 * @throws TileNotInHandException
 	 */
 
 	public void removeFromHand(List<Tile> tileList) throws TileNotInHandException {
@@ -158,11 +160,12 @@ public class Hand extends Observable {
 	public List<Tile> getTilesInHand() {
 		return this.tilesInHand;
 	}
-	
+
 	/**
 	 * Returns a tile from the hand based on Protocol input.
 	 * 
-	 * @param tile Textual representation of a tile in the hand.
+	 * @param tile
+	 *            Textual representation of a tile in the hand.
 	 * @return The Tile in the users hand.
 	 */
 	public Tile getTileFromProtocol(String tile) {
@@ -185,24 +188,24 @@ public class Hand extends Observable {
 
 	public String toString() {
 		String returnMessage = "Displaying hand (" + this.getAmountOfTiles() + ") : \n";
-		
+
 		returnMessage += "+";
-		for(int i = 0; i < this.getAmountOfTiles() - 1; i++){
+		for (int i = 0; i < this.getAmountOfTiles() - 1; i++) {
 			returnMessage += "--" + (i + 1) + "-|";
 		}
 		returnMessage += "--6-+";
 		returnMessage += "\n|";
 		int count = this.getAmountOfTiles() - 1;
 		for (Tile t : this.getTilesInHand()) {
-			returnMessage += " "+t.toString()+" ";
-			if(count != 0){
+			returnMessage += " " + t.toString() + " ";
+			if (count != 0) {
 				returnMessage += "|";
 			}
 			count--;
 		}
 		returnMessage += "|";
 		returnMessage += "\n+";
-		for(int i = 0; i < this.getAmountOfTiles() - 1; i++){
+		for (int i = 0; i < this.getAmountOfTiles() - 1; i++) {
 			returnMessage += "----|";
 		}
 		returnMessage += "----+";

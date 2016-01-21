@@ -81,22 +81,23 @@ public class Bag {
 	 *            The tiles that should be put back into the bag.
 	 * @return True if the swap succeeded, false otherwise.
 	 * @throws TooManyTilesInBag
-	 * @throws TileNotInHandException 
+	 * @throws TileNotInHandException
 	 */
 	public synchronized void swapTiles(Hand hand, List<Tile> tiles)
-					throws TooFewTilesInBagException, TileNotInBagException, TooManyTilesInBag, TileNotInHandException {
+					throws TooFewTilesInBagException, TileNotInBagException, TooManyTilesInBag,
+					TileNotInHandException {
 		if (tiles.size() > this.getNumberOfTiles()) {
 			throw new TooFewTilesInBagException(tiles.size(), this.getNumberOfTiles());
 		}
-		
+
 		hand.removeFromHand(tiles);
-		
+
 		try {
 			this.takeFromBag(hand, tiles.size());
 		} catch (HandLimitReachedExeption e) {
 			Util.log(e);
 		}
-		
+
 		this.addToBag(tiles);
 	}
 
@@ -108,17 +109,15 @@ public class Bag {
 	 * @param amount
 	 *            The amount of Tiles that should be added.
 	 * @throws TooFewTilesInBagException
-	 * @throws HandLimitReachedExeption 
+	 * @throws HandLimitReachedExeption
 	 */
-	public synchronized void takeFromBag(Hand hand, int amount)
-					throws TooFewTilesInBagException, TileNotInBagException, HandLimitReachedExeption {
+	public synchronized void takeFromBag(Hand hand, int amount) throws TooFewTilesInBagException,
+					TileNotInBagException, HandLimitReachedExeption {
 		if (amount > this.getNumberOfTiles()) {
 			throw new TooFewTilesInBagException(amount, this.getNumberOfTiles());
 		}
 		for (int i = 0; i < amount; i++) {
-			Tile tile = this.content.get(
-					randomGenerator.nextInt(
-							this.getNumberOfTiles()));
+			Tile tile = this.content.get(randomGenerator.nextInt(this.getNumberOfTiles()));
 			hand.addToHand(tile);
 			this.removeFromBag(tile);
 		}

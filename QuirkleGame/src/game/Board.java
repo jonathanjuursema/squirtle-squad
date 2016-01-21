@@ -33,7 +33,8 @@ public class Board extends Observable {
 		this.board = new BoardSquare[arraySize][arraySize];
 		for (int i = 0; i < arraySize; i++) {
 			for (int j = 0; j < arraySize; j++) {
-				this.board[i][j] = new BoardSquare(this, i - (board.length / 2), j - (board[0].length / 2));
+				this.board[i][j] = new BoardSquare(this, i - (board.length / 2),
+								j - (board[0].length / 2));
 			}
 		}
 	}
@@ -76,7 +77,7 @@ public class Board extends Observable {
 	public void placeTile(Tile tile, int x, int y) throws SquareOutOfBoundsException {
 		// TODO Should throw exception when there is already a tile.
 		this.getSquare(x, y).placeTile(tile);
-		
+
 		setChanged();
 		notifyObservers("board");
 	}
@@ -127,11 +128,11 @@ public class Board extends Observable {
 	/**
 	 * Returns a copy of the game board.
 	 * 
-	 * @param board
+	 * @param theBoard
 	 *            The (empty) board to which BoardSquares should be associated.
 	 * @return A copy of the game board.
 	 */
-	public BoardSquare[][] copy(Board board) {
+	public BoardSquare[][] copy(Board theBoard) {
 		// We make a new 2D-array of board squares of the same size as our
 		// current board.
 		BoardSquare[][] boardCopy = new BoardSquare[this.board.length][this.board[0].length];
@@ -143,8 +144,8 @@ public class Board extends Observable {
 			 * and assign this copy to the new column in boardCopy.
 			 */
 			for (int j = 0; j < this.board[i].length; j++) {
-				boardCopy[i][j] = new BoardSquare(board, this.board[i][j].getX(), this.board[i][j].getY(),
-						this.board[i][j].getTile());
+				boardCopy[i][j] = new BoardSquare(theBoard, this.board[i][j].getX(),
+								this.board[i][j].getY(), this.board[i][j].getTile());
 			}
 		}
 		// Finally, we construct a new Board using this copy of the board.
@@ -230,14 +231,17 @@ public class Board extends Observable {
 				if (!current.isEmpty()) {
 					count++;
 					if (count != 6) {
-						if (current.getNeighbour(3).isEmpty() && !retList.contains(current.getNeighbour(3))) {
+						if (current.getNeighbour(3).isEmpty()
+										&& !retList.contains(current.getNeighbour(3))) {
 							retList.add(current.getNeighbour(3));
 						}
-						if (current.getNeighbour(1).isEmpty() && !retList.contains(current.getNeighbour(1))) {
+						if (current.getNeighbour(1).isEmpty()
+										&& !retList.contains(current.getNeighbour(1))) {
 							retList.add(current.getNeighbour(1));
 						}
 					} else {
-						if (current.getNeighbour(3).isEmpty() && !retList.contains(current.getNeighbour(3))) {
+						if (current.getNeighbour(3).isEmpty()
+										&& !retList.contains(current.getNeighbour(3))) {
 							igList.add(current.getNeighbour(3));
 						}
 						BoardSquare temp = this.getSquare(current.getX() - count, current.getY());
@@ -261,14 +265,17 @@ public class Board extends Observable {
 				if (!current.isEmpty()) {
 					count++;
 					if (count != 6) {
-						if (current.getNeighbour(0).isEmpty() && !retList.contains(current.getNeighbour(0))) {
+						if (current.getNeighbour(0).isEmpty()
+										&& !retList.contains(current.getNeighbour(0))) {
 							retList.add(current.getNeighbour(0));
 						}
-						if (current.getNeighbour(2).isEmpty() && !retList.contains(current.getNeighbour(2))) {
+						if (current.getNeighbour(2).isEmpty()
+										&& !retList.contains(current.getNeighbour(2))) {
 							retList.add(current.getNeighbour(2));
 						}
 					} else {
-						if (current.getNeighbour(0).isEmpty() && !igList.contains(current.getNeighbour(0))) {
+						if (current.getNeighbour(0).isEmpty()
+										&& !igList.contains(current.getNeighbour(0))) {
 							igList.add(current.getNeighbour(0));
 						}
 						BoardSquare temp = this.getSquare(current.getX(), current.getY() + count);
@@ -294,8 +301,9 @@ public class Board extends Observable {
 	public String toString() {
 		int[] minmax = getMinMax();
 
-		String representation = "Displaying board from (" + minmax[0] + "," + minmax[2] + ") to (" + minmax[1] + ","
-				+ minmax[3] + ")." + System.lineSeparator() + System.lineSeparator();
+		String representation = "Displaying board from (" + minmax[0] + "," + minmax[2] + ") to ("
+						+ minmax[1] + "," + minmax[3] + ")." + System.lineSeparator()
+						+ System.lineSeparator();
 
 		representation = representation.concat("     |");
 
@@ -305,7 +313,8 @@ public class Board extends Observable {
 			linesep = linesep.concat("----+");
 		}
 
-		representation = representation.concat(System.lineSeparator() + linesep + System.lineSeparator());
+		representation = representation
+						.concat(System.lineSeparator() + linesep + System.lineSeparator());
 
 		for (int y = minmax[3] + 1; y >= minmax[2] - 1; y--) {
 			representation = representation.concat(" " + String.format("% 3d ", y) + "|");
@@ -320,7 +329,8 @@ public class Board extends Observable {
 				} catch (SquareOutOfBoundsException e) {
 				}
 			}
-			representation = representation.concat(System.lineSeparator() + linesep + System.lineSeparator());
+			representation = representation
+							.concat(System.lineSeparator() + linesep + System.lineSeparator());
 		}
 
 		return representation;
