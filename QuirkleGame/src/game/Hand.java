@@ -145,6 +145,17 @@ public class Hand {
 	public List<Tile> getTilesInHand() {
 		return this.tilesInHand;
 	}
+	
+	/**
+	 * Returns a tile from the hand based on Protocol input.
+	 * 
+	 * @param tile Textual representation of a tile in the hand.
+	 * @return The Tile in the users hand.
+	 */
+	public Tile getTileFromProtocol(String tile) {
+		return null;
+		// TODO Implement
+	}
 
 	/**
 	 * 

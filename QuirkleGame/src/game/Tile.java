@@ -64,6 +64,14 @@ public class Tile {
 	}
 	
 	/**
+	 * Returns a textual representation of the tile, in accordance with the Protocol.
+	 * @return The representation.
+	 */
+	public String toProtocol() {
+		return "" + this.getColor() + this.getShape();
+	}
+	
+	/**
 	 * Returns a textual representation of the tile.
 	 * @return The textual representation.
 	 */
