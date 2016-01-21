@@ -1,6 +1,7 @@
 package server;
 
 import exceptions.IllegalTurnException;
+import exceptions.NotYourTurnException;
 import exceptions.SquareOutOfBoundsException;
 import game.Hand;
 import game.Turn;
@@ -48,10 +49,22 @@ public class Player {
 	 * 
 	 * @param turn
 	 *            the turn that needs passed through the game.
+	 * @throws NotYourTurnException
 	 */
-	public void playTurn() {
-		this.game.receiveTurn(this.getTurn());
-		this.turn = null;
+	public void playTurn(String[] moves) throws NotYourTurnException {
+		if (!this.game.getCurrentPlayer().equals(this)) {
+			throw new NotYourTurnException();
+		}
+		// TODO Parse the moves according to protocol.
+		// TODO Play the moves.
+	}
+
+	public void playSwap(String[] tiles) throws NotYourTurnException {
+		if (!this.game.getCurrentPlayer().equals(this)) {
+			throw new NotYourTurnException();
+		}
+		// TODO Parse the stones according to protocol.
+		// TODO Perform the swap.
 	}
 
 	/**
