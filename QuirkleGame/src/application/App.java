@@ -50,7 +50,7 @@ public class App {
 			new Server(port);
 		} catch (IOException e) {
 			Console.println("Cannot assign this port number. See below for the reason.");
-			Util.log("exception", e.getMessage());
+			Util.log(e);
 			App.server();
 		}
 		
@@ -65,7 +65,7 @@ public class App {
 				host = InetAddress.getByName(Console.readString("What hostname should we connect to?" + System.lineSeparator() + "> "));
 			} catch (UnknownHostException e) {
 				Console.println("This hostname cannot be resolved. See below for the reason.");
-				Util.log("exception", e.getMessage());
+				Util.log(e);
 			}
 		}
 		
@@ -79,7 +79,7 @@ public class App {
 			new Client(host, port);
 		} catch (IOException e) {
 			Console.println("Cannot connect to the server. See below for the reason.");
-			Util.log("exception", e.getMessage());
+			Util.log(e);
 			App.client();
 		}	
 		

@@ -43,7 +43,7 @@ public abstract class ConnectionHandler extends Thread {
 			this.tx = new BufferedWriter(new OutputStreamWriter(this.socket.getOutputStream(),
 							Charset.forName(Protocol.Server.Settings.ENCODING)));
 		} catch (IOException e) {
-			Util.log("error", "IOException caught while setting up rx and tx: " + e.getMessage());
+			Util.log(e);
 			this.shutdown("Unrecoverable IOException.");
 		}
 	}
@@ -67,7 +67,7 @@ public abstract class ConnectionHandler extends Thread {
 					this.parse(args[0], Arrays.copyOfRange(args, 1, args.length));
 				}
 			} catch (IOException e) {
-				Util.log("error", "IOException caught while reading commands: " + e.getMessage());
+				Util.log(e);
 				this.shutdown("Unrecoverable IOException.");
 				running = false;
 			}
@@ -103,7 +103,7 @@ public abstract class ConnectionHandler extends Thread {
 			this.tx.flush();
 			Util.log("tx", message);
 		} catch (IOException e) {
-			Util.log("error", "IOException caught while sending commands: " + e.getMessage());
+			Util.log(e);
 			this.shutdown("Unrecoverable IOException.");
 		}
 	}

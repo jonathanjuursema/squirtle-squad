@@ -42,8 +42,7 @@ public class Server extends Thread {
 				(new ServerConnectionHandler(this, this.socket.accept())).start();
 				Util.log("debug", "A new client has connected.");
 			} catch (IOException e) {
-				Util.log("exception", "IOException caught whil listening for connections: "
-								+ e.getMessage());
+				Util.log(e);
 			}
 		}
 	}

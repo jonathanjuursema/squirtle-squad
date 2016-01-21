@@ -103,8 +103,7 @@ public class ClientConnectionHandler extends ConnectionHandler {
 		try {
 			this.getSocket().close();
 		} catch (IOException e) {
-			Util.log("exception",
-							"An IOException was thrown while closing socket: " + e.getMessage());
+			Util.log(e);
 		}
 
 	}

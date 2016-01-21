@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.swing.Timer;
 
+import application.Util;
 import exceptions.SquareOutOfBoundsException;
 import exceptions.TileNotInBagException;
 import exceptions.TooFewTilesInBagException;
@@ -97,6 +98,7 @@ public abstract class Game implements ActionListener {
 			try {
 				this.bag.takeFromBag(p.getHand(), 6);
 			} catch (TooFewTilesInBagException | TileNotInBagException e) {
+				Util.log(e);
 				this.shutdown("Irrecoverable exception during game initialisation.");
 			}
 
@@ -147,6 +149,7 @@ public abstract class Game implements ActionListener {
 							highestScoring = p;
 						}
 					} catch (SquareOutOfBoundsException e) {
+						Util.log(e);
 						shutdown("Irrecoverable exception in determinging scores of first moves.");
 					}
 				}
@@ -159,6 +162,7 @@ public abstract class Game implements ActionListener {
 		try {
 			this.initialMoves.get(highestScoring).applyTurn();
 		} catch (SquareOutOfBoundsException e) {
+			Util.log(e);
 			shutdown("Irrecoverable error in applying the first move.");
 		}
 
@@ -242,7 +246,8 @@ public abstract class Game implements ActionListener {
 								new String[] { "3", "There are not that many stones in the bag." });
 				return;
 			} catch (TileNotInBagException | TooManyTilesInBag e) {
-				this.shutdown("Irrecoverable exception during swap: " + e.getMessage());
+				Util.log(e);
+				this.shutdown("Irrecoverable exception during swap.");
 			}
 
 			args = new String[2];
@@ -257,17 +262,17 @@ public abstract class Game implements ActionListener {
 			for (int i = 0; i < moves.size(); i++) {
 				Move m = moves.get(i);
 				try {
-					
+
 					board.placeTile(m.tileToPlay, m.getPosition().getX(), m.getPosition().getY());
-					
+
 					// Try to construct protocol arguments... Ugly. :/
 					args[2 + (i * 2)] = "" + m.tileToPlay.getColor() + m.tileToPlay.getShape();
 					args[2 + (i * 2) + 1] = "" + m.getPosition().getX()
 									+ Protocol.Server.Settings.DELIMITER2 + m.getPosition().getY();
-					
+
 				} catch (SquareOutOfBoundsException e) {
-					this.shutdown("Irrecoverable exception during move performing: "
-									+ e.getMessage());
+					Util.log(e);
+					this.shutdown("Irrecoverable exception during move performing.");
 				}
 			}
 
@@ -297,8 +302,8 @@ public abstract class Game implements ActionListener {
 		try {
 			this.bag.addToBag(tiles);
 		} catch (TooManyTilesInBag e) {
-			this.shutdown("Irrecoverable exception during player disqualification: "
-							+ e.getMessage());
+			Util.log(e);
+			this.shutdown("Irrecoverable exception during player disqualification.");
 		}
 		this.removePlayer(player);
 		this.nextTurn(0);
