@@ -32,6 +32,7 @@ public class Bag {
 	 */
 	public Bag() {
 		this.content = new ArrayList<Tile>();
+		randomGenerator = new Random();
 	}
 	/**
 	 * Initializes a new bag, and fills it with any number of existing tiles.
@@ -40,6 +41,7 @@ public class Bag {
 	 */
 	public Bag(List<Tile> tiles) {
 		this.content = tiles;
+		randomGenerator = new Random();
 	}
 	
 	/**
@@ -61,9 +63,7 @@ public class Bag {
 	 * Empties the bag.
 	 */
 	public void empty() {
-		for (Tile t : this.content) {
-			this.content.remove(t);
-		}
+		this.content.clear();
 	}
 	
 	/**
@@ -102,7 +102,9 @@ public class Bag {
 			throw new TooFewTilesInBagException(amount, this.getNumberOfTiles());
 		}
 		for (int i = 0; i < amount; i++) {
-			Tile tile = this.content.get(randomGenerator.nextInt(this.getNumberOfTiles()));
+			Tile tile = this.content.get(
+					randomGenerator.nextInt(
+							this.getNumberOfTiles()));
 			hand.addToHand(tile);
 			this.removeFromBag(tile);
 		}
