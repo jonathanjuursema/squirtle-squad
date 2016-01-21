@@ -81,6 +81,29 @@ public class Game implements ActionListener {
 		this.gameState = Game.GameState.NOTSTARTED;
 	}
 
+	/*
+	 * Getters and setters below.
+	 */
+	
+	/**
+	 * Adds a player to the game.
+	 * 
+	 * @param player
+	 *            The player to be added.
+	 * @throws PlayerAlreadyInGameException
+	 */
+	public void addPlayer(ServerPlayer player) throws PlayerAlreadyInGameException {
+		if (!players.contains(player)) {
+			players.add(player);
+			this.parentServer.playerFromLobby(player);
+			if (players.size() == this.noOfPlayers) {
+				this.start();
+			}
+		} else {
+			throw new PlayerAlreadyInGameException(player);
+		}
+	}
+
 	/**
 	 * Start the game.
 	 */
@@ -228,6 +251,23 @@ public class Game implements ActionListener {
 	}
 
 	/**
+	 * Timeout function that is called after the timeout is exceeded. What to do
+	 * depends on what state the game is currently in.
+	 */
+	public void actionPerformed(ActionEvent e) {
+
+		timeout.stop();
+
+		if (this.gameState == Game.GameState.INITIAL) {
+			this.initialMove();
+		} else if (this.gameState == Game.GameState.WAITING) {
+			this.disqualify(this.getCurrentPlayer());
+			this.nextTurn(0);
+		}
+
+	}
+
+	/**
 	 * Entry function which player can use to signal their turn is done.
 	 * 
 	 * @param turn
@@ -297,7 +337,7 @@ public class Game implements ActionListener {
 	}
 
 	/**
-	 * Disqualify a player. Diqualification removes a player from the game, puts
+	 * Disqualify a player. Disqualification removes a player from the game, puts
 	 * their stones back in the bag and continues normal gameplay. When one
 	 * player remains they win the game.
 	 * 
@@ -328,10 +368,15 @@ public class Game implements ActionListener {
 			p.getHand().hardResetHand();
 			this.removePlayer(p);
 			this.parentServer.playerToLobby(p);
-			this.parentServer.endGame(this);
-			p.sendMessage(Protocol.Server.GAME_END, new String[] { "DISCONNECT", "UNRECOVERABLE_GAME_ERROR" });
+			this.parentServer.removeGame(this);
+			p.sendMessage(Protocol.Server.GAME_END,
+							new String[] { "DISCONNECT", "UnrecoverableGameError" });
 		}
 	}
+
+	/*
+	 * Getters and setters below.
+	 */
 
 	/**
 	 * Removes a player from the game.
@@ -344,50 +389,29 @@ public class Game implements ActionListener {
 	}
 
 	/**
-	 * Adds a player to the game.
+	 * Check if the given player is participating in this game.
 	 * 
 	 * @param player
-	 *            The player to be added.
-	 * @throws PlayerAlreadyInGameException 
+	 *            The Player.
+	 * @return True if the player is participating, false otherwise.
 	 */
-	public void addPlayer(ServerPlayer player) throws PlayerAlreadyInGameException {
-		if (!players.contains(player)) {
-			players.add(player);
-			this.parentServer.playerFromLobby(player);
-			if (players.size() == this.noOfPlayers) {
-				this.start();
-			}
-		} else {
-			throw new PlayerAlreadyInGameException(player);
-		}
+	public boolean isPlayer(ServerPlayer player) {
+		return this.players.contains(player);
 	}
-
-	/**
-	 * Timeout function that is called after the timeout is exceeded. What to do
-	 * depends on what state the game is currently in.
-	 */
-	public void actionPerformed(ActionEvent e) {
-
-		timeout.stop();
-
-		if (this.gameState == Game.GameState.INITIAL) {
-			this.initialMove();
-		} else if (this.gameState == Game.GameState.WAITING) {
-			this.disqualify(this.getCurrentPlayer());
-			this.nextTurn(0);
-		}
-
-	}
-
-	/*
-	 * Getters and setters below.
-	 */
 
 	/**
 	 * Get the current player for this game.
 	 */
 	public ServerPlayer getCurrentPlayer() {
 		return this.players.get(this.currentPlayer);
+	}
+
+	/**
+	 * @param currentPlayer
+	 *            the currentPlayer to set
+	 */
+	public void setCurrentPlayer(ServerPlayer p) {
+		this.currentPlayer = this.players.indexOf(p);
 	}
 
 	/**
@@ -403,14 +427,6 @@ public class Game implements ActionListener {
 	 */
 	public ServerPlayer getNextPlayer(int mod) {
 		return this.players.get((this.currentPlayer + mod) % this.players.size());
-	}
-
-	/**
-	 * @param currentPlayer
-	 *            the currentPlayer to set
-	 */
-	public void setCurrentPlayer(ServerPlayer p) {
-		this.currentPlayer = this.players.indexOf(p);
 	}
 
 	/**

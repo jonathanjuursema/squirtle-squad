@@ -6,7 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import application.Util;
+import exceptions.PlayerAlreadyInGameException;
+import exceptions.TooManyPlayersException;
 import players.Player;
+import players.ServerPlayer;
 
 /**
  * TODO Write file header.
@@ -111,17 +114,8 @@ public class Server extends Thread {
 	 * @param game
 	 *            The game to be removed.
 	 */
-	public void endGame(Game game) {
+	public void removeGame(Game game) {
 		games.remove(game);
-	}
-
-	/**
-	 * Returns a list of all current games.
-	 * 
-	 * @return The list.
-	 */
-	public List<Game> getGames() {
-		return this.games;
 	}
 
 	/**
@@ -132,6 +126,49 @@ public class Server extends Thread {
 	 */
 	public void addGame(Game game) {
 		this.games.add(game);
+	}
+
+	/**
+	 * Try to find a game for a player for a specified amount of players. If
+	 * none can be found, create a new one.
+	 * 
+	 * @param serverConnectionHandler
+	 * @param player
+	 * @param noOfPlayers
+	 * @throws TooManyPlayersException
+	 * @throws PlayerAlreadyInGameException
+	 */
+	public void findGameFor(ServerPlayer player, int noOfPlayers)
+					throws TooManyPlayersException, PlayerAlreadyInGameException {
+		// TODO Support computer player.
+		for (Game game : this.games) {
+			if (game.getGameState() == Game.GameState.NOTSTARTED
+							&& game.getNoOfPlayers() == noOfPlayers) {
+				game.addPlayer(player);
+			}
+		}
+		if (this.isInGame(player)) {
+			throw new PlayerAlreadyInGameException(player);
+		}
+		Game game = new Game(this, noOfPlayers);
+		game.addPlayer(player);
+		addGame(game);
+	}
+
+	/**
+	 * Checks if the given player is currently in a game.
+	 * 
+	 * @param player
+	 *            The player.
+	 * @return True if the player is in a game, false otherwise.
+	 */
+	public boolean isInGame(ServerPlayer player) {
+		for (Game game : this.games) {
+			if (game.isPlayer(player) == true) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }
