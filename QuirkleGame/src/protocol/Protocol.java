@@ -1,16 +1,21 @@
 package protocol;
 
 /*
- * Protocol file downloaded on January 19 from:
+ * Protocol file downloaded on January 21 from:
  * https://github.com/mmmcompany/QuirkleInterfaceRepository/blob/master/src/protocol_v1.3/Protocol.java
  */
 
 /**
- * <!-- Versie 1.3.3
+ * <!-- Versie 1.3.4
  *
  * -------------
  * - CHANGELOG -
  * -------------
+ * 
+ * Versie 1.3.4
+ * 
+ * + correcte delimiter implemented binnen commando's - Rosalyn
+ * 		-example: move & makemove
  * Versie 1.3.3
  * 
  * +verduidelijking commando server MOVE aangaande delimitter gebruik - Thomas & Niek
@@ -221,7 +226,7 @@ package protocol;
  * omdat dit makkelijk en handig is.
  * </p>
  * <p>
- * Als delimiter binnen een argument gebruiken wij een sterretje (<code>*
+ * Als tweede delimiter binnen een argument gebruiken wij een sterretje (<code>*
  * <\code>) omdat dit makkelijk en handig is.
  * </p>
  * de tweede delimitter wordt gebruikt om de integers in een makemove te
@@ -343,11 +348,11 @@ public class Protocol {
 		 * elke steen wordt bescheven als volgt:
 		 * </p>
 		 * <p>
-		 * charchar_int*int
+		 * charchar*int*int
 		 * </p>
-		 * \ voorbeeld: Content: <code>charchar_int*int\n\n</code>
+		 * \ voorbeeld: Content: <code>charchar*int*int\n\n</code>
 		 * </p>
-		 * <code>MAKEMOVE_AF_11*6_BF_11*7\n\n<code> Als er meerdere stenen in
+		 * <code>MAKEMOVE_AF*11*6_BF*11*7\n\n<code> Als er meerdere stenen in
 		 * een beurt worden gelegd is de de eerste steen de eerste in het
 		 * commando en de laatste de laatste in het commando.
 		 * 
@@ -387,8 +392,8 @@ public class Protocol {
 		 * CHANGESTONE <br>
 		 * Name: <code>CHANGESTONE</code> <br>
 		 * Descriptie: Vraagt de server om een stenen in te wisselen<br>
-		 * Content: <code>CHANGESTONE_steen_steen\n\n <code>
-		 * 
+		 * Content: <code>CHANGESTONE_steen_steen\n\n <code> example:
+		 * CHANGESTONE_AE_AA\n\n
 		 */
 
 		public static final String CHANGESTONE = "CHANGESTONE";
@@ -532,11 +537,14 @@ public class Protocol {
 		 * </p>
 		 * Example:
 		 * <p>
-		 * MOVE_sjaak_piet_AF_11*6_BF_11*7\n\n Er kunnen meerdere moves gemaakt
-		 * worden, deze worden gedelimit door standaarddelimiter De integers in
-		 * de move wordt gedelimit door standaarddelimiter2 Als er meerdere
-		 * stenen in een beurt worden gelegd is de de eerste steen de eerste in
-		 * het commando en de laatste de laatste in het commando.
+		 * MOVE_sjaak_piet_AF*11*6_BF*11*7\n\n Er kunnen meerdere moves gemaakt
+		 * worden, deze worden gedelimit door standaarddelimiter De charchar
+		 * worden gescheiden van de integers met standaarddelimter2 "*". De
+		 * integers worden van elkaar gescheiden met standaarddelimiter2 "*" de
+		 * individuele gelegde stenen worden gescheiden door standaarddelimter 1
+		 * "_" . Als er meerdere stenen in een beurt worden gelegd is de de
+		 * eerste steen de eerste in het commando en de laatste de laatste in
+		 * het commando.
 		 * 
 		 */
 
