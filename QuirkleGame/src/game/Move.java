@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import exceptions.IllegalMoveException;
 import exceptions.SquareOutOfBoundsException;
 
 /**
@@ -38,26 +39,11 @@ public class Move {
 		this.position = position;
 	}
 
-	/**
-	 * This function will translate the object into a textual representation. It
-	 * will print the Tiles contained by the move and the play they will be
-	 * placed
-	 * 
-	 * @return String The message
-	 */
-	public String toString() {
-		return "Move with Tile " + this.tileToPlay.toString() + " on " + this.position.toString();
-	}
-	
-	public boolean isValidMove(Board board) throws SquareOutOfBoundsException {
-		return this.isValidMove(board, false);
-	}
-
-	public boolean isValidMove(Board board, boolean firstMove) throws SquareOutOfBoundsException {
+	public boolean isValidMove(Board board) throws SquareOutOfBoundsException, IllegalMoveException {
 		// Check move in relation with the board
 		
 		if(!board.getPossiblePlaces().contains(this.getPosition())) {
-			return false;
+			throw new IllegalMoveException(this, "This place does not have a connection to an existing row or column.");
 		}
 		
 		board.placeTile(this.getTile(), this.getPosition().getX(), this.getPosition().getY());
@@ -76,13 +62,13 @@ public class Move {
 		// if the move is legal.
 		
 		if (!checkSequence(cleanedMap.get(tempMove).get(0)) || !checkSequence(cleanedMap.get(tempMove).get(1))) {
-			return false;
+			throw new IllegalMoveException(this, "This move is not valid because it conflicts current rows or columns.");
 		} else {
 			return true;
 		}
 	}
 
-	public boolean checkSequence(List<Tile> sequence) {
+	public boolean checkSequence(List<Tile> sequence) throws IllegalMoveException {
 		// If only 1 tile is representing the sequence,
 		// the sequence does not have to be checked.
 		if (sequence.size() == 1) {
@@ -99,7 +85,7 @@ public class Move {
 			} else if (sequence.get(0).getShape() == sequence.get(1).getShape()) {
 				shape = sequence.get(0).getShape();
 			} else {
-				return false;
+				throw new IllegalMoveException(this, "The identity of the row or column can not be identified.");
 			}
 
 		}
@@ -114,7 +100,7 @@ public class Move {
 			if (color != null) {
 				// check if the same shape already exists.
 				if (shapes.contains(t.getShape())) {
-					return false;
+					throw new IllegalMoveException(this, "This shape ("+t.getShape()+") is allready existing in the columns or rows it is connected too.");
 				} else {
 					// If not, add the shape to the list
 					shapes.add(t.getShape());
@@ -122,18 +108,29 @@ public class Move {
 			} else if (shape != null) {
 				// check if the same colour already exists.
 				if (colors.contains(t.getColor())) {
-					return false;
+					throw new IllegalMoveException(this, "This color ("+t.getColor()+") is allready existing in the columns or rows it is connected too.");
 				} else {
 					// If not, add the colour to the list
 					colors.add(t.getColor());
 				}
 			} else {
 				// If the sequence has no identity
-				return false;
+				throw new IllegalMoveException(this, "The identity of the row or column can not be identified.");
 			}
 		}
 
 		return true;
+	}
+
+	/**
+	 * This function will translate the object into a textual representation. It
+	 * will print the Tiles contained by the move and the play they will be
+	 * placed
+	 * 
+	 * @return String The message
+	 */
+	public String toString() {
+		return "Move with Tile " + this.tileToPlay.toString() + " on " + this.position.toString();
 	}
 
 }

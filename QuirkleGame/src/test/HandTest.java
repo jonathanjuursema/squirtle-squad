@@ -9,6 +9,8 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
+import exceptions.HandLimitReachedExeption;
+import exceptions.TileNotInHandException;
 import game.Hand;
 import game.Tile;
 import server.Player;
@@ -24,16 +26,16 @@ public class HandTest {
 
 	@Test
 	public void setUpHandTest() {
-		hand = new Hand(player);
+		hand = new Hand();
 
 		assertEquals(0, hand.getAmountOfTiles());
 		assertFalse(hand.hasInHand(new Tile(Tile.BLUE, Tile.CIRCLE)));
 
 	}
 
-	@Test
-	public void addTilesTest() {
-		hand = new Hand(player);
+	@Test (expected= HandLimitReachedExeption.class)
+	public void addTilesTest() throws HandLimitReachedExeption {
+		hand = new Hand();
 
 		List<Tile> tilesToAdd = new ArrayList<Tile>();
 
@@ -74,8 +76,8 @@ public class HandTest {
 	}
 
 	@Test
-	public void removeTilesTest() {
-		hand = new Hand(player);
+	public void removeTilesTest() throws HandLimitReachedExeption, TileNotInHandException {
+		hand = new Hand();
 
 		List<Tile> tilesToAdd = new ArrayList<Tile>();
 
@@ -91,11 +93,7 @@ public class HandTest {
 		tilesToAdd.add(blueCircle);
 
 		hand.addTohand(tilesToAdd);
-
-		hand.removeFromHand(purpleCircle);
-		hand.removeFromHand(orangeCircle);
-		hand.removeFromHand(greenCircle);
-
+		
 		assertTrue(hand.hasInHand(redCircle));
 		assertTrue(hand.hasInHand(tilesToAdd));
 		assertEquals(3, hand.getAmountOfTiles());
@@ -110,8 +108,8 @@ public class HandTest {
 	}
 
 	@Test
-	public void hardResetTest() {
-		hand = new Hand(player);
+	public void hardResetTest() throws HandLimitReachedExeption {
+		hand = new Hand();
 
 		List<Tile> tilesToAdd = new ArrayList<Tile>();
 
@@ -133,8 +131,8 @@ public class HandTest {
 	}
 
 	@Test
-	public void checkToString() {
-		hand = new Hand(player);
+	public void checkToString() throws HandLimitReachedExeption {
+		hand = new Hand();
 
 		List<Tile> tilesToAdd = new ArrayList<Tile>();
 
@@ -151,18 +149,10 @@ public class HandTest {
 		tilesToAdd.add(purpleCircle);
 		tilesToAdd.add(orangeCircle);
 		tilesToAdd.add(greenCircle);
-		tilesToAdd.add(greenCircle);
 
 		hand.addTohand(tilesToAdd);
-		/*
-		assertTrue(hand.toString().contains("(6)"));
 
-		for (Tile t : tilesToAdd) {
-			assertTrue(hand.toString().contains("[" + t.toString() + "]"));
-		}
-		*/
-		
-		System.out.println(hand);
+		assertTrue(hand.toString().contains("(6)"));
 
 	}
 }

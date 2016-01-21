@@ -118,8 +118,12 @@ public class Turn {
 				}
 			}
 		}
+		
+		if(!unvalid) {
+			throw new IllegalMoveException(move, "This move is not placed in the same row or column as the previous move.");
+		}
 
-		if (move.isValidMove(this.getBoardCopy()) && unvalid) {
+		if (move.isValidMove(this.getBoardCopy())) {
 			this.moves.add(move);
 			this.boardCopy.placeTile(move.getTile(), move.getPosition().getX(), move.getPosition().getY());
 		} else {
@@ -320,16 +324,12 @@ public class Turn {
 		return boardCopy;
 	}
 
-	public void setBoardCopy(Board boardCopy) {
-		this.boardCopy = boardCopy;
-	}
-
 	public Player getPlayer() {
 		return this.assignedPlayer;
 	}
 
 	public String toString() {
-		String message = "The turn is for " + this.assignedPlayer.getName() + "\n";
+		String message = "The turn is for " + getPlayer().getName() + "\n";
 		message += "With approved moves: \n ";
 		for (Move m : this.getMoves()) {
 			message += m.toString() + "\n";
