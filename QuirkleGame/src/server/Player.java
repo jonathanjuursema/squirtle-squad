@@ -32,6 +32,18 @@ public class Player {
 	}
 
 	/**
+	 * Sends a message to the connection associated with the player.
+	 * 
+	 * @param cmd
+	 *            The command to be send.
+	 * @param args
+	 *            The arguments to this command.
+	 */
+	public void sendMessage(String cmd, String[] args) {
+		this.connection.send(cmd, args);
+	}
+
+	/**
 	 * Submit the turn to the game.
 	 * 
 	 * @param turn
@@ -56,6 +68,7 @@ public class Player {
 	 * Increment the score.
 	 * 
 	 * @param amount
+	 *            The amount to increase the score by.
 	 */
 	public void incrementScore(int amount) {
 		this.score += amount;
@@ -131,7 +144,8 @@ public class Player {
 	}
 
 	/**
-	 * @param status the status to set
+	 * @param status
+	 *            the status to set
 	 */
 	public void setStatus(Status status) {
 		this.status = status;

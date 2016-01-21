@@ -7,23 +7,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.Timer;
 
-import exceptions.IllegalTurnException;
 import exceptions.SquareOutOfBoundsException;
 import exceptions.TileNotInBagException;
 import exceptions.TooFewTilesInBagException;
 import exceptions.TooManyPlayersException;
+import exceptions.TooManyTilesInBag;
 import game.Bag;
 import game.Board;
 import game.Hand;
 import game.Move;
 import game.Tile;
 import game.Turn;
+import protocol.Protocol;
 import server.Game;
 
 /**
@@ -75,6 +73,7 @@ public abstract class Game implements ActionListener {
 		} else {
 			throw new TooManyPlayersException(noOfPlayers);
 		}
+		this.gameState = Game.GameState.NOTSTARTED;
 	}
 
 	/**
@@ -94,13 +93,20 @@ public abstract class Game implements ActionListener {
 		// Initialise player hands, send them, and request first turn.
 		for (Player p : this.players) {
 			// Initialise hand
-			p.assignHand(new Hand(p));
+			p.assignHand(new Hand());
 			try {
 				this.bag.takeFromBag(p.getHand(), 6);
 			} catch (TooFewTilesInBagException | TileNotInBagException e) {
-				/* TODO */ }
+				this.shutdown("Irrecoverable exception during game initialisation.");
+			}
 
-			// TODO Send hand to player.
+			List<Tile> tiles = p.getHand().getTilesInHand();
+			String[] args = new String[tiles.size()];
+			for (int i = 0; i < tiles.size(); i++) {
+				args[i] = "" + tiles.get(i).getColor() + tiles.get(i).getShape();
+			}
+			p.sendMessage(Protocol.Server.ADDTOHAND, args);
+			p.sendMessage(Protocol.Server.STARTGAME, new String[] {});
 
 			// Request initial turn
 			beginturns.put(p, null);
@@ -141,7 +147,8 @@ public abstract class Game implements ActionListener {
 							highestScoring = p;
 						}
 					} catch (SquareOutOfBoundsException e) {
-						/* TODO */ }
+						shutdown("Irrecoverable exception in determinging scores of first moves.");
+					}
 				}
 			} else {
 				this.disqualify(p);
@@ -152,7 +159,8 @@ public abstract class Game implements ActionListener {
 		try {
 			this.initialMoves.get(highestScoring).applyTurn();
 		} catch (SquareOutOfBoundsException e) {
-			/* TODO */ }
+			shutdown("Irrecoverable error in applying the first move.");
+		}
 
 		// Start the real game.
 		this.gameState = Game.GameState.NORMAL;
@@ -216,13 +224,64 @@ public abstract class Game implements ActionListener {
 	 * @param turn
 	 */
 	public void receiveTurn(Turn turn) {
-		timeout.stop();
-		try {
-			turn.applyTurn();
-			this.nextTurn(1);
-		} catch (SquareOutOfBoundsException e) {
-			// TODO
+
+		String[] args;
+
+		if (turn.isSwapRequest()) {
+
+			timeout.stop();
+			List<Tile> tilesToSwap = turn.getSwap();
+			Hand h = this.getCurrentPlayer().getHand();
+
+			try {
+				bag.swapTiles(h, tilesToSwap);
+				// TODO Hier moet nog een exceptie komen en worden afgevangen
+				// met een error 2
+			} catch (TooFewTilesInBagException e) {
+				this.getCurrentPlayer().sendMessage(Protocol.Server.ERROR,
+								new String[] { "3", "There are not that many stones in the bag." });
+				return;
+			} catch (TileNotInBagException | TooManyTilesInBag e) {
+				this.shutdown("Irrecoverable exception during swap: " + e.getMessage());
+			}
+
+			args = new String[2];
+
+		} else if (turn.isMoveRequest()) {
+
+			timeout.stop();
+			List<Move> moves = turn.getMoves();
+
+			args = new String[2 + (moves.size() * 2)];
+
+			for (int i = 0; i < moves.size(); i++) {
+				Move m = moves.get(i);
+				try {
+					
+					board.placeTile(m.tileToPlay, m.getPosition().getX(), m.getPosition().getY());
+					
+					// Try to construct protocol arguments... Ugly. :/
+					args[2 + (i * 2)] = "" + m.tileToPlay.getColor() + m.tileToPlay.getShape();
+					args[2 + (i * 2) + 1] = "" + m.getPosition().getX()
+									+ Protocol.Server.Settings.DELIMITER2 + m.getPosition().getY();
+					
+				} catch (SquareOutOfBoundsException e) {
+					this.shutdown("Irrecoverable exception during move performing: "
+									+ e.getMessage());
+				}
+			}
+
+		} else {
+
+			this.disqualify(this.getCurrentPlayer());
+			return;
+
 		}
+
+		for (Player p : this.players) {
+			p.sendMessage(Protocol.Server.MOVE, args);
+		}
+
 	}
 
 	/**
@@ -235,8 +294,30 @@ public abstract class Game implements ActionListener {
 	 */
 	public void disqualify(Player player) {
 		List<Tile> tiles = player.getHand().hardResetHand();
-		this.bag.addToBag(tiles);
+		try {
+			this.bag.addToBag(tiles);
+		} catch (TooManyTilesInBag e) {
+			this.shutdown("Irrecoverable exception during player disqualification: "
+							+ e.getMessage());
+		}
 		this.removePlayer(player);
+		this.nextTurn(0);
+	}
+
+	/**
+	 * Exit the game for a specified reason.
+	 * 
+	 * @param message
+	 *            The reason.
+	 */
+	public void shutdown(String message) {
+		for (Player p : this.players) {
+			p.getHand().hardResetHand();
+			this.removePlayer(p);
+			this.parentServer.playerToLobby(p);
+			// TODO Message player.
+			this.parentServer.endGame(this);
+		}
 	}
 
 	/**
@@ -258,14 +339,11 @@ public abstract class Game implements ActionListener {
 	public void addPlayer(Player player) {
 		if (!players.contains(player)) {
 			players.add(player);
+			this.parentServer.playerFromLobby(player);
+			if (players.size() == this.noOfPlayers) {
+				this.start();
+			}
 		}
-	}
-
-	/**
-	 * Clean-up the game.
-	 */
-	public void finish() {
-		// TODO Implement body.
 	}
 
 	/**
@@ -283,22 +361,6 @@ public abstract class Game implements ActionListener {
 			this.nextTurn(0);
 		}
 
-	}
-
-	/**
-	 * Exit the game for a specified reason.
-	 * 
-	 * @param message
-	 *            The reason.
-	 */
-	public void shutdown(String message) {
-		for (Player p : this.players) {
-			p.getHand().hardResetHand();
-			this.removePlayer(p);
-			this.parentServer.playerToLobby(p);
-			// TODO Message player.
-			this.parentServer.endGame(this);
-		}
 	}
 
 	/*
@@ -342,6 +404,15 @@ public abstract class Game implements ActionListener {
 	 */
 	public int getNoOfPlayers() {
 		return this.noOfPlayers;
+	}
+
+	/**
+	 * Get the game state.
+	 * 
+	 * @return The state.
+	 */
+	public Game.GameState getGameState() {
+		return this.gameState;
 	}
 
 }

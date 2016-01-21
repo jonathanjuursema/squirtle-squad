@@ -24,7 +24,7 @@ public class ServerConnectionHandler extends ConnectionHandler {
 		super(socket);
 		this.server = server;
 	}
-	
+
 	public void run() {
 		super.run();
 	}
@@ -38,11 +38,44 @@ public class ServerConnectionHandler extends ConnectionHandler {
 				Util.log("protocol", "Recevied an generic error from the server: " + args[2]);
 				break;
 			}
+		case Protocol.Client.ACCEPTINVITE:
+			// TODO
+			break;
+		case Protocol.Client.CHANGESTONE:
+			// TODO
+			break;
+		case Protocol.Client.CHAT:
+			// TODO
+			break;
+		case Protocol.Client.DECLINEINVITE:
+			// TODO
+			break;
+		case Protocol.Client.GETLEADERBOARD:
+			// TODO
+			break;
+		case Protocol.Client.GETSTONESINBAG:
+			// TODO
+			break;
 		case Protocol.Client.HALLO:
 			if (args.length < 1) {
 				this.send(Protocol.Server.ERROR, new String[] { "8", "Too few arguments." });
 			}
 			registerClient(args[0]);
+			break;
+		case Protocol.Client.INVITE:
+			// TODO
+			break;
+		case Protocol.Client.MAKEMOVE:
+			// TODO
+			break;
+		case Protocol.Client.QUIT:
+			// TODO
+			break;
+		case Protocol.Client.REQUESTGAME:
+			if (args.length < 1) {
+				this.send(Protocol.Server.ERROR, new String[] { "8", "Too few arguments." });
+			}
+			this.createGameFor(this.player, Integer.parseInt(args[0]));
 			break;
 		default:
 			Util.log("protocol", "Received an unknown command from the client: " + command);
@@ -67,6 +100,15 @@ public class ServerConnectionHandler extends ConnectionHandler {
 		this.server.addPlayer(this.player);
 		this.server.playerToLobby(this.player);
 		Util.log("info", "New player connected: " + this.player.getName());
+	}
+
+	private void createGameFor(Player player, int noOfPlayers) {
+		for (Game game : this.server.getGames()) {
+			if (game.getGameState() == Game.GameState.NOTSTARTED
+							&& game.getNoOfPlayers() == noOfPlayers) {
+				game.addPlayer(player);
+			}
+		}
 	}
 
 	@Override
