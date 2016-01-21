@@ -4,6 +4,7 @@ import exceptions.IllegalTurnException;
 import exceptions.SquareOutOfBoundsException;
 import game.Hand;
 import game.Turn;
+import views.TUIview;
 
 /**
  * TODO Write file header.
@@ -150,5 +151,6 @@ public class Player {
 	public void setStatus(Status status) {
 		this.status = status;
 	}
+
 
 }
