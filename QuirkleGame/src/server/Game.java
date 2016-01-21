@@ -11,8 +11,11 @@ import java.util.Map;
 import javax.swing.Timer;
 
 import application.Util;
+import exceptions.HandLimitReachedExeption;
+import exceptions.PlayerAlreadyInGameException;
 import exceptions.SquareOutOfBoundsException;
 import exceptions.TileNotInBagException;
+import exceptions.TileNotInHandException;
 import exceptions.TooFewTilesInBagException;
 import exceptions.TooManyPlayersException;
 import exceptions.TooManyTilesInBag;
@@ -22,6 +25,7 @@ import game.Hand;
 import game.Move;
 import game.Tile;
 import game.Turn;
+import players.ServerPlayer;
 import protocol.Protocol;
 import server.Game;
 
@@ -32,7 +36,7 @@ import server.Game;
  * @author Jonathan Juursema & Peter Wessels
  *
  */
-public abstract class Game implements ActionListener {
+public class Game implements ActionListener {
 
 	public final static int DIFFERENTSHAPES = 6;
 	public final static int DIFFERENTCOLORS = 6;
@@ -42,10 +46,10 @@ public abstract class Game implements ActionListener {
 	public final int TURNTIMEOUT = 60;
 
 	private int noOfPlayers;
-	private List<Player> players = new ArrayList<Player>();
+	private List<ServerPlayer> players = new ArrayList<ServerPlayer>();
 	private int currentPlayer;
 
-	private Map<Player, Turn> initialMoves;
+	private Map<ServerPlayer, Turn> initialMoves;
 
 	private Server parentServer;
 
@@ -89,15 +93,16 @@ public abstract class Game implements ActionListener {
 		this.bag = new Bag();
 		this.bag.fill();
 
-		Map<Player, Turn> beginturns = new HashMap<Player, Turn>();
+		Map<ServerPlayer, Turn> beginturns = new HashMap<ServerPlayer, Turn>();
 
 		// Initialise player hands, send them, and request first turn.
-		for (Player p : this.players) {
+		for (ServerPlayer p : this.players) {
 			// Initialise hand
 			p.assignHand(new Hand());
 			try {
 				this.bag.takeFromBag(p.getHand(), 6);
-			} catch (TooFewTilesInBagException | TileNotInBagException e) {
+			} catch (TooFewTilesInBagException | TileNotInBagException
+							| HandLimitReachedExeption e) {
 				Util.log(e);
 				this.shutdown("Irrecoverable exception during game initialisation.");
 			}
@@ -105,7 +110,7 @@ public abstract class Game implements ActionListener {
 			List<Tile> tiles = p.getHand().getTilesInHand();
 			String[] args = new String[tiles.size()];
 			for (int i = 0; i < tiles.size(); i++) {
-				args[i] = "" + tiles.get(i).getColor() + tiles.get(i).getShape();
+				args[i] = tiles.get(i).toProtocol();
 			}
 			p.sendMessage(Protocol.Server.ADDTOHAND, args);
 			p.sendMessage(Protocol.Server.STARTGAME, new String[] {});
@@ -119,7 +124,7 @@ public abstract class Game implements ActionListener {
 
 	}
 
-	public void receiveInitialMove(Turn turn, Player player) {
+	public void receiveInitialMove(Turn turn, ServerPlayer player) {
 
 		this.initialMoves.put(player, turn);
 		for (Turn t : this.initialMoves.values()) {
@@ -136,9 +141,9 @@ public abstract class Game implements ActionListener {
 	public void initialMove() {
 
 		// We want to find the highest scoring move.
-		Player highestScoring = null;
+		ServerPlayer highestScoring = null;
 
-		for (Player p : this.initialMoves.keySet()) {
+		for (ServerPlayer p : this.initialMoves.keySet()) {
 			if (this.initialMoves.get(p) != null) {
 				if (highestScoring == null) {
 					highestScoring = p;
@@ -187,7 +192,7 @@ public abstract class Game implements ActionListener {
 		}
 
 		if (this.bag.getNumberOfTiles() == 0) {
-			for (Player p : this.players) {
+			for (ServerPlayer p : this.players) {
 				if (p.getHand().getTilesInHand().size() == 0) {
 					return true;
 				}
@@ -226,6 +231,8 @@ public abstract class Game implements ActionListener {
 	 * Entry function which player can use to signal their turn is done.
 	 * 
 	 * @param turn
+	 * @throws TileNotInHandException
+	 * @throws TooFewTilesInBagException
 	 */
 	public void receiveTurn(Turn turn) {
 
@@ -239,15 +246,15 @@ public abstract class Game implements ActionListener {
 
 			try {
 				bag.swapTiles(h, tilesToSwap);
-				// TODO Hier moet nog een exceptie komen en worden afgevangen
-				// met een error 2
-			} catch (TooFewTilesInBagException e) {
-				this.getCurrentPlayer().sendMessage(Protocol.Server.ERROR,
-								new String[] { "3", "There are not that many stones in the bag." });
-				return;
 			} catch (TileNotInBagException | TooManyTilesInBag e) {
 				Util.log(e);
 				this.shutdown("Irrecoverable exception during swap.");
+			} catch (TooFewTilesInBagException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (TileNotInHandException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 
 			args = new String[2];
@@ -283,7 +290,7 @@ public abstract class Game implements ActionListener {
 
 		}
 
-		for (Player p : this.players) {
+		for (ServerPlayer p : this.players) {
 			p.sendMessage(Protocol.Server.MOVE, args);
 		}
 
@@ -297,7 +304,7 @@ public abstract class Game implements ActionListener {
 	 * @param player
 	 *            The player to be disqualified.
 	 */
-	public void disqualify(Player player) {
+	public void disqualify(ServerPlayer player) {
 		List<Tile> tiles = player.getHand().hardResetHand();
 		try {
 			this.bag.addToBag(tiles);
@@ -306,6 +313,7 @@ public abstract class Game implements ActionListener {
 			this.shutdown("Irrecoverable exception during player disqualification.");
 		}
 		this.removePlayer(player);
+		player.sendMessage(Protocol.Server.GAME_END, new String[] { "DISCONNECT", "DISQUALIFIED" });
 		this.nextTurn(0);
 	}
 
@@ -316,12 +324,12 @@ public abstract class Game implements ActionListener {
 	 *            The reason.
 	 */
 	public void shutdown(String message) {
-		for (Player p : this.players) {
+		for (ServerPlayer p : this.players) {
 			p.getHand().hardResetHand();
 			this.removePlayer(p);
 			this.parentServer.playerToLobby(p);
-			// TODO Message player.
 			this.parentServer.endGame(this);
+			p.sendMessage(Protocol.Server.GAME_END, new String[] { "DISCONNECT", "UNRECOVERABLE_GAME_ERROR" });
 		}
 	}
 
@@ -331,7 +339,7 @@ public abstract class Game implements ActionListener {
 	 * @param player
 	 *            The player to be removed.
 	 */
-	public void removePlayer(Player player) {
+	public void removePlayer(ServerPlayer player) {
 		players.remove(player);
 	}
 
@@ -340,14 +348,17 @@ public abstract class Game implements ActionListener {
 	 * 
 	 * @param player
 	 *            The player to be added.
+	 * @throws PlayerAlreadyInGameException 
 	 */
-	public void addPlayer(Player player) {
+	public void addPlayer(ServerPlayer player) throws PlayerAlreadyInGameException {
 		if (!players.contains(player)) {
 			players.add(player);
 			this.parentServer.playerFromLobby(player);
 			if (players.size() == this.noOfPlayers) {
 				this.start();
 			}
+		} else {
+			throw new PlayerAlreadyInGameException(player);
 		}
 	}
 
@@ -375,7 +386,7 @@ public abstract class Game implements ActionListener {
 	/**
 	 * Get the current player for this game.
 	 */
-	public Player getCurrentPlayer() {
+	public ServerPlayer getCurrentPlayer() {
 		return this.players.get(this.currentPlayer);
 	}
 
@@ -390,7 +401,7 @@ public abstract class Game implements ActionListener {
 	 *            player is selected. 1 picks the next player from the list in
 	 *            normal situations.
 	 */
-	public Player getNextPlayer(int mod) {
+	public ServerPlayer getNextPlayer(int mod) {
 		return this.players.get((this.currentPlayer + mod) % this.players.size());
 	}
 
@@ -398,7 +409,7 @@ public abstract class Game implements ActionListener {
 	 * @param currentPlayer
 	 *            the currentPlayer to set
 	 */
-	public void setCurrentPlayer(Player p) {
+	public void setCurrentPlayer(ServerPlayer p) {
 		this.currentPlayer = this.players.indexOf(p);
 	}
 
@@ -418,6 +429,10 @@ public abstract class Game implements ActionListener {
 	 */
 	public Game.GameState getGameState() {
 		return this.gameState;
+	}
+
+	public int getTilesInBag() {
+		return this.bag.getNumberOfTiles();
 	}
 
 }

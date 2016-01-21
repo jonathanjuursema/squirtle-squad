@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import application.Util;
+import players.Player;
 
 /**
  * TODO Write file header.
@@ -15,7 +16,7 @@ import application.Util;
  */
 public class Server extends Thread {
 
-	public static final String FUNCTIONS = "";
+	public static final String[] FUNCTIONS = { "CHALLENGE", "CHAT", "LEADERBORD" };
 
 	private List<Player> lobby;
 	private List<Player> players;
@@ -121,6 +122,16 @@ public class Server extends Thread {
 	 */
 	public List<Game> getGames() {
 		return this.games;
+	}
+
+	/**
+	 * Add a new game to the list of current games.
+	 * 
+	 * @param game
+	 *            The game. You lost it.
+	 */
+	public void addGame(Game game) {
+		this.games.add(game);
 	}
 
 }

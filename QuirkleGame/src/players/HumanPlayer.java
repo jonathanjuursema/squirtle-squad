@@ -1,7 +1,5 @@
 package players;
 
-import game.Turn;
-import server.Player;
 import views.View;
 
 public class HumanPlayer extends Player {
@@ -9,11 +7,21 @@ public class HumanPlayer extends Player {
 	
 	public HumanPlayer(String name, View view) {
 		super(name);
-		this.view = view;
+		this.setView(view);
 	}
-	
-	public void giveTurn(Turn turn) {
-		this.turn = turn;
+
+	/**
+	 * @return the view
+	 */
+	public View getView() {
+		return view;
+	}
+
+	/**
+	 * @param view the view to set
+	 */
+	public void setView(View view) {
+		this.view = view;
 	}
 
 

@@ -13,10 +13,12 @@ import server.Server;
  *
  */
 public class App {
+	
+	public static final String name = "SquirtleSquad";
 
 	public static void main(String[] args) {
 		
-		Console.println("Welcome to the SquirtleSquad Qwirkle application!" + System.lineSeparator());
+		Console.println("Welcome to the " + name + " Qwirkle application!" + System.lineSeparator());
 		
 		String appType = "";
 		

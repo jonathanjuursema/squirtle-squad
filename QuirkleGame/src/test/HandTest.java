@@ -13,7 +13,7 @@ import exceptions.HandLimitReachedExeption;
 import exceptions.TileNotInHandException;
 import game.Hand;
 import game.Tile;
-import server.Player;
+import players.Player;
 
 public class HandTest {
 	public Player player;

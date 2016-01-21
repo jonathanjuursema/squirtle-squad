@@ -20,8 +20,8 @@ import game.Move;
 import game.Tile;
 import game.Turn;
 import players.HumanPlayer;
+import players.Player;
 import protocol.Protocol;
-import server.Player;
 import views.TUIview;
 
 /**

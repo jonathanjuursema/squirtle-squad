@@ -15,7 +15,7 @@ import game.BoardSquare;
 import game.Move;
 import game.Tile;
 import game.Turn;
-import server.Player;
+import players.Player;
 
 public class TurnTest {
 
