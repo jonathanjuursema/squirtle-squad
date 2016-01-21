@@ -3,7 +3,10 @@ package game;
 import java.util.List;
 import java.util.Random;
 
+import application.Util;
+import exceptions.HandLimitReachedExeption;
 import exceptions.TileNotInBagException;
+import exceptions.TileNotInHandException;
 import exceptions.TooFewTilesInBagException;
 import exceptions.TooManyTilesInBag;
 import server.Game;
@@ -35,20 +38,6 @@ public class Bag {
 	 */
 	public Bag() {
 		this.content = new ArrayList<Tile>();
-		randomGenerator = new Random();
-	}
-
-	/**
-	 * Initializes a new bag, and fills it with any number of existing tiles.
-	 * 
-	 * @param game
-	 *            The game to which this bag should be assigned.
-	 * @param tiles
-	 *            A List<Tile> of tiles. This List will be copied directly into
-	 *            the bag.
-	 */
-	public Bag(List<Tile> tiles) {
-		this.content = tiles;
 		randomGenerator = new Random();
 	}
 
@@ -92,14 +81,22 @@ public class Bag {
 	 *            The tiles that should be put back into the bag.
 	 * @return True if the swap succeeded, false otherwise.
 	 * @throws TooManyTilesInBag
+	 * @throws TileNotInHandException 
 	 */
 	public synchronized void swapTiles(Hand hand, List<Tile> tiles)
-					throws TooFewTilesInBagException, TileNotInBagException, TooManyTilesInBag {
+					throws TooFewTilesInBagException, TileNotInBagException, TooManyTilesInBag, TileNotInHandException {
 		if (tiles.size() > this.getNumberOfTiles()) {
 			throw new TooFewTilesInBagException(tiles.size(), this.getNumberOfTiles());
 		}
+		
 		hand.removeFromHand(tiles);
-		this.takeFromBag(hand, tiles.size());
+		
+		try {
+			this.takeFromBag(hand, tiles.size());
+		} catch (HandLimitReachedExeption e) {
+			Util.log(e);
+		}
+		
 		this.addToBag(tiles);
 	}
 
@@ -111,9 +108,10 @@ public class Bag {
 	 * @param amount
 	 *            The amount of Tiles that should be added.
 	 * @throws TooFewTilesInBagException
+	 * @throws HandLimitReachedExeption 
 	 */
 	public synchronized void takeFromBag(Hand hand, int amount)
-					throws TooFewTilesInBagException, TileNotInBagException {
+					throws TooFewTilesInBagException, TileNotInBagException, HandLimitReachedExeption {
 		if (amount > this.getNumberOfTiles()) {
 			throw new TooFewTilesInBagException(amount, this.getNumberOfTiles());
 		}
@@ -167,24 +165,11 @@ public class Bag {
 	 *            The Tile to be removed.
 	 * @throws TileNotInBagException
 	 */
-	public synchronized void removeFromBag(Tile tile) throws TileNotInBagException {
+	private synchronized void removeFromBag(Tile tile) throws TileNotInBagException {
 		if (!this.content.contains(tile)) {
 			throw new TileNotInBagException(tile);
 		}
 		this.content.remove(tile);
-	}
-
-	/**
-	 * Remove the given Tiles from the Bag.
-	 * 
-	 * @param tiles
-	 *            The Tiles to be removed.
-	 * @throws TileNotInBagException
-	 */
-	public synchronized void removeFromBag(List<Tile> tiles) throws TileNotInBagException {
-		for (Tile t : tiles) {
-			this.removeFromBag(t);
-		}
 	}
 
 	/**

@@ -3,6 +3,8 @@ package game;
 import java.util.ArrayList;
 import java.util.List;
 
+import exceptions.HandLimitReachedExeption;
+import exceptions.TileNotInHandException;
 import server.Player;
 
 /**
@@ -11,11 +13,11 @@ import server.Player;
  * various functions.
  * 
  * @author Jonathan Juursema & Peter Wessels
- *
+ * TODO: make exceptions
  */
 public class Hand {
 	private List<Tile> tilesInHand = new ArrayList<Tile>();
-	private static final int LIMIT = 6;
+	public static final int LIMIT = 6;
 
 	/**
 	 * Constructor. Sets this.ownerPlayer to ownerPlayer.
@@ -72,11 +74,14 @@ public class Hand {
 	 * @param tile
 	 *            The tile-object that needs to be added to the hand.
 	 * @return boolean True if succesful added.
+	 * @throws HandLimitReachedExeption 
 	 */
 
-	public void addToHand(Tile tile) {
+	public void addToHand(Tile tile) throws HandLimitReachedExeption {
 		if (this.getAmountOfTiles() + 1 <= Hand.LIMIT) {
 			this.tilesInHand.add(tile);
+		} else { 
+			throw new HandLimitReachedExeption(this);
 		}
 	}
 
@@ -86,9 +91,10 @@ public class Hand {
 	 * @param tileArray
 	 *            An array with tile-object that needs to be added to the hand.
 	 * @return boolean True if succesful
+	 * @throws HandLimitReachedExeption 
 	 */
 
-	public void addTohand(List<Tile> tileList) {
+	public void addTohand(List<Tile> tileList) throws HandLimitReachedExeption {
 		for (Tile t : tileList) {
 			this.addToHand(t);
 		}
@@ -101,11 +107,14 @@ public class Hand {
 	 * @param The
 	 *            tile-object that needs to be removed from the hand.
 	 * @return true if succesful
+	 * @throws TileNotInHandException 
 	 */
 
-	public void removeFromHand(Tile tile) {
+	public void removeFromHand(Tile tile) throws TileNotInHandException {
 		if (this.hasInHand(tile)) {
 			this.tilesInHand.remove(tile);
+		} else {
+			throw new TileNotInHandException(tile, this);
 		}
 	}
 
@@ -115,14 +124,16 @@ public class Hand {
 	 * @param tileList
 	 *            The list of tiles that needs to be removed.
 	 * @return true if succesful
+	 * @throws TileNotInHandException 
 	 */
 
-	public void removeFromHand(List<Tile> tileList) {
+	public void removeFromHand(List<Tile> tileList) throws TileNotInHandException {
 		for (Tile t : tileList) {
-			if (this.hasInHand(t)) {
-				this.removeFromHand(t);
+			if (!this.hasInHand(t)) {
+				throw new TileNotInHandException(t, this);
 			}
 		}
+		this.tilesInHand.removeAll(tileList);
 	}
 
 	/**
