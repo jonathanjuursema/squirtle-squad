@@ -16,6 +16,7 @@ import game.BoardSquare;
 import game.Move;
 import game.Tile;
 import game.Turn;
+import players.ClientPlayer;
 import players.HumanPlayer;
 import players.Player;
 import protocol.Protocol;
@@ -36,7 +37,7 @@ public class Client {
 	private TUIview view;
 	
 	private Board boardCopy;
-	private Player player;
+	private ClientPlayer player;
 
 	String nickname = "";
 
@@ -229,7 +230,7 @@ public class Client {
 		return player;
 	}
 
-	public void setPlayer(Player player) {
+	public void setPlayer(ClientPlayer player) {
 		this.player = player;
 	}
 

@@ -5,7 +5,7 @@ import game.Turn;
 import views.TUIview;
 import views.View;
 
-public class HumanPlayer extends Player {
+public class HumanPlayer extends ClientPlayer {
 	private TUIview view;
 	private Client client;
 	
@@ -37,6 +37,5 @@ public class HumanPlayer extends Player {
 	public void sendError(String string) {
 		view.printMessage("error", string);
 	}
-
 
 }
