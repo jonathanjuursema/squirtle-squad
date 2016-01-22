@@ -7,9 +7,11 @@ import views.View;
 
 public class HumanPlayer extends Player {
 	private TUIview view;
+	private Client client;
 	
 	public HumanPlayer(String name, Client client) {
-		super(name,client);
+		super(name);
+		this.client = client;
 		this.setView(new TUIview(client));
 	}
 

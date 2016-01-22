@@ -25,9 +25,8 @@ public abstract class Player {
 
 	private int score;
 
-	public Player(String name, Client client) {
+	public Player(String name) {
 		this.name = name;
-		this.client = client;
 	}
 
 	public void placeMove(Move move)
