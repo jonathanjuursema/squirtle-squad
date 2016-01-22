@@ -151,35 +151,6 @@ public class Board extends Observable {
 		// Finally, we construct a new Board using this copy of the board.
 		return boardCopy;
 	}
-	/*
-	 * public List<BoardSquare> getPossiblePlaces() throws
-	 * SquareOutOfBoundsException { return getPossiblePlaces(this.getSquare(0,
-	 * 0), 0); }
-	 * 
-	 * private List<BoardSquare> possiblePlaces = new ArrayList<BoardSquare>();
-	 * private List<BoardSquare> checkedPlaces = new ArrayList<BoardSquare>();
-	 * 
-	 * public List<BoardSquare> getPossiblePlaces(BoardSquare currentSquare,
-	 * Integer direction) throws SquareOutOfBoundsException { List<Integer>
-	 * directionsChecked = new ArrayList<Integer>();
-	 * 
-	 * while (!directionsChecked.contains(direction) && directionsChecked.size()
-	 * <= 4) { if (currentSquare.getNeighbour(direction).isEmpty() &&
-	 * !possiblePlaces.contains(currentSquare.getNeighbour(direction))) {
-	 * possiblePlaces.add(currentSquare.getNeighbour(direction));
-	 * 
-	 * } else if (!currentSquare.getNeighbour(direction).isEmpty() &&
-	 * !checkedPlaces.contains(currentSquare.getNeighbour(direction))) {
-	 * checkedPlaces.add(currentSquare);
-	 * 
-	 * this.getPossiblePlaces(currentSquare.getNeighbour(direction), direction);
-	 * } directionsChecked.add(direction); direction++; direction = direction %
-	 * 4; }
-	 * 
-	 * return possiblePlaces;
-	 * 
-	 * }
-	 */
 
 	/**
 	 * Returns the minimal and maximal X and Y values that are occupied on the
