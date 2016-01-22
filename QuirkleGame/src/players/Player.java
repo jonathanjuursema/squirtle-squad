@@ -22,7 +22,7 @@ public abstract class Player {
 	private Hand hand;
 	private String name;
 	private Turn turn;
-
+	
 	private int score;
 
 	public Player(String name) {
