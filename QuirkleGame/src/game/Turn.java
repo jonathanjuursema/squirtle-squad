@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.rmi.CORBA.Util;
+import java.util.Observable;
 
 import exceptions.IllegalMoveException;
 import exceptions.IllegalTurnException;
@@ -20,15 +19,15 @@ import players.Player;
  * @author Jonathan Juursema & Peter Wessels
  *
  */
-public class Turn {
+public class Turn extends Observable {
 
 	private List<Move> moves = new ArrayList<Move>();
-	private List<Tile> swap = new ArrayList<Tile>();
+	public List<Tile> swap = new ArrayList<Tile>();
 
 	private Board boardCopy;
-	private Board boardOriginal;
+	public Board boardOriginal; // TODO: Weghalen
 
-	private Player assignedPlayer;
+	public Player assignedPlayer;
 
 	/**
 	 * Creates a turn with assigned Player and the board. This functions creates
@@ -154,27 +153,8 @@ public class Turn {
 			this.swap.add(t);
 		}
 	}
-
-	/**
-	 * Function to check if current turn is possible. It is for example not
-	 * possible to do a swap request and a set of moves.
-	 * 
-	 * @return true if turn is according to the game rules.
-	 * @throws SquareOutOfBoundsException
-	 */
-
-	public void applyTurn() throws SquareOutOfBoundsException {
-		// Check if an swapRequest has been added
-		if (this.swap.size() != 0) {
-			Hand playerHand = this.assignedPlayer.getHand();
-			
-		} else if (this.getMoves().size() != 0) {
-			for (Move m : this.getMoves()) {
-				this.boardOriginal.placeTile(m.getTile(), m.getPosition().getX(), m.getPosition().getY());
-			}
-		}
-	}
 	
+
 	public List<Tile> getSwap() {
 		return this.swap;
 	}
@@ -329,8 +309,7 @@ public class Turn {
 	}
 
 	public String toString() {
-		String message = "The turn is for " + getPlayer().getName() + "\n";
-		message += "With approved moves: \n ";
+		String message = getPlayer().getName() + " played the following approved moves: \n";
 		for (Move m : this.getMoves()) {
 			message += m.toString() + "\n";
 		}
