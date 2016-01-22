@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.rmi.CORBA.Util;
-
 import exceptions.IllegalMoveException;
 import exceptions.IllegalTurnException;
 import exceptions.SquareOutOfBoundsException;
@@ -158,10 +156,13 @@ public class Turn {
 	 * Function to check if current turn is possible. It is for example not
 	 * possible to do a swap request and a set of moves.
 	 * 
+	 * TODO Check if this method is really necessary.
+	 * If so, resolve unused problem in Hand playerhand line.
+	 * If not, move this code to the client and remove this method.
+	 * 
 	 * @return true if turn is according to the game rules.
 	 * @throws SquareOutOfBoundsException
 	 */
-
 	public void applyTurn() throws SquareOutOfBoundsException {
 		// Check if an swapRequest has been added
 		if (this.swap.size() != 0) {

@@ -118,11 +118,11 @@ public class Board extends Observable {
 	 * Overwrites the current board with a new board. This is useful after
 	 * making copies.
 	 * 
-	 * @param board
+	 * @param theBoard
 	 *            The new BoardSquare array.
 	 */
-	public void setBoard(BoardSquare[][] board) {
-		this.board = board;
+	public void setBoard(BoardSquare[][] theBoard) {
+		this.board = theBoard;
 	}
 
 	/**
