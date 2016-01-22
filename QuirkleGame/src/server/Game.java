@@ -188,7 +188,7 @@ public class Game implements ActionListener {
 
 		// Applying first move!
 		try {
-			this.initialMoves.get(highestScoring).applyTurn();
+			this.initialMoves.get(highestScoring).assignedPlayer.applyTurn(this.initialMoves.get(highestScoring));
 		} catch (SquareOutOfBoundsException e) {
 			Util.log(e);
 			shutdown("Irrecoverable error in applying the first move.");
