@@ -50,7 +50,7 @@ public class ServerConnectionHandler extends ConnectionHandler {
 			break;
 		case Protocol.Client.CHANGESTONE:
 			try {
-				this.getPlayer().playSwap(args);
+				this.getPlayer().addSwap(args);
 			} catch (NotYourTurnException e) {
 				this.send(Protocol.Server.ERROR, new String[] { "1", "NotYourTurn" });
 			}
@@ -79,7 +79,7 @@ public class ServerConnectionHandler extends ConnectionHandler {
 			break;
 		case Protocol.Client.MAKEMOVE:
 			try {
-				this.getPlayer().playMoves(args);
+				this.getPlayer().placeMove(args);
 			} catch (NotYourTurnException e) {
 				this.send(Protocol.Server.ERROR, new String[] { "1", "NotYourTurn" });
 			}

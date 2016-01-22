@@ -29,13 +29,13 @@ public abstract class Player {
 		this.name = name;
 	}
 
-	public void placeMove(Move move)
-			throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException, TileNotInHandException {
+	public void placeMove(Move move) throws SquareOutOfBoundsException, IllegalMoveException,
+					IllegalTurnException, TileNotInHandException {
 		this.turn.addMove(move);
 	}
-	
-	public void addSwap(Tile t)
-			throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException, TileNotInHandException {
+
+	public void addSwap(Tile t) throws SquareOutOfBoundsException, IllegalMoveException,
+					IllegalTurnException, TileNotInHandException {
 		this.turn.addSwapRequest(t);
 	}
 
@@ -50,7 +50,7 @@ public abstract class Player {
 		// IF HUMANPLAYER NOW THE TUI KICKS IN
 		// IF COMPUTER PLAYER THE COMPUTER PLAYER WILL CALCULATE THE BEST TURN
 	}
-	
+
 	public void applyTurn() {
 		try {
 			this.client.sendTurnToServer();

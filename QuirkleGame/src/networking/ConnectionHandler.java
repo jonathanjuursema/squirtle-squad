@@ -57,8 +57,9 @@ public abstract class ConnectionHandler extends Thread {
 		while (running) {
 			try {
 				String command = this.rx.readLine();
-				if (command.length() > 2) { // WHY ON EARTH DO WE SEPERATE COMMANDS
-										// WITH TWO NEWLINES???
+				if (command.length() > 2) { // WHY ON EARTH DO WE SEPERATE
+											// COMMANDS
+					// WITH TWO NEWLINES???
 					Util.log("rx", command);
 					// Split command in arguments
 					String[] args = command
@@ -96,7 +97,7 @@ public abstract class ConnectionHandler extends Thread {
 							.concat(String.valueOf(Protocol.Server.Settings.DELIMITER));
 		}
 		// Trim last seperator
-		message = message.substring(0, message.length()-1);
+		message = message.substring(0, message.length() - 1);
 		// Write
 		try {
 			this.tx.write(message + Protocol.Server.Settings.COMMAND_END);
@@ -106,6 +107,20 @@ public abstract class ConnectionHandler extends Thread {
 			Util.log(e);
 			this.shutdown("Unrecoverable IOException.");
 		}
+	}
+
+	/**
+	 * Send a command to the remote host. This function takes one String as an
+	 * argument, and will convert it to an array of one argument to be passed to
+	 * the normal send command.
+	 * 
+	 * @param command
+	 *            The command.
+	 * @param arg
+	 *            One String, will be converted to an array of one item.
+	 */
+	public void send(String command, String arg) {
+		this.send(command, new String[] { arg });
 	}
 
 	/**

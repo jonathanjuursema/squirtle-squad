@@ -21,6 +21,7 @@ import exceptions.TooManyPlayersException;
 import exceptions.TooManyTilesInBag;
 import game.Bag;
 import game.Board;
+import game.BoardSquare;
 import game.Hand;
 import game.Move;
 import game.Tile;
@@ -537,6 +538,10 @@ public class Game implements ActionListener {
 
 	public int getTilesInBag() {
 		return this.bag.getNumberOfTiles();
+	}
+	
+	public BoardSquare getBoardSquare(int x, int y) throws SquareOutOfBoundsException {
+		return this.board.getSquare(x, y);
 	}
 
 }
