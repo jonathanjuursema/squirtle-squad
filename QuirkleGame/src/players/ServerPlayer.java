@@ -9,11 +9,6 @@ public class ServerPlayer extends Player {
 	private Game game;
 	private ServerConnectionHandler connection;
 
-	public static enum Status {
-		IN_LOBBY, IN_GAME
-	};
-
-	private Status status;
 
 	/**
 	 * Instantiate the new server player.
@@ -58,21 +53,6 @@ public class ServerPlayer extends Player {
 		}
 		// TODO Parse the stones according to protocol.
 		// TODO Perform the swap.
-	}
-
-	/**
-	 * @return the status
-	 */
-	public Status getStatus() {
-		return status;
-	}
-
-	/**
-	 * @param status
-	 *            the status to set
-	 */
-	public void setStatus(Status status) {
-		this.status = status;
 	}
 
 	/**
