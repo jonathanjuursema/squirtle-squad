@@ -109,6 +109,4 @@ public abstract class Player {
 		return this.name;
 	}
 
-	public abstract void sendError(String string);
-
 }
