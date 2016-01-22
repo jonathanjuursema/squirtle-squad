@@ -45,15 +45,16 @@ public class Game implements ActionListener {
 	public final static int MAXPLAYERS = 4;
 	public final int TURNTIMEOUT = 60;
 
+	private static final int BONUS_WHEN_FINISH_FIRST = 6;
+
+	private Server parentServer;
+	private Board board;
+	private Bag bag;
+	private Timer timeout;
 	private int noOfPlayers;
 	private List<ServerPlayer> players = new ArrayList<ServerPlayer>();
 	private int currentPlayer;
-
 	private Map<ServerPlayer, Turn> initialMoves;
-
-	private Server parentServer;
-
-	private Timer timeout;
 
 	public static enum GameState {
 		NOTSTARTED, WAITING, INITIAL, NORMAL, FINISHED
@@ -61,11 +62,8 @@ public class Game implements ActionListener {
 
 	private GameState gameState;
 
-	private Board board;
-	private Bag bag;
-
 	/**
-	 * Initialises the game with the given players.
+	 * Initialises the game with the given number of players.
 	 * 
 	 * @param players
 	 *            The players.
@@ -84,7 +82,7 @@ public class Game implements ActionListener {
 	/*
 	 * Getters and setters below.
 	 */
-	
+
 	/**
 	 * Adds a player to the game.
 	 * 
@@ -95,12 +93,12 @@ public class Game implements ActionListener {
 	public void addPlayer(ServerPlayer player) throws PlayerAlreadyInGameException {
 		if (!players.contains(player)) {
 			players.add(player);
-			this.parentServer.playerFromLobby(player);
-			if (players.size() == this.noOfPlayers) {
-				this.start();
-			}
 		} else {
 			throw new PlayerAlreadyInGameException(player);
+		}
+		this.parentServer.playerFromLobby(player);
+		if (players.size() == this.noOfPlayers) {
+			this.start();
 		}
 	}
 
@@ -135,36 +133,60 @@ public class Game implements ActionListener {
 			for (int i = 0; i < tiles.size(); i++) {
 				args[i] = tiles.get(i).toProtocol();
 			}
-			p.sendMessage(Protocol.Server.ADDTOHAND, args);
+
 			p.sendMessage(Protocol.Server.STARTGAME, new String[] {});
+			p.sendMessage(Protocol.Server.ADDTOHAND, args);
 
 			// Request initial turn
 			beginturns.put(p, null);
-			new Turn(this.board, p);
+			Turn turn = new Turn(this.board, p);
+			p.giveTurn(turn);
 		}
 
 		this.timeout = new Timer(this.TURNTIMEOUT * 1000, this);
 
 	}
 
+	/**
+	 * Submit an initial move for a specified player.
+	 * 
+	 * @param turn
+	 *            The initial turn.
+	 * @param player
+	 *            The player.
+	 */
 	public void receiveInitialMove(Turn turn, ServerPlayer player) {
 
-		this.initialMoves.put(player, turn);
-		for (Turn t : this.initialMoves.values()) {
-			if (t == null) {
-				return;
-			}
-		}
+		if (turn.isMoveRequest()) {
 
-		this.timeout.stop();
-		this.initialMove();
+			this.initialMoves.put(player, turn);
+
+			for (Turn t : this.initialMoves.values()) {
+				if (t == null) {
+					return;
+				}
+			}
+
+			this.timeout.stop();
+			this.initialMove();
+
+		} else {
+
+			player.sendMessage(Protocol.Server.ERROR, new String[] { "7", "NoSwapAllowed" });
+
+		}
 
 	}
 
+	/**
+	 * Process the initial move.
+	 */
 	public void initialMove() {
 
 		// We want to find the highest scoring move.
 		ServerPlayer highestScoring = null;
+
+		List<ServerPlayer> toDisqualify = new ArrayList<ServerPlayer>();
 
 		for (ServerPlayer p : this.initialMoves.keySet()) {
 			if (this.initialMoves.get(p) != null) {
@@ -178,51 +200,130 @@ public class Game implements ActionListener {
 						}
 					} catch (SquareOutOfBoundsException e) {
 						Util.log(e);
-						shutdown("Irrecoverable exception in determinging scores of first moves.");
+						shutdown("Unrecoverable exception in determinging scores of first moves.");
 					}
 				}
 			} else {
-				this.disqualify(p);
+				toDisqualify.add(p);
 			}
 		}
 
-		// Applying first move!
-		try {
-			this.initialMoves.get(highestScoring).applyTurn();
-		} catch (SquareOutOfBoundsException e) {
-			Util.log(e);
-			shutdown("Irrecoverable error in applying the first move.");
+		for (ServerPlayer p : toDisqualify) {
+			this.disqualify(p);
 		}
 
-		// Start the real game.
+		// Applying first move!
 		this.gameState = Game.GameState.NORMAL;
-
 		this.setCurrentPlayer(highestScoring);
-
-		this.nextTurn(1);
+		this.receiveTurn(this.initialMoves.get(highestScoring));
 
 	}
 
 	/**
-	 * Check if the game is over.
-	 * 
-	 * @return True if any of the win conditions is met. False otherwise.
+	 * Timeout function that is called after the timeout is exceeded. What to do
+	 * depends on what state the game is currently in.
 	 */
-	public boolean gameOver() {
+	public void actionPerformed(ActionEvent e) {
 
-		if (this.players.size() == 1) {
-			return true;
-		}
+		timeout.stop();
 
-		if (this.bag.getNumberOfTiles() == 0) {
+		if (this.gameState == Game.GameState.INITIAL) {
+			this.initialMove();
+		} else if (this.gameState == Game.GameState.WAITING) {
+			this.disqualify(this.getCurrentPlayer());
+
 			for (ServerPlayer p : this.players) {
-				if (p.getHand().getTilesInHand().size() == 0) {
-					return true;
-				}
+				p.sendMessage(Protocol.Server.MOVE,
+								new String[] { "Disqualified", this.getNextPlayer(0).toString() });
 			}
+
+			this.nextTurn(0);
 		}
 
-		return false;
+	}
+
+	/**
+	 * Entry function for submission of a turn into a game.
+	 * 
+	 * @param turn
+	 * @throws TileNotInHandException
+	 * @throws TooFewTilesInBagException
+	 */
+	public void receiveTurn(Turn turn) {
+
+		String[] args;
+
+		if (turn.isSwapRequest()) {
+
+			List<Tile> tilesToSwap = turn.getSwap();
+			Hand h = this.getCurrentPlayer().getHand();
+
+			try {
+				bag.swapTiles(h, tilesToSwap);
+			} catch (TileNotInBagException | TooManyTilesInBag e) {
+				Util.log(e);
+				this.shutdown("Irrecoverable exception during swap.");
+				return;
+			} catch (TooFewTilesInBagException e) {
+				this.getCurrentPlayer().sendMessage(Protocol.Server.ERROR,
+								new String[] { "3", "NotSoManyStonesInBag" });
+				return;
+			} catch (TileNotInHandException e) {
+				this.getCurrentPlayer().sendMessage(Protocol.Server.ERROR,
+								new String[] { "2", "StoneNotInYourHand" });
+				return;
+			}
+
+			args = new String[2];
+
+		} else if (turn.isMoveRequest()) {
+
+			List<Move> moves = turn.getMoves();
+
+			args = new String[2 + moves.size()];
+
+			for (int i = 0; i < moves.size(); i++) {
+
+				Move m = moves.get(i);
+				try {
+					board.placeTile(m.tileToPlay, m.getPosition().getX(), m.getPosition().getY());
+				} catch (SquareOutOfBoundsException e) {
+					Util.log(e);
+					this.shutdown("Irrecoverable exception during move performing.");
+				}
+
+				// Try to construct protocol arguments... Ugly. :/
+				args[2 + i] = "" + m.tileToPlay.getColor() + m.tileToPlay.getShape()
+								+ Protocol.Server.Settings.DELIMITER2 + m.getPosition().getX()
+								+ Protocol.Server.Settings.DELIMITER2 + m.getPosition().getY();
+
+			}
+
+		} else {
+
+			this.disqualify(this.getCurrentPlayer());
+			timeout.stop();
+
+			for (ServerPlayer p : this.players) {
+				p.sendMessage(Protocol.Server.MOVE,
+								new String[] { "Disqualified", this.getNextPlayer(0).toString() });
+			}
+
+			this.nextTurn(0);
+			return;
+
+		}
+
+		timeout.stop();
+
+		args[0] = this.getCurrentPlayer().toString();
+		args[1] = this.getNextPlayer(1).toString();
+
+		for (ServerPlayer p : this.players) {
+			p.sendMessage(Protocol.Server.MOVE, args);
+		}
+
+		this.nextTurn(1);
 
 	}
 
@@ -241,120 +342,97 @@ public class Game implements ActionListener {
 	 */
 	public void nextTurn(int mod) {
 
-		this.setCurrentPlayer(this.getNextPlayer(mod));
-		new Turn(this.board, this.getCurrentPlayer());
+		if (!this.gameOver()) {
 
-		timeout = new Timer(this.TURNTIMEOUT * 1000, this);
+			this.setCurrentPlayer(this.getNextPlayer(mod));
+			this.getCurrentPlayer().giveTurn(new Turn(this.board, this.getCurrentPlayer()));
 
-		this.gameState = Game.GameState.WAITING;
+			timeout = new Timer(this.TURNTIMEOUT * 1000, this);
 
-	}
-
-	/**
-	 * Timeout function that is called after the timeout is exceeded. What to do
-	 * depends on what state the game is currently in.
-	 */
-	public void actionPerformed(ActionEvent e) {
-
-		timeout.stop();
-
-		if (this.gameState == Game.GameState.INITIAL) {
-			this.initialMove();
-		} else if (this.gameState == Game.GameState.WAITING) {
-			this.disqualify(this.getCurrentPlayer());
-			this.nextTurn(0);
-		}
-
-	}
-
-	/**
-	 * Entry function which player can use to signal their turn is done.
-	 * 
-	 * @param turn
-	 * @throws TileNotInHandException
-	 * @throws TooFewTilesInBagException
-	 */
-	public void receiveTurn(Turn turn) {
-
-		String[] args;
-
-		if (turn.isSwapRequest()) {
-
-			timeout.stop();
-			List<Tile> tilesToSwap = turn.getSwap();
-			Hand h = this.getCurrentPlayer().getHand();
-
-			try {
-				bag.swapTiles(h, tilesToSwap);
-			} catch (TileNotInBagException | TooManyTilesInBag e) {
-				Util.log(e);
-				this.shutdown("Irrecoverable exception during swap.");
-			} catch (TooFewTilesInBagException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (TileNotInHandException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			args = new String[2];
-
-		} else if (turn.isMoveRequest()) {
-
-			timeout.stop();
-			List<Move> moves = turn.getMoves();
-
-			args = new String[2 + (moves.size() * 2)];
-
-			for (int i = 0; i < moves.size(); i++) {
-				Move m = moves.get(i);
-				try {
-
-					board.placeTile(m.tileToPlay, m.getPosition().getX(), m.getPosition().getY());
-
-					// Try to construct protocol arguments... Ugly. :/
-					args[2 + (i * 2)] = "" + m.tileToPlay.getColor() + m.tileToPlay.getShape();
-					args[2 + (i * 2) + 1] = "" + m.getPosition().getX()
-									+ Protocol.Server.Settings.DELIMITER2 + m.getPosition().getY();
-
-				} catch (SquareOutOfBoundsException e) {
-					Util.log(e);
-					this.shutdown("Irrecoverable exception during move performing.");
-				}
-			}
+			this.gameState = Game.GameState.WAITING;
 
 		} else {
-
-			this.disqualify(this.getCurrentPlayer());
-			return;
-
-		}
-
-		for (ServerPlayer p : this.players) {
-			p.sendMessage(Protocol.Server.MOVE, args);
+			this.finish();
 		}
 
 	}
 
 	/**
-	 * Disqualify a player. Disqualification removes a player from the game, puts
-	 * their stones back in the bag and continues normal gameplay. When one
-	 * player remains they win the game.
+	 * Check if the game is over.
+	 * 
+	 * @return True if any of the win conditions is met. False otherwise.
+	 */
+	public boolean gameOver() {
+
+		if (this.players.size() == 1) {
+			return true;
+		}
+
+		if (this.bag.getNumberOfTiles() == 0) {
+			for (ServerPlayer p : this.players) {
+				if (p.getHand().getTilesInHand().size() == 0) {
+					p.incrementScore(Game.BONUS_WHEN_FINISH_FIRST);
+					return true;
+				}
+			}
+		}
+
+		return false;
+
+	}
+
+	/**
+	 * Disqualify a player. Disqualification removes a player from the game,
+	 * puts their stones back in the bag and continues normal gameplay.
 	 * 
 	 * @param player
 	 *            The player to be disqualified.
 	 */
 	public void disqualify(ServerPlayer player) {
-		List<Tile> tiles = player.getHand().hardResetHand();
-		try {
-			this.bag.addToBag(tiles);
-		} catch (TooManyTilesInBag e) {
-			Util.log(e);
-			this.shutdown("Irrecoverable exception during player disqualification.");
+		if (this.isPlayer(player)) {
+			List<Tile> tiles = player.getHand().hardResetHand();
+			try {
+				this.bag.addToBag(tiles);
+			} catch (TooManyTilesInBag e) {
+				Util.log(e);
+				this.shutdown("Irrecoverable exception during player disqualification.");
+			}
+			this.removePlayer(player);
+			player.sendMessage(Protocol.Server.GAME_END,
+							new String[] { "DISCONNECT", "DISQUALIFIED" });
 		}
-		this.removePlayer(player);
-		player.sendMessage(Protocol.Server.GAME_END, new String[] { "DISCONNECT", "DISQUALIFIED" });
-		this.nextTurn(0);
+	}
+
+	private void finish() {
+
+		int highScore = 0;
+		for (ServerPlayer p : this.players) {
+			if (p.getScore() > highScore) {
+				highScore = p.getScore();
+			}
+		}
+		List<ServerPlayer> winners = new ArrayList<ServerPlayer>();
+		for (ServerPlayer p : this.players) {
+			if (p.getScore() == highScore) {
+				winners.add(p);
+			}
+		}
+
+		for (ServerPlayer p : this.players) {
+			if (winners.size() == 1) {
+				p.sendMessage(Protocol.Server.GAME_END,
+								new String[] { "WIN", winners.get(0).toString() });
+			} else if (winners.size() > 1) {
+				p.sendMessage(Protocol.Server.GAME_END,
+								new String[] { "DRAW", winners.size() + "Winners" });
+			} else {
+				p.sendMessage(Protocol.Server.GAME_END,
+								new String[] { "DISCONNECT", "FinishedButUncertainEnd" });
+			}
+		}
+		
+		this.cleanUp();
+
 	}
 
 	/**
@@ -365,12 +443,21 @@ public class Game implements ActionListener {
 	 */
 	public void shutdown(String message) {
 		for (ServerPlayer p : this.players) {
+			p.sendMessage(Protocol.Server.GAME_END,
+							new String[] { "DISCONNECT", message });
+		}
+		cleanUp();
+	}
+
+	/**
+	 * @param message
+	 */
+	private void cleanUp() {
+		for (ServerPlayer p : this.players) {
 			p.getHand().hardResetHand();
 			this.removePlayer(p);
 			this.parentServer.playerToLobby(p);
 			this.parentServer.removeGame(this);
-			p.sendMessage(Protocol.Server.GAME_END,
-							new String[] { "DISCONNECT", "UnrecoverableGameError" });
 		}
 	}
 
@@ -386,6 +473,7 @@ public class Game implements ActionListener {
 	 */
 	public void removePlayer(ServerPlayer player) {
 		players.remove(player);
+		this.noOfPlayers--;
 	}
 
 	/**
