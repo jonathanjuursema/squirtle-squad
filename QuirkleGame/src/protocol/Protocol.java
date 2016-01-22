@@ -1,16 +1,14 @@
 package protocol;
 
-/*
- * Protocol file downloaded on January 21 from:
- * https://github.com/mmmcompany/QuirkleInterfaceRepository/blob/master/src/protocol_v1.3/Protocol.java
- */
-
 /**
- * <!-- Versie 1.3.4
+ * <!-- Versie 1.3.5
  *
  * -------------
  * - CHANGELOG -
  * -------------
+ * 
+ * Versie 1.3.5
+ * + fix issue #13, onduidelijkheid over GAME_END argumenten.
  * 
  * Versie 1.3.4
  * 
@@ -510,16 +508,16 @@ public class Protocol {
 		 * Game End <br>
 		 * Name: <code>END</code> <br>
 		 * Descriptie: Een packet dat naar de spelers wordt gestuurd om te laten
-		 * weten dat het spel is gestopt <br>
-		 * Content: <code>END\n\n</code>]
+		 * weten dat het spel is gestopt en waarom.<br>
+		 * Content: <code>END_TYPE_MESSAGE\n\n</code>]
 		 * </p>
 		 *
 		 * <ul>
 		 * <li><code>Type</code>: <code>String</code> &gt; <code>'WIN'</code>
 		 * <code>'DISCONNECT'</code> <code>'DRAW'</code> - Type van einde spel
 		 * </li>
-		 * <li><code>Winner Name</code>: <code>String</code> (15) - Naam van de
-		 * winnaar, of andere info over de reden van het einde.</li>
+		 * <li><code>Message</code>: <code>String</code> - Naam van de winnaar,
+		 * of andere info over de reden van het einde.</li>
 		 * </ul>
 		 */
 

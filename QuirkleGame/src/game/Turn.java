@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import java.util.Observable;
 
 import exceptions.IllegalMoveException;
@@ -40,7 +41,6 @@ public class Turn extends Observable {
 		this.boardCopy = new Board();
 		this.boardCopy.setBoard(board.copy(this.boardCopy));
 		this.assignedPlayer = currentPlayer;
-		this.assignedPlayer.giveTurn(this);
 		this.boardOriginal = board;
 	}
 
@@ -153,7 +153,6 @@ public class Turn extends Observable {
 			this.swap.add(t);
 		}
 	}
-	
 
 	public List<Tile> getSwap() {
 		return this.swap;

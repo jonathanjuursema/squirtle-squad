@@ -10,12 +10,15 @@ import application.Util;
 import exceptions.IllegalMoveException;
 import exceptions.IllegalTurnException;
 import exceptions.SquareOutOfBoundsException;
+import exceptions.TileNotInHandException;
 import game.Board;
 import game.BoardSquare;
 import game.Move;
 import game.Tile;
 import game.Turn;
+import players.HumanPlayer;
 import players.Player;
+import views.TUIview;
 
 public class TurnTest {
 
@@ -25,7 +28,7 @@ public class TurnTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		player = new Player("Test");
+		player = new HumanPlayer("Test", null);
 		board = new Board();
 	}
 
@@ -35,7 +38,7 @@ public class TurnTest {
 	}
 
 	@Test
-	public void testInitialScore() throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException {
+	public void testInitialScore() throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException, TileNotInHandException {
 
 		board = new Board();
 		turn = new Turn(board, player);
@@ -72,7 +75,8 @@ public class TurnTest {
 		assertEquals(12, turn.calculateScore());
 
 		turn.calculateScore();
-		turn.applyTurn();
+		
+		player.applyTurn();
 	}
 
 	@Test
@@ -106,7 +110,7 @@ public class TurnTest {
 		assertEquals(12, turn.calculateScore());
 
 		turn.calculateScore();
-		turn.applyTurn();
+		turn.assignedPlayer.applyTurn(turn);
 
 		turn = new Turn(board, player);
 
@@ -134,7 +138,7 @@ public class TurnTest {
 		assertEquals(12, turn.calculateScore());
 
 		turn.calculateScore();
-		turn.applyTurn();
+		turn.assignedPlayer.applyTurn(turn);
 
 		turn = new Turn(board, player);
 
@@ -143,7 +147,7 @@ public class TurnTest {
 
 		assertEquals(2, turn.calculateScore());
 
-		turn.applyTurn();
+		turn.assignedPlayer.applyTurn(turn);
 
 		turn = new Turn(board, player);
 
@@ -158,7 +162,7 @@ public class TurnTest {
 
 		assertEquals(7, turn.calculateScore());
 
-		turn.applyTurn();
+		turn.assignedPlayer.applyTurn(turn);
 		turn = new Turn(board, player);
 
 		Move newMove5 = new Move(new Tile(Tile.YELLOW, Tile.CIRCLE), turn.getBoardCopy().getSquare(4, 2));
@@ -169,7 +173,7 @@ public class TurnTest {
 
 		assertEquals(7, turn.calculateScore());
 
-		turn.applyTurn();
+		turn.assignedPlayer.applyTurn(turn);
 
 		turn = new Turn(board, player);
 
@@ -181,7 +185,7 @@ public class TurnTest {
 
 		assertEquals(3, turn.calculateScore());
 
-		turn.applyTurn();
+		turn.assignedPlayer.applyTurn(turn);
 
 		turn = new Turn(board, player);
 
@@ -196,7 +200,7 @@ public class TurnTest {
 
 		assertEquals(12, turn.calculateScore());
 
-		turn.applyTurn();
+		turn.assignedPlayer.applyTurn(turn);
 
 		turn = new Turn(board, player);
 
@@ -206,7 +210,7 @@ public class TurnTest {
 		Move newMove14 = new Move(new Tile(Tile.YELLOW, Tile.PLUS), turn.getBoardCopy().getSquare(5, -1));
 		turn.addMove(newMove14);
 
-		turn.applyTurn();
+		turn.assignedPlayer.applyTurn(turn);
 
 		turn = new Turn(board, player);
 
@@ -215,7 +219,7 @@ public class TurnTest {
 
 		assertEquals(2, turn.calculateScore());
 
-		turn.applyTurn();
+		turn.assignedPlayer.applyTurn(turn);
 
 		for (BoardSquare b : board.getPossiblePlaces()) {
 			turn.getBoardCopy().placeTile(new Tile(Tile.BLACK, Tile.DUMMY), b.getX(), b.getY());
@@ -256,7 +260,7 @@ public class TurnTest {
 		turn.addMove(move6);
 
 		turn.calculateScore();
-		turn.applyTurn();
+		turn.assignedPlayer.applyTurn(turn);
 	}
 	
 	@Test (expected = IllegalTurnException.class)
@@ -274,7 +278,7 @@ public class TurnTest {
 		turn.addMove(move2);
 		
 		turn.calculateScore();
-		turn.applyTurn();
+		turn.assignedPlayer.applyTurn(turn);
 	}
 	
 	@Test (expected = IllegalTurnException.class)
@@ -292,7 +296,7 @@ public class TurnTest {
 		turn.addSwapRequest(swapTile);
 		
 		turn.calculateScore();
-		turn.applyTurn();
+		turn.assignedPlayer.applyTurn(turn);
 	}
 
 }

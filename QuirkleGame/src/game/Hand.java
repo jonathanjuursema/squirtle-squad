@@ -6,7 +6,6 @@ import java.util.Observable;
 
 import exceptions.HandLimitReachedExeption;
 import exceptions.TileNotInHandException;
-import players.Player;
 
 /**
  * This hand represents the 'hand' of a player in real life. A hand contains a

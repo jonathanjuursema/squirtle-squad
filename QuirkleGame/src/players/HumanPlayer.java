@@ -1,13 +1,16 @@
 package players;
 
+import client.Client;
+import game.Turn;
+import views.TUIview;
 import views.View;
 
 public class HumanPlayer extends Player {
-	private View view;
+	private TUIview view;
 	
-	public HumanPlayer(String name, View view) {
-		super(name);
-		this.setView(view);
+	public HumanPlayer(String name, Client client) {
+		super(name,client);
+		this.setView(new TUIview(client));
 	}
 
 	/**
@@ -20,8 +23,17 @@ public class HumanPlayer extends Player {
 	/**
 	 * @param view the view to set
 	 */
-	public void setView(View view) {
+	public void setView(TUIview view) {
 		this.view = view;
+	}
+	
+	public void giveTurn(Turn turn) {
+		super.giveTurn(turn);
+		view.requestMoves(this.getName() + " it is your turn.");
+	}
+	
+	public void sendError(String string) {
+		view.printMessage("error", string);
 	}
 
 

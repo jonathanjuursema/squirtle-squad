@@ -1,6 +1,13 @@
 package players;
 
+import client.Client;
+import exceptions.IllegalMoveException;
+import exceptions.IllegalTurnException;
+import exceptions.SquareOutOfBoundsException;
+import exceptions.TileNotInHandException;
 import game.Hand;
+import game.Move;
+import game.Tile;
 import game.Turn;
 
 /**
@@ -11,14 +18,26 @@ import game.Turn;
  */
 public abstract class Player {
 
+	private Client client;
 	private Hand hand;
 	private String name;
 	private Turn turn;
 
 	private int score;
 
-	public Player(String name) {
+	public Player(String name, Client client) {
 		this.name = name;
+		this.client = client;
+	}
+
+	public void placeMove(Move move)
+			throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException, TileNotInHandException {
+		this.turn.addMove(move);
+	}
+	
+	public void addSwap(Tile t)
+			throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException, TileNotInHandException {
+		this.turn.addSwapRequest(t);
 	}
 
 	/**
@@ -29,6 +48,17 @@ public abstract class Player {
 	 */
 	public void giveTurn(Turn turn) {
 		this.turn = turn;
+		// IF HUMANPLAYER NOW THE TUI KICKS IN
+		// IF COMPUTER PLAYER THE COMPUTER PLAYER WILL CALCULATE THE BEST TURN
+	}
+	
+	public void applyTurn() {
+		try {
+			this.client.sendTurnToServer();
+		} catch (SquareOutOfBoundsException | TileNotInHandException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -79,5 +109,7 @@ public abstract class Player {
 	public String getName() {
 		return this.name;
 	}
+
+	public abstract void sendError(String string);
 
 }
