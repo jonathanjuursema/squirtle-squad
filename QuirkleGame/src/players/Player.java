@@ -28,6 +28,9 @@ public abstract class Player {
 	public Player(String name) {
 		this.name = name;
 	}
+	
+	public Player() {
+	}
 
 	public void placeMove(Move move) throws SquareOutOfBoundsException, IllegalMoveException,
 					IllegalTurnException, TileNotInHandException {
@@ -52,12 +55,7 @@ public abstract class Player {
 	}
 
 	public void applyTurn() {
-		try {
-			this.client.sendTurnToServer();
-		} catch (SquareOutOfBoundsException | TileNotInHandException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		this.client.sendTurnToServer();
 	}
 
 	/**
@@ -107,6 +105,14 @@ public abstract class Player {
 	 */
 	public String getName() {
 		return this.name;
+	}
+	
+	/**
+	 * Sets the name of the player
+	 * @param name
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

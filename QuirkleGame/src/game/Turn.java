@@ -26,7 +26,6 @@ public class Turn extends Observable {
 	public List<Tile> swap = new ArrayList<Tile>();
 
 	private Board boardCopy;
-	public Board boardOriginal; // TODO: Weghalen
 
 	public Player assignedPlayer;
 
@@ -41,7 +40,6 @@ public class Turn extends Observable {
 		this.boardCopy = new Board();
 		this.boardCopy.setBoard(board.copy(this.boardCopy));
 		this.assignedPlayer = currentPlayer;
-		this.boardOriginal = board;
 	}
 
 	/**
@@ -128,7 +126,9 @@ public class Turn extends Observable {
 		} else {
 			throw new IllegalMoveException(move);
 		}
-
+		
+		setChanged();
+		notifyObservers("turn");
 		// TODO: implement further
 	}
 
@@ -152,6 +152,9 @@ public class Turn extends Observable {
 		if(!this.swap.contains(t)){
 			this.swap.add(t);
 		}
+		
+		setChanged();
+		notifyObservers("turn");
 	}
 
 	public List<Tile> getSwap() {

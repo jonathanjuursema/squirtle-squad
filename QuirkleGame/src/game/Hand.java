@@ -145,8 +145,7 @@ public class Hand extends Observable {
 				throw new TileNotInHandException(t, this);
 			}
 		}
-		setChanged();
-		notifyObservers("hand");
+
 		this.tilesInHand.removeAll(tileList);
 	}
 
@@ -189,25 +188,18 @@ public class Hand extends Observable {
 		String returnMessage = "Displaying hand (" + this.getAmountOfTiles() + ") : \n";
 
 		returnMessage += "+";
-		for (int i = 0; i < this.getAmountOfTiles() - 1; i++) {
-			returnMessage += "--" + (i + 1) + "-|";
+		for (int i = 0; i < this.getAmountOfTiles(); i++) {
+			returnMessage += "--" + (i + 1) + "-+";
 		}
-		returnMessage += "--6-+";
-		returnMessage += "\n|";
-		int count = this.getAmountOfTiles() - 1;
-		for (Tile t : this.getTilesInHand()) {
-			returnMessage += " " + t.toString() + " ";
-			if (count != 0) {
-				returnMessage += "|";
-			}
-			count--;
-		}
+		returnMessage += "+\n";
 		returnMessage += "|";
-		returnMessage += "\n+";
-		for (int i = 0; i < this.getAmountOfTiles() - 1; i++) {
-			returnMessage += "----|";
+		for (Tile t : this.getTilesInHand()) {
+			returnMessage += " " + t.toString() + " |";
 		}
-		returnMessage += "----+";
+		returnMessage += "\n+";
+		for (int i = 0; i < this.getAmountOfTiles(); i++) {
+			returnMessage += "----+";
+		}
 		return returnMessage;
 	}
 

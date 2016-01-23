@@ -30,13 +30,13 @@ public class ClientConnectionHandler extends ConnectionHandler {
 	public void parse(String command, String[] args) {
 		switch (command) {
 		case Protocol.Server.ERROR:
-			client.unParseErrorMessage(args);
+			client.pushErrorMessage(args);
 			break;
 		case Protocol.Server.ADDTOHAND:
 			client.addTilesToHand(args);
 			break;
 		case Protocol.Server.CHAT:
-			client.pushChatMessage(args[0]);
+			client.pushMessage(args[0]);
 			break;
 		case Protocol.Server.DECLINEINVITE:
 			client.pushErrorMessage("Sorry, the challenged player does not accept your invite.");
@@ -45,7 +45,8 @@ public class ClientConnectionHandler extends ConnectionHandler {
 			client.pushErrorMessage("The game is finished.");
 			break;
 		case Protocol.Server.HALLO:
-			client.pushErrorMessage("The server says hello.");
+			client.pushMessage("Welcome " + client.getNickname());
+			client.setStatus(Client.Status.IN_LOBBY);
 			// TODO: arguments specifies which functionality is suitable
 			break;
 		case Protocol.Server.INVITE:
@@ -56,7 +57,7 @@ public class ClientConnectionHandler extends ConnectionHandler {
 			break;
 		case Protocol.Server.MOVE:
 			// TODO: Only update if in game
-			client.unParseTurn(args);
+			client.registerTurn(args);
 			break;
 		case Protocol.Server.OKWAITFOR:
 			client.pushErrorMessage("Waiting for more players to enter..");

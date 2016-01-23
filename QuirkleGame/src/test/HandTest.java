@@ -13,15 +13,17 @@ import exceptions.HandLimitReachedExeption;
 import exceptions.TileNotInHandException;
 import game.Hand;
 import game.Tile;
+import players.ClientPlayer;
+import players.HumanPlayer;
 import players.Player;
 
 public class HandTest {
-	public Player player;
+	public ClientPlayer player;
 	public Hand hand;
 
 	@Before
 	public void setUp() throws Exception {
-		player = new Player("Test");
+		player = new HumanPlayer("Peter",null);
 	}
 
 	@Test
