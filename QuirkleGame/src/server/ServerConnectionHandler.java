@@ -40,16 +40,25 @@ public class ServerConnectionHandler extends ConnectionHandler {
 
 	@Override
 	public void parse(String command, String[] args) {
+
+		if (this.player == null && command != Protocol.Client.HALLO) {
+			this.send(Protocol.Server.ERROR, new String[] { "8", "RegisterFirst" });
+			return;
+		}
+
 		switch (command) {
+
 		case Protocol.Client.ERROR:
 			switch (args[1]) {
 			default:
-				Util.log("protocol", "Recevied an generic error from the server: " + args[2]);
+				Util.log("protocol", "Recevied an generic error from the client: " + args[2]);
 				break;
 			}
+
 		case Protocol.Client.ACCEPTINVITE:
 			this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
 			break;
+
 		case Protocol.Client.CHANGESTONE:
 			try {
 				this.getPlayer().playSwap(args);
@@ -61,28 +70,35 @@ public class ServerConnectionHandler extends ConnectionHandler {
 				this.send(Protocol.Server.ERROR, new String[] { "7", "InvalidSwap" });
 			}
 			break;
+
 		case Protocol.Client.CHAT:
 			this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
 			break;
+
 		case Protocol.Client.DECLINEINVITE:
 			this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
 			break;
+
 		case Protocol.Client.GETLEADERBOARD:
 			this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
 			break;
+
 		case Protocol.Client.GETSTONESINBAG:
 			this.send(Protocol.Server.STONESINBAG,
 							new String[] { "" + this.getPlayer().getGame().getTilesInBag() });
 			break;
+
 		case Protocol.Client.HALLO:
 			if (args.length < 1) {
 				this.send(Protocol.Server.ERROR, new String[] { "8", "TooFewArguments" });
 			}
 			registerClient(args);
 			break;
+
 		case Protocol.Client.INVITE:
 			this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
 			break;
+
 		case Protocol.Client.MAKEMOVE:
 			try {
 				this.getPlayer().placeMove(args);
@@ -100,9 +116,11 @@ public class ServerConnectionHandler extends ConnectionHandler {
 				this.send(Protocol.Server.ERROR, new String[] { "7", "IllegalTurn" });
 			}
 			break;
+
 		case Protocol.Client.QUIT:
 			this.shutdown("On client request.");
 			break;
+
 		case Protocol.Client.REQUESTGAME:
 			if (args.length < 1) {
 				this.send(Protocol.Server.ERROR, new String[] { "8", "TooFewArguments" });
@@ -116,15 +134,17 @@ public class ServerConnectionHandler extends ConnectionHandler {
 			} catch (NumberFormatException e) {
 				this.send(Protocol.Server.ERROR, new String[] { "8", "InvalidNumberOfPlayers" });
 			} catch (TooManyPlayersException e) {
-				this.send(Protocol.Server.ERROR,
-								new String[] { "8", "NotSoManyPlayersAllowed" });
+				this.send(Protocol.Server.ERROR, new String[] { "8", "NotSoManyPlayersAllowed" });
 			}
 			break;
+
 		default:
 			this.send(Protocol.Server.ERROR, new String[] { "8", "UnknownCommand" });
 			Util.log("protocol", "Received an unknown command from the client: " + command);
 			break;
+
 		}
+
 	}
 
 	/**

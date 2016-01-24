@@ -404,6 +404,9 @@ public class Game implements ActionListener {
 		}
 	}
 
+	/**
+	 * When the game is over, finish the game (submitting scores and such).
+	 */
 	private void finish() {
 
 		int highScore = 0;
@@ -431,7 +434,7 @@ public class Game implements ActionListener {
 								new String[] { "DISCONNECT", "FinishedButUncertainEnd" });
 			}
 		}
-		
+
 		this.cleanUp();
 
 	}
@@ -444,14 +447,13 @@ public class Game implements ActionListener {
 	 */
 	public void shutdown(String message) {
 		for (ServerPlayer p : this.players) {
-			p.sendMessage(Protocol.Server.GAME_END,
-							new String[] { "DISCONNECT", message });
+			p.sendMessage(Protocol.Server.GAME_END, new String[] { "DISCONNECT", message });
 		}
 		cleanUp();
 	}
 
 	/**
-	 * @param message
+	 * Cleans up the game after finishing or abandoning it.
 	 */
 	private void cleanUp() {
 		for (ServerPlayer p : this.players) {
@@ -459,6 +461,21 @@ public class Game implements ActionListener {
 			this.removePlayer(p);
 			this.parentServer.playerToLobby(p);
 			this.parentServer.removeGame(this);
+		}
+	}
+
+	/**
+	 * Sends a chat message to all players in this game. Text is already
+	 * pre-formatted.
+	 * 
+	 * @param text
+	 *            The message.
+	 */
+	public void sendChat(String text) {
+		for (ServerPlayer p : this.players) {
+			if (p.canChat()) {
+				p.sendMessage(Protocol.Server.CHAT, new String[] { text });
+			}
 		}
 	}
 
@@ -536,10 +553,25 @@ public class Game implements ActionListener {
 		return this.gameState;
 	}
 
+	/**
+	 * Returns the number of tiles in the bag.
+	 * 
+	 * @return The number of tiles in the bag.
+	 */
 	public int getTilesInBag() {
 		return this.bag.getNumberOfTiles();
 	}
-	
+
+	/**
+	 * Get the boardSquare object for a specific coordiante.
+	 * 
+	 * @param x
+	 *            The x-coordinate.
+	 * @param y
+	 *            The y-coordinate.
+	 * @return The BoardSquare object.
+	 * @throws SquareOutOfBoundsException
+	 */
 	public BoardSquare getBoardSquare(int x, int y) throws SquareOutOfBoundsException {
 		return this.board.getSquare(x, y);
 	}

@@ -10,6 +10,7 @@ import exceptions.PlayerAlreadyInGameException;
 import exceptions.TooManyPlayersException;
 import players.Player;
 import players.ServerPlayer;
+import protocol.Protocol;
 
 /**
  * TODO Write file header.
@@ -21,15 +22,15 @@ public class Server extends Thread {
 
 	public static final String[] FUNCTIONS = { "CHALLENGE", "CHAT", "LEADERBORD" };
 
-	private List<Player> lobby;
-	private List<Player> players;
+	private List<ServerPlayer> lobby;
+	private List<ServerPlayer> players;
 	private List<Game> games;
 
 	private ServerSocket socket;
 
 	public Server(int port) throws IOException {
-		this.lobby = new ArrayList<Player>();
-		this.players = new ArrayList<Player>();
+		this.lobby = new ArrayList<ServerPlayer>();
+		this.players = new ArrayList<ServerPlayer>();
 		this.socket = new ServerSocket(port);
 		this.start();
 	}
@@ -52,12 +53,32 @@ public class Server extends Thread {
 	}
 
 	/**
+	 * Submits a chat message to the server. The server will prepend the
+	 * nickname and send it to all supported clients.
+	 * 
+	 * @param player
+	 * @param message
+	 */
+	public void chat(ServerPlayer player, String message) {
+		String text = "(" + player.getName() + ") " + message;
+		if (this.isInGame(player)) {
+			player.getGame().sendChat(text);
+		} else {
+			for (ServerPlayer p : this.lobby) {
+				if (p.canChat()) {
+					p.sendMessage(Protocol.Server.CHAT, new String[] { text });
+				}
+			}
+		}
+	}
+
+	/**
 	 * Add a player to the lobby.
 	 * 
 	 * @param player
 	 *            The player.
 	 */
-	public void playerToLobby(Player player) {
+	public void playerToLobby(ServerPlayer player) {
 		lobby.add(player);
 	}
 
@@ -67,7 +88,7 @@ public class Server extends Thread {
 	 * @param player
 	 *            The player.
 	 */
-	public void playerFromLobby(Player player) {
+	public void playerFromLobby(ServerPlayer player) {
 		lobby.remove(player);
 	}
 
@@ -77,7 +98,7 @@ public class Server extends Thread {
 	 * @param player
 	 *            The player.
 	 */
-	public void addPlayer(Player player) {
+	public void addPlayer(ServerPlayer player) {
 		players.add(player);
 	}
 
@@ -87,7 +108,7 @@ public class Server extends Thread {
 	 * @param player
 	 *            The player.
 	 */
-	public void removePlayer(Player player) {
+	public void removePlayer(ServerPlayer player) {
 		players.remove(player);
 		this.playerFromLobby(player);
 	}
