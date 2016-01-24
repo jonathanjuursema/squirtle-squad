@@ -83,7 +83,7 @@ public class Bag {
 	 * @throws TooManyTilesInBag
 	 * @throws TileNotInHandException
 	 */
-	public synchronized void swapTiles(Hand hand, List<Tile> tiles)
+	public synchronized List<Tile> swapTiles(Hand hand, List<Tile> tiles)
 					throws TooFewTilesInBagException, TileNotInBagException, TooManyTilesInBag,
 					TileNotInHandException {
 		if (tiles.size() > this.getNumberOfTiles()) {
@@ -92,13 +92,17 @@ public class Bag {
 
 		hand.removeFromHand(tiles);
 
+		List<Tile> fromBag = new ArrayList<Tile>();
+		
 		try {
-			this.takeFromBag(hand, tiles.size());
+			fromBag = this.takeFromBag(hand, tiles.size());
 		} catch (HandLimitReachedExeption e) {
 			Util.log(e);
 		}
 
 		this.addToBag(tiles);
+		
+		return fromBag;
 	}
 
 	/**
@@ -111,16 +115,19 @@ public class Bag {
 	 * @throws TooFewTilesInBagException
 	 * @throws HandLimitReachedExeption
 	 */
-	public synchronized void takeFromBag(Hand hand, int amount) throws TooFewTilesInBagException,
+	public synchronized List<Tile> takeFromBag(Hand hand, int amount) throws TooFewTilesInBagException,
 					TileNotInBagException, HandLimitReachedExeption {
 		if (amount > this.getNumberOfTiles()) {
 			throw new TooFewTilesInBagException(amount, this.getNumberOfTiles());
 		}
+		List<Tile> fromBag = new ArrayList<Tile>();
 		for (int i = 0; i < amount; i++) {
 			Tile tile = this.content.get(randomGenerator.nextInt(this.getNumberOfTiles()));
 			hand.addToHand(tile);
+			fromBag.add(tile);
 			this.removeFromBag(tile);
 		}
+		return fromBag;
 	}
 
 	/**

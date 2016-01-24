@@ -10,7 +10,9 @@ import exceptions.IllegalTurnException;
 import exceptions.NotInGameException;
 import exceptions.NotYourTurnException;
 import exceptions.PlayerAlreadyInGameException;
+import exceptions.PlayerIsNoChallengeeException;
 import exceptions.SquareOutOfBoundsException;
+import exceptions.TileNotInHandException;
 import exceptions.TooManyPlayersException;
 import networking.ConnectionHandler;
 import players.ServerPlayer;
@@ -56,7 +58,13 @@ public class ServerConnectionHandler extends ConnectionHandler {
 			}
 
 		case Protocol.Client.ACCEPTINVITE:
-			this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
+			try {
+				this.server.acceptInvite(this.player);
+			} catch (PlayerIsNoChallengeeException e1) {
+				this.send(Protocol.Server.ERROR, new String[] { "8", "YouHaveNotBeenChallenged" });
+			} catch (PlayerAlreadyInGameException e) {
+				this.send(Protocol.Server.ERROR, new String[] { "8", "PlayerIsAlreadyInGame" });
+			}
 			break;
 
 		case Protocol.Client.CHANGESTONE:
@@ -71,6 +79,8 @@ public class ServerConnectionHandler extends ConnectionHandler {
 					this.send(Protocol.Server.ERROR, new String[] { "1", "YourNotInAGame" });
 				} catch (IllegalTurnException e) {
 					this.send(Protocol.Server.ERROR, new String[] { "7", "InvalidSwap" });
+				} catch (TileNotInHandException e) {
+					this.send(Protocol.Server.ERROR, new String[] { "2", "NotYourStone" });
 				}
 			}
 			break;
@@ -85,8 +95,11 @@ public class ServerConnectionHandler extends ConnectionHandler {
 			break;
 
 		case Protocol.Client.DECLINEINVITE:
-			this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
-			// TODO
+			try {
+				this.server.declineInvite(this.player);
+			} catch (PlayerIsNoChallengeeException e1) {
+				this.send(Protocol.Server.ERROR, new String[] { "8", "YouHaveNotBeenChallenged" });
+			}
 			break;
 
 		case Protocol.Client.GETLEADERBOARD:

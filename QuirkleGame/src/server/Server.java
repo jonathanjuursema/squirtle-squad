@@ -3,11 +3,16 @@ package server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import application.Console;
 import application.Util;
+import exceptions.AlreadyChallengedSomeoneException;
 import exceptions.PlayerAlreadyInGameException;
+import exceptions.PlayerCannotBeChallengedException;
+import exceptions.PlayerIsNoChallengeeException;
 import exceptions.TooManyPlayersException;
 import players.Player;
 import players.ServerPlayer;
@@ -27,6 +32,8 @@ public class Server extends Thread {
 	private List<ServerPlayer> players;
 	private List<Game> games;
 
+	private Map<ServerPlayer, ServerPlayer> challenges;
+
 	private ServerSocket socket;
 
 	public Server(int port) throws IOException {
@@ -34,6 +41,7 @@ public class Server extends Thread {
 		this.players = new ArrayList<ServerPlayer>();
 		this.socket = new ServerSocket(port);
 		this.games = new ArrayList<Game>();
+		this.challenges = new HashMap<ServerPlayer, ServerPlayer>();
 		this.start();
 	}
 
@@ -203,6 +211,133 @@ public class Server extends Thread {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Tries to establish a challenge between two players.
+	 * 
+	 * @param challenger
+	 *            The challenger.
+	 * @param challengee
+	 *            The one who's challenged.
+	 * @throws PlayerCannotBeChallengedException
+	 * @throws AlreadyChallengedSomeoneException
+	 */
+	public void challenge(ServerPlayer challenger, ServerPlayer challengee)
+					throws PlayerCannotBeChallengedException, AlreadyChallengedSomeoneException {
+		if (!challengee.canInvite() || isChallengee(challengee)) {
+			throw new PlayerCannotBeChallengedException(challengee);
+		} else if (isChallenger(challenger)) {
+			throw new AlreadyChallengedSomeoneException();
+		}
+		this.challenges.put(challenger, challengee);
+		challengee.invite(challenger);
+	}
+
+	/**
+	 * See if the player is already challenged by someone.
+	 * 
+	 * @param challenger
+	 *            The player.
+	 * @return True of the player is already being challenged, false otherwise.
+	 */
+	private boolean isChallengee(ServerPlayer challengee) {
+		return this.challenges.containsValue(challengee);
+	}
+
+	/**
+	 * See if the specified player is already challenging someone.
+	 * 
+	 * @param challengee
+	 *            The player.
+	 * @return True of the player is already challenging, false otherwise.
+	 */
+	private boolean isChallenger(ServerPlayer challenger) {
+		return this.challenges.containsKey(challenger);
+	}
+
+	/**
+	 * The given player declines the invite.
+	 * 
+	 * @param challengee
+	 *            The player who was challenged.
+	 * @throws PlayerIsNoChallengeeException
+	 */
+	public void declineInvite(ServerPlayer challengee) throws PlayerIsNoChallengeeException {
+		if (!isChallengee(challengee)) {
+			throw new PlayerIsNoChallengeeException(challengee);
+		} else {
+			ServerPlayer challenger = null;
+			for (ServerPlayer p : this.challenges.keySet()) {
+				if (this.challenges.get(p) == challengee) {
+					challenger = p;
+				}
+			}
+			if (challenger != null) {
+				challenger.decline();
+				this.challenges.remove(challenger, challengee);
+			} else {
+				throw new PlayerIsNoChallengeeException(challengee);
+			}
+
+		}
+	}
+
+	/**
+	 * The given player accepts the invite.
+	 * 
+	 * @param challengee
+	 *            The challenged player.
+	 * @throws PlayerIsNoChallengeeException
+	 * @throws PlayerAlreadyInGameException
+	 */
+	public void acceptInvite(ServerPlayer challengee)
+					throws PlayerIsNoChallengeeException, PlayerAlreadyInGameException {
+		if (!isChallengee(challengee)) {
+			throw new PlayerIsNoChallengeeException(challengee);
+		} else {
+			ServerPlayer challenger = null;
+			for (ServerPlayer p : this.challenges.keySet()) {
+				if (this.challenges.get(p) == challengee) {
+					challenger = p;
+				}
+			}
+			if (challenger != null) {
+				try {
+					Game game = new Game(this, 2);
+					game.addPlayer(challengee);
+					game.addPlayer(challenger);
+					addGame(game);
+					this.challenges.remove(challenger, challengee);
+				} catch (TooManyPlayersException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} else {
+				throw new PlayerIsNoChallengeeException(challengee);
+			}
+
+		}
+	}
+	
+	/**
+	 * When either side of a challenge enters a game, we'll forfeit any challenge.
+	 */
+	public void forfeitChallenge(ServerPlayer player) {
+		if (isChallengee(player)) {
+			ServerPlayer challenger = null;
+			for (ServerPlayer p : this.challenges.keySet()) {
+				if (this.challenges.get(p) == player) {
+					challenger = p;
+				}
+			}			
+			if (challenger != null) {
+			 	challenger.decline();
+			 	this.challenges.remove(challenger);
+			}
+		} else if (isChallenger(player)) {
+			this.challenges.remove(player);
+		}
 	}
 
 }

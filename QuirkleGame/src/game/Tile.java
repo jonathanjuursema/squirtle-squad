@@ -1,5 +1,7 @@
 package game;
 
+import java.util.List;
+
 /**
  * A Tile represents a woorden tile in the real game. In the real game, there
  * exist multiple copies of a tile with the same properties (same color, same
@@ -77,6 +79,14 @@ public class Tile {
 	 */
 	public String toProtocol() {
 		return "" + this.getColor() + this.getShape();
+	}
+	
+	public static String[] toArgs(List<Tile> tiles) {
+		String[] args = new String[tiles.size()];
+		for (int i = 0; i < tiles.size(); i++) {
+			args[i] = tiles.get(i).toProtocol();
+		}
+		return args;
 	}
 
 	/**

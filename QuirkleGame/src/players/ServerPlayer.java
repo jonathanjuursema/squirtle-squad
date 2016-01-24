@@ -8,6 +8,7 @@ import exceptions.IllegalTurnException;
 import exceptions.NotInGameException;
 import exceptions.NotYourTurnException;
 import exceptions.SquareOutOfBoundsException;
+import exceptions.TileNotInHandException;
 import game.Move;
 import game.Tile;
 import protocol.Protocol;
@@ -116,7 +117,7 @@ public class ServerPlayer extends Player {
 	}
 
 	public void playSwap(String[] tiles)
-					throws NotYourTurnException, NotInGameException, IllegalTurnException {
+					throws NotYourTurnException, NotInGameException, IllegalTurnException, TileNotInHandException {
 
 		this.getTurn().getMoves().clear();
 		this.getTurn().getSwap().clear();
@@ -149,13 +150,29 @@ public class ServerPlayer extends Player {
 
 			if (!tileValid) {
 				this.getTurn().getMoves().clear();
-				this.sendMessage(Protocol.Server.ERROR, new String[] { "2", "StoneNotInHand" });
-				return;
+				throw new TileNotInHandException(tile, this.getHand());
 			}
 
 		}
 
 		this.game.receiveTurn(this.getTurn());
+	}
+
+	/**
+	 * Sends an invite to challenge to this player.
+	 * 
+	 * @param challenger
+	 *            The challenger player.
+	 */
+	public void invite(ServerPlayer challenger) {
+		this.sendMessage(Protocol.Server.INVITE, new String[] { challenger.getName() });
+	}
+
+	/**
+	 * Tells the player their invite is declined.
+	 */
+	public void decline() {
+		this.sendMessage(Protocol.Server.DECLINEINVITE, new String[] {});
 	}
 
 	/**

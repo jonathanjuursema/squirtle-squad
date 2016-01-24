@@ -275,8 +275,10 @@ public class Game implements ActionListener {
 			List<Tile> tilesToSwap = turn.getSwap();
 			Hand h = this.getCurrentPlayer().getHand();
 
+			List<Tile> fromBag = new ArrayList<Tile>();
+
 			try {
-				bag.swapTiles(h, tilesToSwap);
+				fromBag = bag.swapTiles(h, tilesToSwap);
 			} catch (TileNotInBagException | TooManyTilesInBag e) {
 				Util.log(e);
 				this.shutdown("Irrecoverable exception during swap.");
@@ -291,6 +293,8 @@ public class Game implements ActionListener {
 				return;
 			}
 
+			this.getCurrentPlayer().sendMessage(Protocol.Server.ADDTOHAND, Tile.toArgs(fromBag));
+
 			args = new String[2];
 
 		} else if (turn.isMoveRequest()) {
@@ -304,7 +308,8 @@ public class Game implements ActionListener {
 				Move m = moves.get(i);
 				try {
 					board.placeTile(m.tileToPlay, m.getPosition().getX(), m.getPosition().getY());
-				} catch (SquareOutOfBoundsException e) {
+					turn.assignedPlayer.getHand().removeFromHand(m.tileToPlay);
+				} catch (SquareOutOfBoundsException | TileNotInHandException e) {
 					Util.log(e);
 					this.shutdown("Irrecoverable exception during move performing.");
 				}
@@ -314,6 +319,39 @@ public class Game implements ActionListener {
 								+ Protocol.Server.Settings.DELIMITER2 + m.getPosition().getX()
 								+ Protocol.Server.Settings.DELIMITER2 + m.getPosition().getY();
 
+			}
+
+			try {
+				turn.assignedPlayer.incrementScore(turn.calculateScore());
+			} catch (SquareOutOfBoundsException e) {
+				Util.log(e);
+				this.shutdown("Unrecoverable exception during score increment.");
+			}
+
+			try {
+
+				if (turn.assignedPlayer instanceof ServerPlayer) {
+					if (moves.size() > bag.getNumberOfTiles()) {
+						((ServerPlayer) turn.assignedPlayer)
+										.sendMessage(Protocol.Server.ADDTOHAND,
+														Tile.toArgs(bag.takeFromBag(
+																		this.getCurrentPlayer()
+																						.getHand(),
+																		bag.getNumberOfTiles())));
+					} else {
+						((ServerPlayer) turn.assignedPlayer)
+										.sendMessage(Protocol.Server.ADDTOHAND,
+														Tile.toArgs(bag.takeFromBag(
+																		this.getCurrentPlayer()
+																						.getHand(),
+																		moves.size())));
+					}
+				}
+
+			} catch (TooFewTilesInBagException | TileNotInBagException
+							| HandLimitReachedExeption e) {
+				Util.log(e);
+				this.shutdown("Irrecoverable exception during hand refilling.");
 			}
 
 		} else {
@@ -338,9 +376,10 @@ public class Game implements ActionListener {
 
 		for (ServerPlayer p : this.players) {
 			p.sendMessage(Protocol.Server.MOVE, args);
+			Console.print(p.getName() + "(" + p.getScore() + ") ");
 		}
-		
-		Console.print(this.board.toString());
+
+		Console.print("\n" + this.board.toString());
 
 		this.nextTurn(1);
 
