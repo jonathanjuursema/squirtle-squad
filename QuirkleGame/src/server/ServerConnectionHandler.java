@@ -5,12 +5,14 @@ import java.net.Socket;
 
 import application.App;
 import application.Util;
-import client.Client;
+import exceptions.IllegalMoveException;
+import exceptions.IllegalTurnException;
+import exceptions.NotInGameException;
 import exceptions.NotYourTurnException;
 import exceptions.PlayerAlreadyInGameException;
+import exceptions.SquareOutOfBoundsException;
 import exceptions.TooManyPlayersException;
 import networking.ConnectionHandler;
-import players.Player;
 import players.ServerPlayer;
 import protocol.Protocol;
 
@@ -46,23 +48,27 @@ public class ServerConnectionHandler extends ConnectionHandler {
 				break;
 			}
 		case Protocol.Client.ACCEPTINVITE:
-			// TODO
+			this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
 			break;
 		case Protocol.Client.CHANGESTONE:
 			try {
-				this.getPlayer().addSwap(args);
+				this.getPlayer().playSwap(args);
 			} catch (NotYourTurnException e) {
 				this.send(Protocol.Server.ERROR, new String[] { "1", "NotYourTurn" });
+			} catch (NotInGameException e) {
+				this.send(Protocol.Server.ERROR, new String[] { "1", "YourNotInAGame" });
+			} catch (IllegalTurnException e) {
+				this.send(Protocol.Server.ERROR, new String[] { "7", "InvalidSwap" });
 			}
 			break;
 		case Protocol.Client.CHAT:
-			// TODO
+			this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
 			break;
 		case Protocol.Client.DECLINEINVITE:
-			// TODO
+			this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
 			break;
 		case Protocol.Client.GETLEADERBOARD:
-			// TODO
+			this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
 			break;
 		case Protocol.Client.GETSTONESINBAG:
 			this.send(Protocol.Server.STONESINBAG,
@@ -75,13 +81,23 @@ public class ServerConnectionHandler extends ConnectionHandler {
 			registerClient(args);
 			break;
 		case Protocol.Client.INVITE:
-			// TODO
+			this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
 			break;
 		case Protocol.Client.MAKEMOVE:
 			try {
 				this.getPlayer().placeMove(args);
 			} catch (NotYourTurnException e) {
 				this.send(Protocol.Server.ERROR, new String[] { "1", "NotYourTurn" });
+			} catch (NotInGameException e) {
+				this.send(Protocol.Server.ERROR, new String[] { "1", "YourNotInAGame" });
+			} catch (NumberFormatException e) {
+				this.send(Protocol.Server.ERROR, new String[] { "8", "NotANumber" });
+			} catch (SquareOutOfBoundsException e) {
+				this.send(Protocol.Server.ERROR, new String[] { "7", "CoordinatesOutOfBounds" });
+			} catch (IllegalMoveException e) {
+				this.send(Protocol.Server.ERROR, new String[] { "7", "IllegalMove" });
+			} catch (IllegalTurnException e) {
+				this.send(Protocol.Server.ERROR, new String[] { "7", "IllegalTurn" });
 			}
 			break;
 		case Protocol.Client.QUIT:
@@ -164,7 +180,7 @@ public class ServerConnectionHandler extends ConnectionHandler {
 	public void shutdown(String reason) {
 		Util.log("debug", "Client socket closed: " + reason);
 		if (this.getPlayer() != null) {
-			if (this.getPlayer().getStatus() == ServerPlayer.Status.IN_GAME) {
+			if (this.server.isInGame(this.getPlayer())) {
 				this.getPlayer().getGame().disqualify(this.getPlayer());
 			}
 			this.server.removePlayer(this.getPlayer());
