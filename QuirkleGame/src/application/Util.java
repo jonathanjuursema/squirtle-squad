@@ -35,7 +35,7 @@ public class Util {
 	 */
 
 	public static void log(Exception e) {
-		Console.println("[" + e.getClass().getSimpleName() + "] " + e.getMessage());
+		Util.log(e.getClass().getSimpleName(), e.getMessage());
 	}
 
 	/**
