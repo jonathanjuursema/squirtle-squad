@@ -140,8 +140,8 @@ public class Board extends Observable {
 		for (int i = 0; i < this.board.length; i++) {
 			/*
 			 * We cannot just assign, because this would barely duplicate the
-			 * address. To truly copy, we use System.arraycopy on every column
-			 * and assign this copy to the new column in boardCopy.
+			 * address. To truly copy, we construct a new BoardSquare with the
+			 * same properties.
 			 */
 			for (int j = 0; j < this.board[i].length; j++) {
 				boardCopy[i][j] = new BoardSquare(theBoard, this.board[i][j].getX(),

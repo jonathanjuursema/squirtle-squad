@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
 
+import application.Console;
 import application.Util;
 import exceptions.PlayerAlreadyInGameException;
 import exceptions.TooManyPlayersException;
@@ -32,6 +33,7 @@ public class Server extends Thread {
 		this.lobby = new ArrayList<ServerPlayer>();
 		this.players = new ArrayList<ServerPlayer>();
 		this.socket = new ServerSocket(port);
+		this.games = new ArrayList<Game>();
 		this.start();
 	}
 
@@ -39,6 +41,7 @@ public class Server extends Thread {
 	 * The main functionality of the server.
 	 */
 	public void run() {
+		Console.println("Server is now accepting connections. Enjoy your game!");
 		Util.log("debug", "Server thread has started.");
 		boolean running = true;
 		while (running) {
@@ -70,6 +73,7 @@ public class Server extends Thread {
 				}
 			}
 		}
+		Util.log("debug", "Received chat from " + player.getName() + ": " + message);
 	}
 
 	/**
@@ -80,6 +84,7 @@ public class Server extends Thread {
 	 */
 	public void playerToLobby(ServerPlayer player) {
 		lobby.add(player);
+		Util.log("debug", player.getName() + " joined the lobby.");
 	}
 
 	/**
@@ -90,6 +95,7 @@ public class Server extends Thread {
 	 */
 	public void playerFromLobby(ServerPlayer player) {
 		lobby.remove(player);
+		Util.log("debug", player.getName() + " left the lobby.");
 	}
 
 	/**
@@ -100,6 +106,7 @@ public class Server extends Thread {
 	 */
 	public void addPlayer(ServerPlayer player) {
 		players.add(player);
+		Util.log("debug", player.getName() + " joined the server.");
 	}
 
 	/**
@@ -111,6 +118,7 @@ public class Server extends Thread {
 	public void removePlayer(ServerPlayer player) {
 		players.remove(player);
 		this.playerFromLobby(player);
+		Util.log("debug", player.getName() + " left the server.");
 	}
 
 	/**
@@ -137,6 +145,7 @@ public class Server extends Thread {
 	 */
 	public void removeGame(Game game) {
 		games.remove(game);
+		Util.log("debug", "A game of " + game.getNoOfPlayers() + " has been removed.");
 	}
 
 	/**
@@ -147,6 +156,7 @@ public class Server extends Thread {
 	 */
 	public void addGame(Game game) {
 		this.games.add(game);
+		Util.log("debug", "A game of " + game.getNoOfPlayers() + " has been created.");
 	}
 
 	/**
@@ -166,6 +176,7 @@ public class Server extends Thread {
 			if (game.getGameState() == Game.GameState.NOTSTARTED
 							&& game.getNoOfPlayers() == noOfPlayers) {
 				game.addPlayer(player);
+				return;
 			}
 		}
 		if (this.isInGame(player)) {
@@ -174,6 +185,8 @@ public class Server extends Thread {
 		Game game = new Game(this, noOfPlayers);
 		game.addPlayer(player);
 		addGame(game);
+		Util.log("debug", "Created a game of " + game.getNoOfPlayers() + " for " + player.getName()
+						+ ".");
 	}
 
 	/**

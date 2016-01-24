@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.swing.Timer;
 
+import application.Console;
 import application.Util;
 import exceptions.HandLimitReachedExeption;
 import exceptions.PlayerAlreadyInGameException;
@@ -77,7 +78,13 @@ public class Game implements ActionListener {
 		} else {
 			throw new TooManyPlayersException(noOfPlayers);
 		}
+
+		this.board = new Board();
+
 		this.gameState = Game.GameState.NOTSTARTED;
+
+		Util.log("debug", "A new game has been initialized for " + this.getNoOfPlayers()
+						+ " players.");
 	}
 
 	/*
@@ -94,6 +101,9 @@ public class Game implements ActionListener {
 	public void addPlayer(ServerPlayer player) throws PlayerAlreadyInGameException {
 		if (!players.contains(player)) {
 			players.add(player);
+			player.setGame(this);
+			Util.log("debug",
+							player.getName() + " joined a game for " + this.getNoOfPlayers() + ".");
 		} else {
 			throw new PlayerAlreadyInGameException(player);
 		}
@@ -108,6 +118,8 @@ public class Game implements ActionListener {
 	 */
 	public void start() {
 
+		Util.log("debug", "Starting game for " + this.getNoOfPlayers() + " players.");
+
 		// Initialise the game.
 		this.gameState = Game.GameState.INITIAL;
 
@@ -115,7 +127,7 @@ public class Game implements ActionListener {
 		this.bag = new Bag();
 		this.bag.fill();
 
-		Map<ServerPlayer, Turn> beginturns = new HashMap<ServerPlayer, Turn>();
+		this.initialMoves = new HashMap<ServerPlayer, Turn>();
 
 		// Initialise player hands, send them, and request first turn.
 		for (ServerPlayer p : this.players) {
@@ -135,11 +147,11 @@ public class Game implements ActionListener {
 				args[i] = tiles.get(i).toProtocol();
 			}
 
-			p.sendMessage(Protocol.Server.STARTGAME, new String[] {});
 			p.sendMessage(Protocol.Server.ADDTOHAND, args);
+			p.sendMessage(Protocol.Server.STARTGAME, new String[] {});
 
 			// Request initial turn
-			beginturns.put(p, null);
+			initialMoves.put(p, null);
 			Turn turn = new Turn(this.board, p);
 			p.giveTurn(turn);
 		}
@@ -157,6 +169,8 @@ public class Game implements ActionListener {
 	 *            The player.
 	 */
 	public void receiveInitialMove(Turn turn, ServerPlayer player) {
+
+		Util.log("debug", "Recevied initial move for " + player.getName() + ".");
 
 		if (turn.isMoveRequest()) {
 
@@ -225,6 +239,8 @@ public class Game implements ActionListener {
 	 * depends on what state the game is currently in.
 	 */
 	public void actionPerformed(ActionEvent e) {
+
+		Util.log("debug", "Timeout occured in a game for " + this.getNoOfPlayers() + ".");
 
 		timeout.stop();
 
@@ -323,6 +339,8 @@ public class Game implements ActionListener {
 		for (ServerPlayer p : this.players) {
 			p.sendMessage(Protocol.Server.MOVE, args);
 		}
+		
+		Console.print(this.board.toString());
 
 		this.nextTurn(1);
 
@@ -391,12 +409,14 @@ public class Game implements ActionListener {
 	 */
 	public void disqualify(ServerPlayer player) {
 		if (this.isPlayer(player)) {
-			List<Tile> tiles = player.getHand().hardResetHand();
-			try {
-				this.bag.addToBag(tiles);
-			} catch (TooManyTilesInBag e) {
-				Util.log(e);
-				this.shutdown("Irrecoverable exception during player disqualification.");
+			if (this.gameState != Game.GameState.NOTSTARTED) {
+				List<Tile> tiles = player.getHand().hardResetHand();
+				try {
+					this.bag.addToBag(tiles);
+				} catch (TooManyTilesInBag e) {
+					Util.log(e);
+					this.shutdown("Irrecoverable exception during player disqualification.");
+				}
 			}
 			this.removePlayer(player);
 			player.sendMessage(Protocol.Server.GAME_END,

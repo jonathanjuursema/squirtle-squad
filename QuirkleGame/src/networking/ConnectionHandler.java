@@ -35,7 +35,7 @@ public abstract class ConnectionHandler extends Thread {
 	 */
 	public ConnectionHandler(Socket socket) {
 		this.socket = socket;
-		Util.log("debug", "A new connection has been established to "
+		Util.log("debug", "A new connection has been established with "
 						+ this.socket.getRemoteSocketAddress() + ".");
 		try {
 			this.rx = new BufferedReader(new InputStreamReader(this.socket.getInputStream(),
@@ -57,10 +57,12 @@ public abstract class ConnectionHandler extends Thread {
 		while (running) {
 			try {
 				String command = this.rx.readLine();
-				if (command.length() > 2) { // WHY ON EARTH DO WE SEPERATE
-											// COMMANDS
-					// WITH TWO NEWLINES???
-					Util.log("rx", command);
+				if (command.length() > 2) {
+					/*
+					 * Why on earth do we seperate commands with two newlines?
+					 */
+					Util.log("rx", command + " (from " + this.socket.getRemoteSocketAddress()
+									+ ")");
 					// Split command in arguments
 					String[] args = command
 									.split(String.valueOf(Protocol.Server.Settings.DELIMITER));
@@ -102,7 +104,7 @@ public abstract class ConnectionHandler extends Thread {
 		try {
 			this.tx.write(message + Protocol.Server.Settings.COMMAND_END);
 			this.tx.flush();
-			Util.log("tx", message);
+			Util.log("tx", message + " (to " + this.socket.getRemoteSocketAddress() + ")");
 		} catch (IOException e) {
 			Util.log(e);
 			this.shutdown("Unrecoverable IOException.");

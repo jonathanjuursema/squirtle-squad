@@ -29,8 +29,9 @@ public class ServerPlayer extends Player {
 	 * @param name
 	 *            The player name.
 	 */
-	public ServerPlayer(String name) {
+	public ServerPlayer(String name, ServerConnectionHandler server) {
 		super(name);
+		this.connection = server;
 	}
 
 	/**
@@ -68,7 +69,8 @@ public class ServerPlayer extends Player {
 			throw new NotInGameException();
 		}
 
-		if (!this.game.getCurrentPlayer().equals(this)) {
+		if (!this.game.getCurrentPlayer().equals(this)
+						&& this.game.getGameState() != Game.GameState.INITIAL) {
 			throw new NotYourTurnException();
 		}
 
@@ -76,7 +78,8 @@ public class ServerPlayer extends Player {
 		handCopy.addAll(this.getHand().getTilesInHand());
 
 		for (String move : moves) {
-			String[] args = move.split(String.valueOf(Protocol.Server.Settings.DELIMITER2));
+			// We need to 'escape' the DELIMITER2 because of RegexReasons.
+			String[] args = move.split("\\" + String.valueOf(Protocol.Server.Settings.DELIMITER2));
 
 			boolean moveValid = false;
 
@@ -86,7 +89,7 @@ public class ServerPlayer extends Player {
 
 					handCopy.remove(t);
 
-					this.getTurn().addMove(new Move(t, this.game.getBoardSquare(
+					this.getTurn().addMove(new Move(t, this.getTurn().getBoardCopy().getSquare(
 									Integer.parseInt(args[1]), Integer.parseInt(args[2]))));
 					moveValid = true;
 
@@ -104,7 +107,11 @@ public class ServerPlayer extends Player {
 
 		}
 
-		this.game.receiveTurn(this.getTurn());
+		if (this.game.getGameState() == Game.GameState.INITIAL) {
+			this.game.receiveInitialMove(this.getTurn(), this);
+		} else {
+			this.game.receiveTurn(this.getTurn());
+		}
 
 	}
 
@@ -117,7 +124,8 @@ public class ServerPlayer extends Player {
 		if (this.game == null || !this.game.isPlayer(this)) {
 			throw new NotInGameException();
 		}
-		if (!this.game.getCurrentPlayer().equals(this)) {
+		if (!this.game.getCurrentPlayer().equals(this)
+						&& this.game.getGameState() != Game.GameState.INITIAL) {
 			throw new NotYourTurnException();
 		}
 
@@ -177,7 +185,8 @@ public class ServerPlayer extends Player {
 	}
 
 	/**
-	 * @param canInvite the canInvite to set
+	 * @param canInvite
+	 *            the canInvite to set
 	 */
 	public void canInvite(boolean canInvite) {
 		this.canInvite = canInvite;
@@ -191,7 +200,8 @@ public class ServerPlayer extends Player {
 	}
 
 	/**
-	 * @param chanChat the chanChat to set
+	 * @param chanChat
+	 *            the chanChat to set
 	 */
 	public void canChat(boolean chanChat) {
 		this.chanChat = chanChat;
@@ -205,7 +215,8 @@ public class ServerPlayer extends Player {
 	}
 
 	/**
-	 * @param canLeaderBoard the canLeaderBoard to set
+	 * @param canLeaderBoard
+	 *            the canLeaderBoard to set
 	 */
 	public void canLeaderBoard(boolean canLeaderBoard) {
 		this.canLeaderBoard = canLeaderBoard;

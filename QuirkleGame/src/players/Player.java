@@ -116,4 +116,11 @@ public abstract class Player {
 		this.name = name;
 	}
 
+	/**
+	 * Returns the name of the player.
+	 */
+	public String toString() {
+		return this.getName();
+	}
+
 }

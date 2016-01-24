@@ -41,7 +41,7 @@ public class ServerConnectionHandler extends ConnectionHandler {
 	@Override
 	public void parse(String command, String[] args) {
 
-		if (this.player == null && command != Protocol.Client.HALLO) {
+		if (!command.equals(Protocol.Client.HALLO) && this.player == null) {
 			this.send(Protocol.Server.ERROR, new String[] { "8", "RegisterFirst" });
 			return;
 		}
@@ -60,27 +60,38 @@ public class ServerConnectionHandler extends ConnectionHandler {
 			break;
 
 		case Protocol.Client.CHANGESTONE:
-			try {
-				this.getPlayer().playSwap(args);
-			} catch (NotYourTurnException e) {
-				this.send(Protocol.Server.ERROR, new String[] { "1", "NotYourTurn" });
-			} catch (NotInGameException e) {
-				this.send(Protocol.Server.ERROR, new String[] { "1", "YourNotInAGame" });
-			} catch (IllegalTurnException e) {
-				this.send(Protocol.Server.ERROR, new String[] { "7", "InvalidSwap" });
+			if (args.length < 1) {
+				this.send(Protocol.Server.ERROR, new String[] { "8", "TooFewArguments" });
+			} else {
+				try {
+					this.getPlayer().playSwap(args);
+				} catch (NotYourTurnException e) {
+					this.send(Protocol.Server.ERROR, new String[] { "1", "NotYourTurn" });
+				} catch (NotInGameException e) {
+					this.send(Protocol.Server.ERROR, new String[] { "1", "YourNotInAGame" });
+				} catch (IllegalTurnException e) {
+					this.send(Protocol.Server.ERROR, new String[] { "7", "InvalidSwap" });
+				}
 			}
 			break;
 
 		case Protocol.Client.CHAT:
-			this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
+			if (args.length < 1) {
+				this.send(Protocol.Server.ERROR, new String[] { "8", "TooFewArguments" });
+			} else {
+				this.server.chat(this.getPlayer(),
+								Util.joinStringArray(args, Protocol.Server.Settings.DELIMITER));
+			}
 			break;
 
 		case Protocol.Client.DECLINEINVITE:
 			this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
+			// TODO
 			break;
 
 		case Protocol.Client.GETLEADERBOARD:
 			this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
+			// TODO
 			break;
 
 		case Protocol.Client.GETSTONESINBAG:
@@ -91,29 +102,40 @@ public class ServerConnectionHandler extends ConnectionHandler {
 		case Protocol.Client.HALLO:
 			if (args.length < 1) {
 				this.send(Protocol.Server.ERROR, new String[] { "8", "TooFewArguments" });
+			} else {
+				registerClient(args);
 			}
-			registerClient(args);
 			break;
 
 		case Protocol.Client.INVITE:
-			this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
+			if (args.length < 1) {
+				this.send(Protocol.Server.ERROR, new String[] { "8", "TooFewArguments" });
+			} else {
+				this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
+				// TODO
+			}
 			break;
 
 		case Protocol.Client.MAKEMOVE:
-			try {
-				this.getPlayer().placeMove(args);
-			} catch (NotYourTurnException e) {
-				this.send(Protocol.Server.ERROR, new String[] { "1", "NotYourTurn" });
-			} catch (NotInGameException e) {
-				this.send(Protocol.Server.ERROR, new String[] { "1", "YourNotInAGame" });
-			} catch (NumberFormatException e) {
-				this.send(Protocol.Server.ERROR, new String[] { "8", "NotANumber" });
-			} catch (SquareOutOfBoundsException e) {
-				this.send(Protocol.Server.ERROR, new String[] { "7", "CoordinatesOutOfBounds" });
-			} catch (IllegalMoveException e) {
-				this.send(Protocol.Server.ERROR, new String[] { "7", "IllegalMove" });
-			} catch (IllegalTurnException e) {
-				this.send(Protocol.Server.ERROR, new String[] { "7", "IllegalTurn" });
+			if (args.length < 1) {
+				this.send(Protocol.Server.ERROR, new String[] { "8", "TooFewArguments" });
+			} else {
+				try {
+					this.getPlayer().placeMove(args);
+				} catch (NotYourTurnException e) {
+					this.send(Protocol.Server.ERROR, new String[] { "1", "NotYourTurn" });
+				} catch (NotInGameException e) {
+					this.send(Protocol.Server.ERROR, new String[] { "1", "YourNotInAGame" });
+				} catch (NumberFormatException e) {
+					this.send(Protocol.Server.ERROR, new String[] { "8", "NotANumber" });
+				} catch (SquareOutOfBoundsException e) {
+					this.send(Protocol.Server.ERROR,
+									new String[] { "7", "CoordinatesOutOfBounds" });
+				} catch (IllegalMoveException e) {
+					this.send(Protocol.Server.ERROR, new String[] { "7", "IllegalMove" });
+				} catch (IllegalTurnException e) {
+					this.send(Protocol.Server.ERROR, new String[] { "7", "IllegalTurn" });
+				}
 			}
 			break;
 
@@ -174,7 +196,7 @@ public class ServerConnectionHandler extends ConnectionHandler {
 
 		this.send(Protocol.Server.HALLO, resp);
 
-		this.player = new ServerPlayer(args[0]);
+		this.player = new ServerPlayer(args[0], this);
 
 		for (int i = 1; i < args.length; i++) {
 			switch (args[i]) {
