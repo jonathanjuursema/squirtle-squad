@@ -2,6 +2,7 @@ package exceptions;
 
 import server.Game;
 
+@SuppressWarnings("serial")
 public class TooManyTilesInBag extends QwirkleException {
 	
 	int inBag, addAmount;

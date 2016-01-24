@@ -12,8 +12,8 @@ import game.Move;
  * @author Jonathan Juursema & Peter Wessels
  *
  */
-@SuppressWarnings("serial")
 
+@SuppressWarnings("serial")
 public class IllegalMoveException extends QwirkleException {
 	private List<Move> moves = new ArrayList<Move>();
 	private String customMessage;

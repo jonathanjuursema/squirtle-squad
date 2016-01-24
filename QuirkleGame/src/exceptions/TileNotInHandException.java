@@ -3,6 +3,7 @@ package exceptions;
 import game.Hand;
 import game.Tile;
 
+@SuppressWarnings("serial")
 public class TileNotInHandException extends QwirkleException {
 	public Tile tileRequest;
 	public Hand hand;
