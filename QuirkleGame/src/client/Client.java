@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -194,12 +195,10 @@ public class Client {
 	 *            The raw strings of moves, for example "CC*1*2_CC*2*1"
 	 */
 	public void updateBoard(String[] args) {
-		int count = 0;
-		Util.log("debug", args.toString());
+		int count = 1;
 		for (String unParsedMove : args) {
 			if (count > 2) {
 				Move doneMove;
-				Util.log("debug", unParsedMove);
 				doneMove = unParseMove(unParsedMove);
 
 				try {
@@ -208,8 +207,8 @@ public class Client {
 				} catch (SquareOutOfBoundsException e) {
 					Util.log(e);
 				}
-				count++;
 			}
+			count++;
 		}
 	}
 
@@ -297,7 +296,7 @@ public class Client {
 	 * @throws SquareOutOfBoundsException
 	 */
 	public void removeTilesToHand(String[] args) {
-		int count = 0;
+		int count = 1;
 		for (String parsedMove : args) {
 			if (count > 2) {
 				Move doneMove = this.unParseMove(parsedMove);
@@ -307,8 +306,8 @@ public class Client {
 				} catch (TileNotInHandException e) {
 					Util.log(e);
 				}
-				count++;
 			}
+			count++;
 		}
 	}
 
@@ -454,14 +453,14 @@ public class Client {
 			// TODO Auto-generated catch block
 		}
 		
-		Util.log("debug", this.boardCopy.toString());
-		
 		if (args[1].equals(getNickname())) {
 			
 			Turn thisClientTurn = new Turn(this.boardCopy, getPlayer());
 			this.getPlayer().giveTurn(thisClientTurn);
 			
 		} else if (args[0].equals(getNickname())) {
+			String message = "You played a move, waiting for other players to make a move.";
+			this.pushMessage(message);
 			removeTilesToHand(args);
 		} else {
 			String message = "Player " + args[0] + " played his turn.";
