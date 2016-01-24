@@ -79,7 +79,7 @@ public class Client {
 			if (this.nickname == null) {
 				this.register();
 			}
-			
+
 		}
 		// TODO: Start afvangen
 	}
@@ -88,16 +88,15 @@ public class Client {
 	 * Register a client to the server
 	 */
 	public void register() {
-		String nickname = Console.readString(
-						"What nickname would you like to use?" + System.lineSeparator() + "> ");
+		String nickname = Console.readString("What nickname would you like to use?" + System.lineSeparator() + "> ");
 		this.setNickname(nickname);
 		this.server.send(Protocol.Client.HALLO, this.getNickname());
 	}
 
 	public void requestGame() {
-		
+
 		String amount = this.waitForInput("game",
-						"With how much players do you want to play? (2-4 players, type 1 for any kind of game)");
+				"With how much players do you want to play? (2-4 players, type 1 for any kind of game)");
 		if (amount != null) {
 			int choice = Integer.parseInt(amount);
 			if (choice >= 1 && choice <= 4) {
@@ -124,7 +123,7 @@ public class Client {
 		}
 
 		// First move
-		
+
 		Turn newTurn = new Turn(boardCopy, player);
 		this.pushMessage("Please select your first best move.");
 		this.player.giveTurn(newTurn);
@@ -203,7 +202,7 @@ public class Client {
 
 				try {
 					this.boardCopy.placeTile(doneMove.getTile(), doneMove.getPosition().getX(),
-									doneMove.getPosition().getY());
+							doneMove.getPosition().getY());
 				} catch (SquareOutOfBoundsException e) {
 					Util.log(e);
 				}
@@ -252,6 +251,36 @@ public class Client {
 	 *            The tiles that needs to be added. For example "CC*1*2"
 	 */
 	public void addTilesToHand(String[] args) {
+		if (this.getPlayer().getTurn() != null) {
+			if (this.getPlayer().getTurn().isMoveRequest()) {
+				Util.log("debug",
+						"" + this.getPlayer().getTurn().getMoves().size() + this.getPlayer().getTurn().toString());
+				List<Tile> tileList = new ArrayList<Tile>();
+				for (Move m : this.getPlayer().getTurn().getMoves()) {
+					tileList.add(m.getTile());
+				}
+
+				try {
+					this.getPlayer().getHand().removeFromHand(tileList);
+				} catch (TileNotInHandException e1) {
+					Util.log(e1);
+				}
+			} else if (this.getPlayer().getTurn().isSwapRequest()) {
+				Util.log("debug",
+						"" + this.getPlayer().getTurn().getSwap().size() + this.getPlayer().getTurn().getSwap().toString());
+				List<Tile> tileList = new ArrayList<Tile>();
+				for (Tile t : this.getPlayer().getTurn().getSwap()) {
+					tileList.add(t);
+				}
+
+				try {
+					this.getPlayer().getHand().removeFromHand(tileList);
+				} catch (TileNotInHandException e1) {
+					Util.log(e1);
+				}
+			}
+		}
+
 		List<Tile> addList = new ArrayList<Tile>();
 
 		boolean succesfull = false;
@@ -260,15 +289,13 @@ public class Client {
 		for (String tile : args) {
 			addList.add(new Tile(tile.charAt(0), tile.charAt(1)));
 		}
-		
+
 		while (!succesfull && tries < 3) {
 			try {
-				getPlayer()
-				.getHand()
-				.addTohand(addList);
+				getPlayer().getHand().addTohand(addList);
 				tries++;
 			} catch (HandLimitReachedExeption e) {
-				if(tries == 0) {
+				if (tries == 0) {
 					pushErrorMessage("Waiting for the server to take your stones and add new stones.");
 				}
 				tries++;
@@ -281,6 +308,8 @@ public class Client {
 		if (!succesfull) {
 			pushErrorMessage("No stones have been added to the hand.");
 		}
+		
+		pushMessage(this.getPlayer().getHand().toString());
 	}
 
 	/**
@@ -346,8 +375,7 @@ public class Client {
 	 * @return The string that contains the Tile and the position
 	 */
 	public String parseMove(Move m) {
-		String position = "" + m.getPosition().getX() + Protocol.Server.Settings.DELIMITER2
-						+ m.getPosition().getY();
+		String position = "" + m.getPosition().getX() + Protocol.Server.Settings.DELIMITER2 + m.getPosition().getY();
 		String tile = "" + m.getTile().getColor() + m.getTile().getShape();
 		return tile + Protocol.Server.Settings.DELIMITER2 + position;
 	}
@@ -445,23 +473,23 @@ public class Client {
 	 * @param args
 	 *            The arguments of the move that has been made. " Example:
 	 *            "nickname_nickname_CC*1*2_CC*1*2"
+	 * @throws SquareOutOfBoundsException 
 	 */
-	public void registerTurn(String[] args) {
+	public void registerTurn(String[] args) throws SquareOutOfBoundsException {
 		try {
 			this.updateBoard(args);
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 		}
-		
+
 		if (args[1].equals(getNickname())) {
-			
+
 			Turn thisClientTurn = new Turn(this.boardCopy, getPlayer());
 			this.getPlayer().giveTurn(thisClientTurn);
-			
+
 		} else if (args[0].equals(getNickname())) {
-			String message = "You played a move, waiting for other players to make a move.";
+			String message = "You played a move and scored " + this.getPlayer().getTurn().calculateScore() + " points, wait for other players to make a move. \n";			
 			this.pushMessage(message);
-			removeTilesToHand(args);
 		} else {
 			String message = "Player " + args[0] + " played his turn.";
 			message += getBoardCopy().toString();
@@ -475,8 +503,7 @@ public class Client {
 			this.player.sendError("It is not your turn at the moment, wait for your turn please.");
 			break;
 		case 2: // not your stone
-			this.player.sendError(
-							"This tile is not your tile, please pick a stone of your own hand.");
+			this.player.sendError("This tile is not your tile, please pick a stone of your own hand.");
 			break;
 		case 3: // not that many stones available
 			this.player.sendError("The bag doesn't have enough tiles to complete this action.");

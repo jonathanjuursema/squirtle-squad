@@ -186,7 +186,11 @@ public class Turn extends Observable {
 		// We first create 2 sequences to
 		// represent the horizontal line, the row
 		// and the vertical line, the column
-
+		
+		if(this.isSwapRequest()) {
+			return 0;
+		}
+		
 		boolean baseIsRow = true;
 
 		if (this.getMoves().size() > 1) {

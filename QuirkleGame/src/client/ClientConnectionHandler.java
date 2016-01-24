@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.Socket;
 
 import application.Util;
+import exceptions.SquareOutOfBoundsException;
 import networking.ConnectionHandler;
 import protocol.Protocol;
 
@@ -57,7 +58,11 @@ public class ClientConnectionHandler extends ConnectionHandler {
 			break;
 		case Protocol.Server.MOVE:
 			// TODO: Only update if in game
-			client.registerTurn(args);
+			try {
+				client.registerTurn(args);
+			} catch (SquareOutOfBoundsException e) {
+				Util.log(e);
+			}
 			break;
 		case Protocol.Server.OKWAITFOR:
 			client.pushErrorMessage("Waiting for more players to enter..");

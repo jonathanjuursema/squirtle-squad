@@ -185,7 +185,7 @@ public class TUIview extends Thread implements Observer, View {
 	 */
 	public Tile selectTileFromHand(int numberInHand) {
 		if (numberInHand > 0 && numberInHand < Hand.LIMIT + 1) {
-			if (client.getPlayer().getHand().getTilesInHand().get(numberInHand) != null) {
+			if (client.getPlayer().getHand().getTilesInHand().get(numberInHand - 1) != null) {
 				return client.getPlayer().getHand().getTilesInHand().get(numberInHand - 1);
 			} else {
 				Util.log("debug", "Tile not in hand");
@@ -193,6 +193,8 @@ public class TUIview extends Thread implements Observer, View {
 		} else {
 			Util.log("debug", "Please make a valid choice");
 		}
+		
+		Util.log("debug", "Please make a valid choice");
 		return null;
 	}
 
