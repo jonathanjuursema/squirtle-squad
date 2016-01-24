@@ -16,10 +16,10 @@ public class Util {
 	public static void log(String type, String message) {
 		switch (type) {
 		case "rx":
-			// Console.println("[" + type + "] " + message);
+			Console.println("[" + type + "] " + message);
 			break;
 		case "tx":
-			// Console.println("[" + type + "] " + message);
+			Console.println("[" + type + "] " + message);
 			break;
 		default:
 			Console.println("[" + type + "] " + message);
