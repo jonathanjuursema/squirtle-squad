@@ -16,10 +16,10 @@ public class Util {
 	public static void log(String type, String message) {
 		switch (type) {
 		case "rx":
-			// Console.println("[" + type + "] " + message);
+			Console.println("[" + type + "] " + message);
 			break;
 		case "tx":
-			// Console.println("[" + type + "] " + message);
+			Console.println("[" + type + "] " + message);
 			break;
 		default:
 			Console.println("[" + type + "] " + message);
@@ -46,6 +46,14 @@ public class Util {
 		final String ANSI_HOME = "\u001b[H";
 		System.out.print(ANSI_CLS + ANSI_HOME);
 		System.out.flush();
+	}
+	
+	public static String joinStringArray(String[] string, char join) {
+		String result = "";
+		for (String s: string) {
+			result = result.concat(s).concat(String.valueOf(join));
+		}
+		return result.substring(0, result.length() - 1);
 	}
 
 }
