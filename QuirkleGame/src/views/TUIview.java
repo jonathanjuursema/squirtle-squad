@@ -4,6 +4,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 import application.Console;
+import application.Util;
 import client.Client;
 import exceptions.IllegalMoveException;
 import exceptions.IllegalTurnException;
@@ -53,19 +54,14 @@ public class TUIview extends Thread implements Observer, View {
 	}
 
 	public void requestMoves(String requestMessage) {
+
 		printMessage("game", requestMessage);
 
-		if (!client.getPlayer().getTurn().isMoveRequest()) {
-			printMessage("game", "[1] Add a tile to swap.");
-		} else if (!client.getPlayer().getTurn().isSwapRequest()) {
-			printMessage("game", "[2] Add a move.");
-		}
-		
-		printMessage("game", "[3] Play this turn.");
-
-		int action = Console.readInt("What action do you want? \n > ");
-		
+		int action = 0;
+		action = printActions();
 		while (action != 3) {
+
+
 			if (action == 2) {
 				try {
 					client.getPlayer().getTurn().addMove(askForMove());
@@ -75,6 +71,8 @@ public class TUIview extends Thread implements Observer, View {
 					} else if (e instanceof IllegalTurnException) {
 						this.printMessage("error", "This turn is not possible");
 					}
+					Util.log(e);
+					action = 0;
 				}
 			}
 
@@ -89,27 +87,66 @@ public class TUIview extends Thread implements Observer, View {
 					} else if (e instanceof TileNotInHandException) {
 						this.printMessage("error", "This turn is not possible");
 					}
+					action = 0;
+					Util.log(e);
 				}
 			}
+			
+			action = printActions();
 		}
 
 		client.sendTurnToServer();
 	}
 
 	/**
-	 * @throws NumberFormatException
+	 * @return
 	 */
-	public Move askForMove() throws NumberFormatException {
-		Tile tile = selectTileFromHand(Console.readInt("Please select a tile of your hand by typing the corresponding number."));
+	public int printActions() {
+		Console.println(client.getPlayer().getTurn().getBoardCopy().toString());
+		Console.println(client.getPlayer().getTurn().getPlayer().getHand().toString());
+
+		if (!client.getPlayer().getTurn().isMoveRequest()) {
+			printMessage("game", "[1] Add a tile to swap.");
+		}
+		if (!client.getPlayer().getTurn().isSwapRequest()) {
+			printMessage("game", "[2] Add a move.");
+		}
+
+		printMessage("game", "[3] Play this turn.");
+
+		int action = Console.readInt("What action do you want? \n> ");
+		return action;
+	}
+
+	/**
+	 * @throws NumberFormatException
+	 * @throws IllegalTurnException 
+	 */
+	public Move askForMove() throws NumberFormatException, IllegalTurnException {
+
+		int tileFromHand = Console.readInt(
+				"[game] Select a tile of your hand by typing the corresponding number. (or type \"cancel\")\n> ");
+		Tile tile = selectTileFromHand(tileFromHand);
+
+		if (selectTileFromHand(tileFromHand) == null) {
+			this.printMessage("error", "This tile is not valid");
+			throw new IllegalTurnException();
+		}
+		
 		while (tile != null) {
-			String input = Console.readString(
-					"Please select the place where you want to place the tile by typing \"x-coordinate,y-coordinate\".");
+			
+			String input = Console
+					.readString("[game] Select a place with \"x-coordinate,y-coordinate\". (or type \"cancel\")\n> ");
+
 			String[] coordinates = input.split(",");
 			int x = Integer.parseInt(coordinates[0]);
-			int y = Integer.parseInt(coordinates[0]);
+			int y = Integer.parseInt(coordinates[1]);
+			
 			BoardSquare b = parseBoardSquare(x, y);
-			while (b != null) {
+			if(b != null) {
 				return new Move(tile, b);
+			} else {
+				throw new IllegalTurnException();
 			}
 		}
 
@@ -117,7 +154,8 @@ public class TUIview extends Thread implements Observer, View {
 	}
 
 	public Tile askForSwap() throws NumberFormatException {
-		Tile tile = selectTileFromHand(Console.readInt("Please select a tile of your hand by typing the corresponding number."));
+		Tile tile = selectTileFromHand(
+				Console.readInt("Please select a tile of your hand by typing the corresponding number.\n> "));
 		while (tile != null) {
 			return tile;
 		}
@@ -126,8 +164,9 @@ public class TUIview extends Thread implements Observer, View {
 
 	public BoardSquare parseBoardSquare(int x, int y) {
 		try {
-			if (client.getBoardCopy().getPossiblePlaces().contains(client.getBoardCopy().getSquare(x, y))) {
-				return client.getBoardCopy().getSquare(x, y);
+			if (client.getPlayer().getTurn().getBoardCopy().getPossiblePlaces()
+					.contains(client.getPlayer().getTurn().getBoardCopy().getSquare(x, y))) {
+				return client.getPlayer().getTurn().getBoardCopy().getSquare(x, y);
 			} else {
 				printMessage("game", "It is not possible to place a tile on this place.");
 			}
@@ -136,23 +175,25 @@ public class TUIview extends Thread implements Observer, View {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Select a tile in hand.
-	 * @requires numberInHand > 0 && numberInHand <= Hand.Limit
+	 * 
+	 * @requires numberInHand >= 1 && numberInHand <= Hand.Limit
 	 * @param numberInHand
 	 * @return
 	 */
 	public Tile selectTileFromHand(int numberInHand) {
-		if (numberInHand > 0 && numberInHand <= 6) {
+		if (numberInHand > 0 && numberInHand < Hand.LIMIT + 1) {
 			if (client.getPlayer().getHand().getTilesInHand().get(numberInHand) != null) {
-				return client.getPlayer().getHand().getTilesInHand().get(numberInHand);
+				return client.getPlayer().getHand().getTilesInHand().get(numberInHand - 1);
 			} else {
-				return null;
+				Util.log("debug", "Tile not in hand");
 			}
 		} else {
-			return null;
+			Util.log("debug", "Please make a valid choice");
 		}
+		return null;
 	}
 
 	public void printHand(Hand hand) {

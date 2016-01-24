@@ -61,7 +61,7 @@ public class Turn extends Observable {
 
 		if (this.getMoves().size() > 0) {
 
-			Move lastMove = this.getMoves().get(0);
+			Move lastMove = this.getMoves().get(0); // TODO: Niet 0 maar laatste move
 
 			if (lastMove.getPosition().getX() == move.getPosition().getX()) {
 

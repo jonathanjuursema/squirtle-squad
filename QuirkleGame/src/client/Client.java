@@ -195,9 +195,11 @@ public class Client {
 	 */
 	public void updateBoard(String[] args) {
 		int count = 0;
+		Util.log("debug", args.toString());
 		for (String unParsedMove : args) {
 			if (count > 2) {
 				Move doneMove;
+				Util.log("debug", unParsedMove);
 				doneMove = unParseMove(unParsedMove);
 
 				try {
@@ -221,7 +223,7 @@ public class Client {
 	 */
 	public Move unParseMove(String argument) {
 
-		String[] move = argument.split("" + Protocol.Server.Settings.DELIMITER2);
+		String[] move = argument.split("\\" + String.valueOf(Protocol.Server.Settings.DELIMITER2));
 		Tile tile = new Tile(move[0].charAt(0), move[0].charAt(1));
 
 		int x = Integer.parseInt(move[1]);
@@ -259,19 +261,22 @@ public class Client {
 		for (String tile : args) {
 			addList.add(new Tile(tile.charAt(0), tile.charAt(1)));
 		}
+		
 		while (!succesfull && tries < 3) {
 			try {
-				getPlayer().getHand().addTohand(addList);
+				getPlayer()
+				.getHand()
+				.addTohand(addList);
 				tries++;
 			} catch (HandLimitReachedExeption e) {
-				pushErrorMessage("Waiting for the server to take your stones and add new stones.");
-				try {
-					this.wait(1000);
-				} catch (InterruptedException e1) {
-					Util.log(e1);
+				if(tries == 0) {
+					pushErrorMessage("Waiting for the server to take your stones and add new stones.");
 				}
+				tries++;
 				Util.log(e);
+				continue;
 			}
+			succesfull = true;
 		}
 
 		if (!succesfull) {
@@ -344,8 +349,7 @@ public class Client {
 	public String parseMove(Move m) {
 		String position = "" + m.getPosition().getX() + Protocol.Server.Settings.DELIMITER2
 						+ m.getPosition().getY();
-		String tile = "" + m.getTile().getColor() + Protocol.Server.Settings.DELIMITER2
-						+ m.getTile().getShape();
+		String tile = "" + m.getTile().getColor() + m.getTile().getShape();
 		return tile + Protocol.Server.Settings.DELIMITER2 + position;
 	}
 
@@ -449,10 +453,14 @@ public class Client {
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 		}
-
+		
+		Util.log("debug", this.boardCopy.toString());
+		
 		if (args[1].equals(getNickname())) {
-			Turn thisClientTurn = new Turn(getBoardCopy(), getPlayer());
+			
+			Turn thisClientTurn = new Turn(this.boardCopy, getPlayer());
 			this.getPlayer().giveTurn(thisClientTurn);
+			
 		} else if (args[0].equals(getNickname())) {
 			removeTilesToHand(args);
 		} else {

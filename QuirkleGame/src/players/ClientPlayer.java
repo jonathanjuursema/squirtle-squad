@@ -1,6 +1,7 @@
 package players;
 
 import client.Client;
+import game.Hand;
 import views.TUIview;
 import views.View;
 
@@ -54,5 +55,6 @@ public abstract class ClientPlayer extends Player {
 	public View getView() {
 		return (TUIview) this.view;
 	}
+
 
 }

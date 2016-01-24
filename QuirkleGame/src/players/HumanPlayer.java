@@ -3,6 +3,7 @@ package players;
 import java.util.Observer;
 
 import client.Client;
+import game.Hand;
 import game.Turn;
 import views.TUIview;
 import views.View;
@@ -16,6 +17,8 @@ public class HumanPlayer extends ClientPlayer {
 	public HumanPlayer(String name, Client client) {
 		super(name);
 		super.client = client;
+		Hand hand = new Hand();
+		super.assignHand(hand);
 		this.setView(new TUIview(client));
 	}
 
@@ -37,7 +40,7 @@ public class HumanPlayer extends ClientPlayer {
 	public void giveTurn(Turn turn) {
 		super.giveTurn(turn);
 		view.requestMoves(this.getName() + " it is your turn.");
-		this.getTurn().addObserver((Observer) turn);
+		//this.getTurn().addObserver((Observer) turn);
 	}
 
 	public void sendError(String string) {

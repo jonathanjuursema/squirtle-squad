@@ -67,6 +67,7 @@ public class Hand extends Observable {
 		List<Tile> returnList = new ArrayList<Tile>();
 		returnList.addAll(this.tilesInHand);
 		this.tilesInHand.clear();
+		
 		setChanged();
 		notifyObservers("hand");
 		return returnList;
