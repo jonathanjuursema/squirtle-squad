@@ -28,7 +28,6 @@ public class Turn extends Observable {
 	private Board boardCopy;
 
 	public Player assignedPlayer;
-
 	/**
 	 * Creates a turn with assigned Player and the board. This functions creates
 	 * a deepcopy of the board.
@@ -41,7 +40,6 @@ public class Turn extends Observable {
 		this.boardCopy.setBoard(board.copy(this.boardCopy));
 		this.assignedPlayer = currentPlayer;
 	}
-
 	/**
 	 * Add a move to the turn. If not possible it throws an exception.
 	 * 
