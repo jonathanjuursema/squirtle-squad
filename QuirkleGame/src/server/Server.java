@@ -28,11 +28,14 @@ public class Server extends Thread {
 
 	public static final String[] FUNCTIONS = { "CHALLENGE", "CHAT", "LEADERBORD" };
 
+	private static final int MAXLEADERBOARDLENGTH = 10;
+
 	private List<ServerPlayer> lobby;
 	private List<ServerPlayer> players;
 	private List<Game> games;
 
 	private Map<ServerPlayer, ServerPlayer> challenges;
+	private List<LeaderboardEntry> leaderboard;
 
 	private ServerSocket socket;
 
@@ -42,6 +45,7 @@ public class Server extends Thread {
 		this.socket = new ServerSocket(port);
 		this.games = new ArrayList<Game>();
 		this.challenges = new HashMap<ServerPlayer, ServerPlayer>();
+		this.leaderboard = new ArrayList<LeaderboardEntry>();
 		this.start();
 	}
 
@@ -310,8 +314,7 @@ public class Server extends Thread {
 					addGame(game);
 					this.challenges.remove(challenger, challengee);
 				} catch (TooManyPlayersException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					Util.log(e);
 				}
 			} else {
 				throw new PlayerIsNoChallengeeException(challengee);
@@ -319,9 +322,10 @@ public class Server extends Thread {
 
 		}
 	}
-	
+
 	/**
-	 * When either side of a challenge enters a game, we'll forfeit any challenge.
+	 * When either side of a challenge enters a game, we'll forfeit any
+	 * challenge.
 	 */
 	public void forfeitChallenge(ServerPlayer player) {
 		if (isChallengee(player)) {
@@ -330,14 +334,77 @@ public class Server extends Thread {
 				if (this.challenges.get(p) == player) {
 					challenger = p;
 				}
-			}			
+			}
 			if (challenger != null) {
-			 	challenger.decline();
-			 	this.challenges.remove(challenger);
+				challenger.decline();
+				this.challenges.remove(challenger);
 			}
 		} else if (isChallenger(player)) {
 			this.challenges.remove(player);
 		}
+	}
+
+	/**
+	 * Submit a score the the leaderboard.
+	 * 
+	 * @param name
+	 *            The name of the player.
+	 * @param score
+	 *            The score of the player.
+	 */
+	public void submitToLeaderboard(String name, int score) {
+		LeaderboardEntry e = new LeaderboardEntry(name, score);
+		if (this.leaderboard.size() < 1) {
+			this.leaderboard.add(e);
+		} else {
+			for (int i = 0; i < this.leaderboard.size(); i++) {
+				if (e.getScore() > this.leaderboard.get(i).getScore()) {
+					this.leaderboard.add(i, e);
+					return;
+				}
+				if (i >= Server.MAXLEADERBOARDLENGTH) {
+					return;
+				}
+			}
+		}
+	}
+
+	public String[] leaderboardToProtocol() {
+		String[] args = new String[Server.MAXLEADERBOARDLENGTH];
+		for (int i = 0; i < Server.MAXLEADERBOARDLENGTH; i++) {
+			if (i >= this.leaderboard.size()) {
+				args[i] = "<empty>" + Protocol.Server.Settings.DELIMITER2 + "0";
+			} else {
+				args[i] = this.leaderboard.get(i).getName() + Protocol.Server.Settings.DELIMITER2
+								+ this.leaderboard.get(i).getScore();
+			}
+		}
+		return args;
+	}
+
+	/**
+	 * This is a small sub-class for the leaderboard.
+	 * 
+	 * @author Jonathan Juursema & Peter Wessels
+	 */
+	class LeaderboardEntry {
+
+		private String name;
+		private int score;
+
+		public LeaderboardEntry(String name, int score) {
+			this.name = name;
+			this.score = score;
+		}
+
+		public int getScore() {
+			return this.score;
+		}
+
+		public String getName() {
+			return this.name;
+		}
+
 	}
 
 }

@@ -470,6 +470,7 @@ public class Game implements ActionListener {
 
 		int highScore = 0;
 		for (ServerPlayer p : this.players) {
+			this.parentServer.submitToLeaderboard(p.getName(), p.getScore());
 			if (p.getScore() > highScore) {
 				highScore = p.getScore();
 			}

@@ -103,8 +103,7 @@ public class ServerConnectionHandler extends ConnectionHandler {
 			break;
 
 		case Protocol.Client.GETLEADERBOARD:
-			this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
-			// TODO
+			this.send(Protocol.Server.LEADERBOARD, this.server.leaderboardToProtocol());
 			break;
 
 		case Protocol.Client.GETSTONESINBAG:
