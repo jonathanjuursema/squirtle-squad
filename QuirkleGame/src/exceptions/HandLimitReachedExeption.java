@@ -2,6 +2,7 @@ package exceptions;
 
 import game.Hand;
 
+@SuppressWarnings("serial")
 public class HandLimitReachedExeption extends QwirkleException {
 	Hand hand;
 	
