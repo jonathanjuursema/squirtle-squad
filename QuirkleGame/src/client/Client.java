@@ -81,7 +81,7 @@ public class Client {
 
 			while (this.status == Status.IN_LOBBY) {
 				String amount = this.waitForInput("game",
-						"With how much players do you want to play? (2-4 players, type 1 for any kind of game)");
+								"With how much players do you want to play? (2-4 players, type 1 for any kind of game)");
 				if (amount != null) {
 					int choice = Integer.parseInt(amount);
 					if (choice >= 1 && choice <= 4) {
@@ -102,7 +102,8 @@ public class Client {
 	 * Register a client to the server
 	 */
 	public void register() {
-		this.nickname = Console.readString("What nickname would you like to use?" + System.lineSeparator() + "> ");
+		this.nickname = Console.readString(
+						"What nickname would you like to use?" + System.lineSeparator() + "> ");
 		this.server.send(Protocol.Client.HALLO, nickname);
 	}
 
@@ -115,12 +116,12 @@ public class Client {
 		this.status = Status.IN_GAME;
 
 		this.boardCopy = new Board();
-		
+
 		ClientPlayer cPlayer = this.player;
-		if(cPlayer.getView() instanceof Observable) {
+		if (cPlayer.getView() instanceof Observable) {
 			this.boardCopy.addObserver((Observer) cPlayer.getView());
 		}
-		
+
 		// First move
 		Turn newTurn = new Turn(boardCopy, player);
 		this.player.giveTurn(newTurn);
@@ -165,7 +166,7 @@ public class Client {
 	 */
 
 	public void pushErrorMessage(String string) {
-		
+
 		((TUIview) this.player.getView()).printMessage("error", string);
 		Util.log("server error", string);
 	}
@@ -198,7 +199,7 @@ public class Client {
 
 				try {
 					this.boardCopy.placeTile(doneMove.getTile(), doneMove.getPosition().getX(),
-							doneMove.getPosition().getY());
+									doneMove.getPosition().getY());
 				} catch (SquareOutOfBoundsException e) {
 					Util.log(e);
 				}
@@ -338,8 +339,10 @@ public class Client {
 	 * @return The string that contains the Tile and the position
 	 */
 	public String parseMove(Move m) {
-		String position = "" + m.getPosition().getX() + Protocol.Server.Settings.DELIMITER2 + m.getPosition().getY();
-		String tile = "" + m.getTile().getColor() + Protocol.Server.Settings.DELIMITER2 + m.getTile().getShape();
+		String position = "" + m.getPosition().getX() + Protocol.Server.Settings.DELIMITER2
+						+ m.getPosition().getY();
+		String tile = "" + m.getTile().getColor() + Protocol.Server.Settings.DELIMITER2
+						+ m.getTile().getShape();
 		return tile + Protocol.Server.Settings.DELIMITER2 + position;
 	}
 
@@ -462,7 +465,8 @@ public class Client {
 			this.player.sendError("It is not your turn at the moment, wait for your turn please.");
 			break;
 		case 2: // not your stone
-			this.player.sendError("This tile is not your tile, please pick a stone of your own hand.");
+			this.player.sendError(
+							"This tile is not your tile, please pick a stone of your own hand.");
 			break;
 		case 3: // not that many stones available
 			this.player.sendError("The bag doesn't have enough tiles to complete this action.");

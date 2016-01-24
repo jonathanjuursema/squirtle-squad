@@ -16,26 +16,26 @@ public class Util {
 	public static void log(String type, String message) {
 		switch (type) {
 		case "rx":
-			//Console.println("[" + type + "] " + message);
+			// Console.println("[" + type + "] " + message);
 			break;
 		case "tx":
-			//Console.println("[" + type + "] " + message);
+			// Console.println("[" + type + "] " + message);
 			break;
 		default:
 			Console.println("[" + type + "] " + message);
 			break;
 		}
 	}
+
 	/**
-	 * The specified log function which logs exception message. The 
-	 * message is consist of the type of exception and the message 
-	 * of the Exception.
+	 * The specified log function which logs exception message. The message is
+	 * consist of the type of exception and the message of the Exception.
 	 * 
 	 * @param e
 	 */
-	
+
 	public static void log(Exception e) {
-		Console.println("["+ e.getClass().getSimpleName() + "] " + e.getMessage());
+		Console.println("[" + e.getClass().getSimpleName() + "] " + e.getMessage());
 	}
 
 	/**

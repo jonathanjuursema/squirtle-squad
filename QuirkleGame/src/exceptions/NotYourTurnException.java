@@ -12,8 +12,9 @@ package exceptions;
 @SuppressWarnings("serial")
 public class NotYourTurnException extends QwirkleException {
 
-	public NotYourTurnException() {}
-	
+	public NotYourTurnException() {
+	}
+
 	public String toString() {
 		return "It is not your turn.";
 	}

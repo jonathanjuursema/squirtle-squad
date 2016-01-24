@@ -51,7 +51,8 @@ public class Turn extends Observable {
 	 * @throws IllegalTurnException
 	 */
 
-	public void addMove(Move move) throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException {
+	public void addMove(Move move)
+					throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException {
 		if (this.swap.size() != 0) {
 			throw new IllegalTurnException();
 		}
@@ -115,18 +116,20 @@ public class Turn extends Observable {
 				}
 			}
 		}
-		
-		if(!unvalid) {
-			throw new IllegalMoveException(move, "This move is not placed in the same row or column as the previous move.");
+
+		if (!unvalid) {
+			throw new IllegalMoveException(move,
+							"This move is not placed in the same row or column as the previous move.");
 		}
 
 		if (move.isValidMove(this.getBoardCopy())) {
 			this.moves.add(move);
-			this.boardCopy.placeTile(move.getTile(), move.getPosition().getX(), move.getPosition().getY());
+			this.boardCopy.placeTile(move.getTile(), move.getPosition().getX(),
+							move.getPosition().getY());
 		} else {
 			throw new IllegalMoveException(move);
 		}
-		
+
 		setChanged();
 		notifyObservers("turn");
 		// TODO: implement further
@@ -148,11 +151,11 @@ public class Turn extends Observable {
 		if (this.getMoves().size() != 0) {
 			throw new IllegalTurnException();
 		}
-		
-		if(!this.swap.contains(t)){
+
+		if (!this.swap.contains(t)) {
 			this.swap.add(t);
 		}
-		
+
 		setChanged();
 		notifyObservers("turn");
 	}
@@ -160,11 +163,11 @@ public class Turn extends Observable {
 	public List<Tile> getSwap() {
 		return this.swap;
 	}
-	
+
 	public boolean isSwapRequest() {
 		return this.swap.size() > 0;
 	}
-	
+
 	public boolean isMoveRequest() {
 		return this.getMoves().size() > 0;
 	}
@@ -187,10 +190,12 @@ public class Turn extends Observable {
 		boolean baseIsRow = true;
 
 		if (this.getMoves().size() > 1) {
-			if (this.getMoves().get(0).getPosition().getX() == this.getMoves().get(1).getPosition().getX()) {
+			if (this.getMoves().get(0).getPosition().getX() == this.getMoves().get(1).getPosition()
+							.getX()) {
 				// If the sequence is a column, then the row needs to be checked
 				baseIsRow = false;
-			} else if (this.getMoves().get(0).getPosition().getY() == this.getMoves().get(1).getPosition().getY()) {
+			} else if (this.getMoves().get(0).getPosition().getY() == this.getMoves().get(1)
+							.getPosition().getY()) {
 				// If the sequence is a row, then the columns needs to be
 				// checked
 				// System.out.println("[debug] Base sequence is row");
@@ -200,7 +205,8 @@ public class Turn extends Observable {
 
 		int returnScore = 0;
 
-		Map<Move, Map<Integer, List<Tile>>> cleanedMap = getSequencesByMovesAndBoard(this.boardCopy, this.getMoves());
+		Map<Move, Map<Integer, List<Tile>>> cleanedMap = getSequencesByMovesAndBoard(this.boardCopy,
+						this.getMoves());
 
 		int rowScore = 0;
 		int columnScore = 0;
@@ -240,8 +246,8 @@ public class Turn extends Observable {
 	 * @return
 	 * @throws SquareOutOfBoundsException
 	 */
-	public static Map<Move, Map<Integer, List<Tile>>> getSequencesByMovesAndBoard(Board board, List<Move> moves)
-			throws SquareOutOfBoundsException {
+	public static Map<Move, Map<Integer, List<Tile>>> getSequencesByMovesAndBoard(Board board,
+					List<Move> moves) throws SquareOutOfBoundsException {
 		Map<Move, Map<Integer, List<Tile>>> sequences = new HashMap<Move, Map<Integer, List<Tile>>>();
 
 		for (Move move : moves) {
@@ -251,7 +257,8 @@ public class Turn extends Observable {
 			for (int i = 0; i < 4; i++) {
 				List<Tile> currentList = new ArrayList<Tile>();
 
-				currentSquare = board.getSquare(move.getPosition().getX(), move.getPosition().getY());
+				currentSquare = board.getSquare(move.getPosition().getX(),
+								move.getPosition().getY());
 
 				currentList.add(currentSquare.getTile());
 

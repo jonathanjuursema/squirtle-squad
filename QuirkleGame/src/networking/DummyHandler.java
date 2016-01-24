@@ -15,9 +15,11 @@ public class DummyHandler extends ConnectionHandler {
 	}
 
 	@Override
-	public void parse(String command, String[] args) { }
+	public void parse(String command, String[] args) {
+	}
 
 	@Override
-	public void shutdown(String reason) { }
+	public void shutdown(String reason) {
+	}
 
 }
