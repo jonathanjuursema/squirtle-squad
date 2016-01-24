@@ -16,6 +16,10 @@ import server.ServerConnectionHandler;
 
 public class ServerPlayer extends Player {
 
+	private boolean canInvite;
+	private boolean chanChat;
+	private boolean canLeaderBoard;
+
 	private Game game;
 	private ServerConnectionHandler connection;
 
@@ -165,19 +169,46 @@ public class ServerPlayer extends Player {
 		this.game = game;
 	}
 
-	public void setCanInvite(boolean b) {
-		// TODO Auto-generated method stub
-
+	/**
+	 * @return the canInvite
+	 */
+	public boolean canInvite() {
+		return canInvite;
 	}
 
-	public void setCanChat(boolean b) {
-		// TODO Auto-generated method stub
-
+	/**
+	 * @param canInvite the canInvite to set
+	 */
+	public void canInvite(boolean canInvite) {
+		this.canInvite = canInvite;
 	}
 
-	public void setCanLeaderBoard(boolean b) {
-		// TODO Auto-generated method stub
+	/**
+	 * @return the chanChat
+	 */
+	public boolean canChat() {
+		return chanChat;
+	}
 
+	/**
+	 * @param chanChat the chanChat to set
+	 */
+	public void canChat(boolean chanChat) {
+		this.chanChat = chanChat;
+	}
+
+	/**
+	 * @return the canLeaderBoard
+	 */
+	public boolean canLeaderBoard() {
+		return canLeaderBoard;
+	}
+
+	/**
+	 * @param canLeaderBoard the canLeaderBoard to set
+	 */
+	public void canLeaderBoard(boolean canLeaderBoard) {
+		this.canLeaderBoard = canLeaderBoard;
 	}
 
 }

@@ -159,13 +159,13 @@ public class ServerConnectionHandler extends ConnectionHandler {
 		for (int i = 1; i < args.length; i++) {
 			switch (args[i]) {
 			case "CHALLENGE":
-				this.getPlayer().setCanInvite(true);
+				this.getPlayer().canInvite(true);
 				break;
 			case "CHAT":
-				this.getPlayer().setCanChat(true);
+				this.getPlayer().canChat(true);
 				break;
 			case "LEADERBOARD":
-				this.getPlayer().setCanLeaderBoard(true);
+				this.getPlayer().canLeaderBoard(true);
 				break;
 			}
 		}
