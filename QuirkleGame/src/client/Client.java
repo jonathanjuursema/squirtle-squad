@@ -46,7 +46,7 @@ public class Client {
 
 	public Status status;
 
-	String nickname;
+	private String nickname;
 
 	/**
 	 * Setting up the client. The sockets will be initialised aswel as the
@@ -78,22 +78,7 @@ public class Client {
 			if (this.nickname == null) {
 				this.register();
 			}
-
-			while (this.status == Status.IN_LOBBY) {
-				String amount = this.waitForInput("game",
-								"With how much players do you want to play? (2-4 players, type 1 for any kind of game)");
-				if (amount != null) {
-					int choice = Integer.parseInt(amount);
-					if (choice >= 1 && choice <= 4) {
-						this.sendMessageToServer(Protocol.Client.REQUESTGAME, "" + choice);
-					}
-				}
-
-				while (run) {
-
-				}
-			}
-
+			
 		}
 		// TODO: Start afvangen
 	}
@@ -102,9 +87,24 @@ public class Client {
 	 * Register a client to the server
 	 */
 	public void register() {
-		this.nickname = Console.readString(
+		String nickname = Console.readString(
 						"What nickname would you like to use?" + System.lineSeparator() + "> ");
-		this.server.send(Protocol.Client.HALLO, nickname);
+		this.setNickname(nickname);
+		this.server.send(Protocol.Client.HALLO, this.getNickname());
+	}
+
+	public void requestGame() {
+		
+		String amount = this.waitForInput("game",
+						"With how much players do you want to play? (2-4 players, type 1 for any kind of game)");
+		if (amount != null) {
+			int choice = Integer.parseInt(amount);
+			if (choice >= 1 && choice <= 4) {
+				this.sendMessageToServer(Protocol.Client.REQUESTGAME, "" + choice);
+				this.pushMessage("Waiting for the server to start a game.");
+			}
+		}
+
 	}
 
 	/**
@@ -123,8 +123,11 @@ public class Client {
 		}
 
 		// First move
+		
 		Turn newTurn = new Turn(boardCopy, player);
+		this.pushMessage("Please select your first best move.");
 		this.player.giveTurn(newTurn);
+
 	}
 
 	/*

@@ -46,7 +46,7 @@ public class ClientConnectionHandler extends ConnectionHandler {
 			break;
 		case Protocol.Server.HALLO:
 			client.pushMessage("Welcome " + client.getNickname());
-			client.setStatus(Client.Status.IN_LOBBY);
+			client.requestGame();
 			// TODO: arguments specifies which functionality is suitable
 			break;
 		case Protocol.Server.INVITE:
@@ -64,7 +64,6 @@ public class ClientConnectionHandler extends ConnectionHandler {
 			break;
 		case Protocol.Server.STARTGAME:
 			client.enterGame();
-			client.pushMessage("Please select your first best move.");
 			break;
 		case Protocol.Server.STONESINBAG:
 			// TODO

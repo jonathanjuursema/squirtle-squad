@@ -55,15 +55,15 @@ public class TUIview extends Thread implements Observer, View {
 	public void requestMoves(String requestMessage) {
 		printMessage("game", requestMessage);
 
-		if (client.getPlayer().getTurn().isSwapRequest()) {
+		if (!client.getPlayer().getTurn().isMoveRequest()) {
 			printMessage("game", "[1] Add a tile to swap.");
-		} else if (client.getPlayer().getTurn().isMoveRequest()) {
+		} else if (!client.getPlayer().getTurn().isSwapRequest()) {
 			printMessage("game", "[2] Add a move.");
 		}
 		
 		printMessage("game", "[3] Play this turn.");
 
-		int action = Console.readInt("What action do you want?");
+		int action = Console.readInt("What action do you want? \n > ");
 		
 		while (action != 3) {
 			if (action == 2) {
