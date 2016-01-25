@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import application.Console;
 import application.Util;
 import exceptions.AlreadyChallengedSomeoneException;
 import exceptions.PlayerAlreadyInGameException;

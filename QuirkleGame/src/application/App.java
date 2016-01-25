@@ -28,7 +28,7 @@ public class App {
 		String appType = "";
 
 		while (!appType.equals("server") && !appType.equals("client")) {
-			appType = Console.readString("Would you like to run a client or a server?"
+			appType = Util.readString("Would you like to run a client or a server?"
 							+ System.lineSeparator() + "> ");
 		}
 
@@ -51,7 +51,7 @@ public class App {
 		int port = 0;
 
 		while (port < 2000 || port > 3000) {
-			port = Console.readInt("What port should the server run on? (2000..3000)"
+			port = Util.readInt("What port should the server run on? (2000..3000)"
 							+ System.lineSeparator() + "> ");
 		}
 

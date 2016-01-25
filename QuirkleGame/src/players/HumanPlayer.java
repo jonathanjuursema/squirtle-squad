@@ -25,8 +25,11 @@ public class HumanPlayer extends ClientPlayer {
 		return view;
 	}
 
-	public void giveTurn(Turn turn) {
+	public synchronized void giveTurn(Turn turn) {
 		this.turn = this.client.getView().requestMoves(turn);
+		if (this.turn != null) {
+			this.client.submitTurn(this.turn);
+		}
 	}
 
 }

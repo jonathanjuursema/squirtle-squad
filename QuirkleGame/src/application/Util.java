@@ -1,6 +1,17 @@
 package application;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+
 public class Util {
+
+	/** sign for wrong input */
+	static public final char FOUT = '\u0004';
+
+	static private BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+	static private PrintStream out = System.out;
 
 	/**
 	 * A general log method. Messages are displayed as follows: [type] message
@@ -11,7 +22,7 @@ public class Util {
 	 * @param message
 	 *            The message.
 	 */
-	public static void log(String type, String message) {
+	public synchronized static void log(String type, String message) {
 		switch (type) {
 		case "rx":
 		case "tx":
@@ -35,7 +46,7 @@ public class Util {
 	 * 
 	 * @param message
 	 */
-	public static void log(String message) {
+	public synchronized static void log(String message) {
 		System.out.println(message);
 	}
 
@@ -45,7 +56,7 @@ public class Util {
 	 * @param message
 	 *            The message.
 	 */
-	public static void println(String message) {
+	public synchronized static void println(String message) {
 		Util.print(message + System.lineSeparator());
 	}
 
@@ -55,7 +66,7 @@ public class Util {
 	 * @param message
 	 *            The message.
 	 */
-	public static void print(String message) {
+	public synchronized static void print(String message) {
 		System.out.print(message);
 	}
 
@@ -66,7 +77,7 @@ public class Util {
 	 * @param e
 	 */
 
-	public static void log(Exception e) {
+	public synchronized static void log(Exception e) {
 		Util.log(e.getClass().getSimpleName(), e.getMessage());
 	}
 
@@ -86,6 +97,61 @@ public class Util {
 			result = result.concat(s).concat(String.valueOf(join));
 		}
 		return result.substring(0, result.length() - 1);
+	}
+
+	/**
+	 * Reads a line from the default input.
+	 * 
+	 * @param text
+	 *            question
+	 * @return read text (never null)
+	 */
+	static synchronized public String readString(String text) {
+		print(text);
+		String antw = null;
+		try {
+			antw = in.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	
+		if (antw == null) {
+			return "" + FOUT;
+		} else {
+			return antw;
+		}
+	}
+
+	/**
+	 * Reads an integer from the default input
+	 * 
+	 * @param text
+	 *            question text
+	 * @return entered number
+	 */
+	static synchronized public int readInt(String text) {
+		return Util.readInt(text, "Enter an integer");
+	}
+
+	/**
+	 * Reads an integer from the default input With an invalid input the
+	 * question will be asked again
+	 * 
+	 * @param text
+	 *            question
+	 * @param errorMessage
+	 *            error message for wrong input
+	 * @return number
+	 */
+	static synchronized public int readInt(String text, String errorMessage) {
+		do {
+			String ans = readString(text);
+			try {
+				return Integer.parseInt(ans);
+			} catch (NumberFormatException e) {
+				log(errorMessage);
+			}
+		} while (true);
 	}
 
 }

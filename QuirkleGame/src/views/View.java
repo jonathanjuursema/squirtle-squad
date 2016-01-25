@@ -18,7 +18,6 @@ public interface View extends Observer {
 	public Turn requestMoves(Turn turn);
 	public void sendLeaderboard(String[] args);
 	public void startGame();
-	public void giveTurn(Turn turn);
 	public void showChat(String message);
 	public void connected();
 

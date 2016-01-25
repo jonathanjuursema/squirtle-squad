@@ -192,7 +192,7 @@ public class Hand extends Observable {
 		for (int i = 0; i < this.getAmountOfTiles(); i++) {
 			returnMessage += "--" + (i + 1) + "-+";
 		}
-		returnMessage += "+\n";
+		returnMessage += "\n";
 		returnMessage += "|";
 		for (Tile t : this.getTilesInHand()) {
 			returnMessage += " " + t.toString() + " |";

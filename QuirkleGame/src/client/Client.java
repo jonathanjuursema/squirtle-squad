@@ -9,7 +9,6 @@ import java.util.Observable;
 import java.util.Observer;
 
 import application.App;
-import application.Console;
 import application.Util;
 import exceptions.HandLimitReachedExeption;
 import exceptions.IllegalMoveException;
@@ -134,22 +133,23 @@ public class Client {
 		}
 
 		this.player.getHand().hardResetHand();
-		this.server.send(Protocol.Client.REQUESTGAME, new String[] { "" + no });
 
 		this.status = Client.Status.WAITINGFORGAME;
+		this.server.send(Protocol.Client.REQUESTGAME, new String[] { "" + no });
 	}
 
 	public void startGame() {
-		if (this.status != Client.Status.WAITINGFORGAME) {
-			this.getView().sendNotification("error",
-							"We've got a new game, but didn't request one.");
-		} else {
-			if (this.player.getHand().getTilesInHand().size() > 0) {
+		if (this.status == Client.Status.WAITINGFORGAME) {
+			if (this.getPlayerHand().getTilesInHand().size() > 0) {
 				this.status = Client.Status.IN_GAME_INITIAL;
 				this.boardCopy = new Board();
 				this.player.giveTurn(new Turn(boardCopy, this.player));
 				this.getView().startGame();
+			} else {
+				Util.log("debug", "We wait for the hand to be filled.");
 			}
+		} else {
+			Util.log("debug", "We got a Game start, but don't know why.");
 		}
 	}
 
@@ -159,6 +159,12 @@ public class Client {
 
 		for (String tile : tiles) {
 			addList.add(new Tile(tile.charAt(0), tile.charAt(1)));
+		}
+		
+		try {
+			this.getPlayerHand().addTohand(addList);
+		} catch (HandLimitReachedExeption e) {
+			Util.log(e);
 		}
 
 		if (this.status == Client.Status.WAITINGFORGAME) {
@@ -183,7 +189,7 @@ public class Client {
 		this.getView().showChat(message);
 	}
 
-	public void registerTurn(String[] args) {
+	public synchronized void  registerTurn(String[] args) {
 
 		// TODO Implement so we can keep track of the scores.
 
@@ -229,7 +235,7 @@ public class Client {
 		}
 
 		if (args[1].equals(this.name)) {
-			this.getView().giveTurn(new Turn(boardCopy, this.player));
+			this.player.giveTurn(new Turn(boardCopy, this.player));
 		} else if (args[0].equals(this.name)) {
 			try {
 				this.getPlayerHand().removeFromHand(usedInPrevious);
@@ -298,6 +304,10 @@ public class Client {
 	 */
 	public String getName() {
 		return name;
+	}
+
+	public Player getPlayer() {
+		return this.player;
 	}
 
 }

@@ -7,9 +7,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 
-import application.Console;
 import application.Util;
 import client.Client;
+import exceptions.HandLimitReachedExeption;
+import exceptions.IllegalTurnException;
+import exceptions.TileNotInHandException;
+import game.Board;
+import game.Hand;
 import game.Tile;
 import game.Turn;
 
@@ -32,7 +36,7 @@ public class TextView extends Thread implements View {
 					Util.log(e);
 				}
 			} else {
-				String[] input = Console.readString("").split(" ");
+				String[] input = Util.readString("").split(" ");
 				String command = input[0];
 				String[] args = Arrays.copyOfRange(input, 1, input.length);
 				switch (command) {
@@ -77,14 +81,14 @@ public class TextView extends Thread implements View {
 		this.sendNotification("[" + type + "]: " + message);
 	}
 
-	public InetAddress askForHost() {
+	public synchronized InetAddress askForHost() {
 
 		InetAddress host = null;
 
 		while (host == null) {
 			try {
 				host = InetAddress
-								.getByName(Console.readString("What hostname should we connect to?"
+								.getByName(Util.readString("What hostname should we connect to?"
 												+ System.lineSeparator() + "> "));
 			} catch (UnknownHostException e) {
 				this.sendNotification("This hostname cannot be resolved.");
@@ -96,12 +100,12 @@ public class TextView extends Thread implements View {
 
 	}
 
-	public int askForPort() {
+	public synchronized int askForPort() {
 
 		int port = 0;
 
 		while (port < 2000 || port > 3000) {
-			port = Console.readInt("What port should we connect to? (2000..3000)"
+			port = Util.readInt("What port should we connect to? (2000..3000)"
 							+ System.lineSeparator() + "> ");
 		}
 
@@ -109,18 +113,22 @@ public class TextView extends Thread implements View {
 
 	}
 
-	public String requestNickname() {
-		return Console.readString(
+	public synchronized String requestNickname() {
+		return Util.readString(
 						"What nickname would you like to use?" + System.lineSeparator() + "> ");
 	}
 
-	public String askForPlayerType() {
-		return Console.readString("What type of player would you like to be? (human, computer)"
+	public synchronized String askForPlayerType() {
+		return Util.readString("What type of player would you like to be? (human, computer)"
 						+ System.lineSeparator() + "> ");
 	}
 
 	@Override
-	public Turn requestMoves(Turn turn) {
+	public synchronized Turn requestMoves(Turn turn) {
+
+		Hand hand = this.client.getPlayerHand();
+		Board board = new Board();
+		board.setBoard(this.client.getBoard().copy(board));
 
 		List<Tile> removedFromHand = new ArrayList<Tile>();
 
@@ -131,15 +139,94 @@ public class TextView extends Thread implements View {
 			Util.println(this.client.getBoard().toString());
 			Util.println(this.client.getPlayerHand().toString());
 
-			String action = "";
+			while (true) {
+				String command = Util
+								.readString("What would you like to do? Type 'help' for a list of possibilities."
+												+ System.lineSeparator() + "> ");
+				String[] args = command.split(" ");
+				switch (args[0]) {
 
-			while (!action.equals("move") && !action.equals("turn")) {
-				switch (Console.readString("Would you like to swap or play?"
-								+ System.lineSeparator() + "> ")) {
+				case "swap":
+
+					if (args.length < 2) {
+						Util.println("usage: swap <tileno>");
+						break;
+					}
+
+					int tileInt = Integer.parseInt(args[1]);
+					if (tileInt > hand.getTilesInHand().size()) {
+						Util.println("There are not so many tiles in your hand.");
+						break;
+					}
+
+					Tile t = hand.getTilesInHand().get(tileInt);
+					
+					try {
+						turn.addSwapRequest(t);
+					} catch (IllegalTurnException e) {
+						Util.log(e);
+						Util.println("Invalid move: " + e.getMessage());
+						break;
+					}
+					
+					try {
+						hand.removeFromHand(t);
+					} catch (TileNotInHandException e) {
+						Util.log(e);
+						Util.println("Could not remove tile.");
+						break;
+					}
+					
+					removedFromHand.add(t);
+					
+					Util.println(this.client.getPlayerHand().toString());
+					
+					break;
+
 				case "move":
+
+					if (args.length < 4) {
+						Util.println("usage: move <tileno> <x> <y>");
+						break;
+					}
+					
 					break;
-				case "turn":
+					
+				case "apply":
+					
+					return turn;
+
+				case "help":
+
+					Util.println("move <tileno> <x> <y>: Play a move.");
+					Util.println("swap <tileno>: Schedule a tile for swapping.");
+					Util.println("apply: Send your move to the server.");
+					Util.println("revert: Restart your turn.");
+					Util.println("stop: Stop your turn.");
 					break;
+
+				case "stop":
+
+					try {
+						hand.addTohand(removedFromHand);
+					} catch (HandLimitReachedExeption e) {
+						Util.log(e);
+					}
+					return null;
+
+				case "revert":
+
+					turn.getMoves().clear();
+					turn.getSwap().clear();
+					try {
+						hand.addTohand(removedFromHand);
+					} catch (HandLimitReachedExeption e) {
+						Util.log(e);
+					}
+					removedFromHand.clear();
+					board.setBoard(this.client.getBoard().copy(board));
+					break;
+
 				}
 			}
 
@@ -156,15 +243,7 @@ public class TextView extends Thread implements View {
 
 	@Override
 	public void startGame() {
-		Console.readInt("A new game has been started. Good luck!");
-	}
-
-	@Override
-	public void giveTurn(Turn turn) {
-		Util.println("It is your turn. You can type 'move' to start it.");
-		if (this.client.getStatus() == Client.Status.IN_GAME_INITIAL) {
-			Util.println("Attention: this is the first turn. The player who submits the highest scoring turn plays it.");
-		}
+		Util.println("A new game has been started. Good luck!");
 	}
 
 	@Override

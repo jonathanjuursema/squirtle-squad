@@ -10,7 +10,6 @@ import java.util.Map;
 
 import javax.swing.Timer;
 
-import application.Console;
 import application.Util;
 import exceptions.HandLimitReachedExeption;
 import exceptions.IllegalTurnException;
