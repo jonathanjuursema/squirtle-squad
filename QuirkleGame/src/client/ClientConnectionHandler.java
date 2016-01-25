@@ -9,7 +9,8 @@ import networking.ConnectionHandler;
 import protocol.Protocol;
 
 /**
- * TODO File header.
+ * The ClientConnectionHandler parses the commands received by the server to a
+ * method call, called in the client.
  * 
  * @author Jonathan Juursema & Peter Wessels
  *
