@@ -1,6 +1,5 @@
 package players;
 
-import client.Client;
 import exceptions.IllegalMoveException;
 import exceptions.IllegalTurnException;
 import exceptions.SquareOutOfBoundsException;
@@ -18,7 +17,6 @@ import game.Turn;
  */
 public abstract class Player {
 
-	private Client client;
 	private Hand hand;
 	private String name;
 	private Turn turn;
