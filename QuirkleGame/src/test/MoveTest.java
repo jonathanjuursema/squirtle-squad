@@ -108,6 +108,8 @@ public class MoveTest {
 		Move move11 = new Move(new Tile(Tile.RED, Tile.CIRCLE), turn.getBoardCopy().getSquare(2, 0));
 
 		try {
+			Util.log("special debug",new Tile(Tile.RED, Tile.DIAMOND) + "op " + turn.getBoardCopy().getPossiblePlaceByTile(new Tile(Tile.RED, Tile.DIAMOND),turn.getMoves()).toString());
+
 			turn.addMove(move10);
 			turn.addMove(move11);
 		} catch (IllegalMoveException | IllegalTurnException e) {

@@ -137,7 +137,7 @@ public class Turn extends Observable {
 			throw new IllegalMoveException(move, "The moves needs to be placed in the same row.");
 		}
 
-		if (move.isValidMove(this.getBoardCopy())) {
+		if (move.isValidMove(this.getBoardCopy(), this)) {
 			this.moves.add(move);
 			this.boardCopy.placeTile(move.getTile(), move.getPosition().getX(), move.getPosition().getY());
 		} else {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import application.Util;
 import exceptions.IllegalMoveException;
 import exceptions.SquareOutOfBoundsException;
 
@@ -39,17 +40,9 @@ public class Move {
 		this.position = position;
 	}
 
-	public boolean isValidMove(Board board) throws SquareOutOfBoundsException, IllegalMoveException {
+	public boolean isValidMove(Board board, Turn turn) throws SquareOutOfBoundsException, IllegalMoveException {
 		// Check move in relation with the board
-		boolean isPossible = false;
-		for (Tile t : board.getAllPossiblePlaces().get(this.position)) {
-			if (t.getShape() == this.getTile().getShape()
-					&& t.getColor() == this.getTile().getColor()) {
-				isPossible = true;
-			}
-		}
-		
-		if (!isPossible) {
+		if(board.getPossiblePlaceByTile(this.getTile(), turn.getMoves()).size() == 0) { 
 			throw new IllegalMoveException(this, "This place does not have a connection to an existing row or column.");
 		}
 

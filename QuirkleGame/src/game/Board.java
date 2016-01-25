@@ -204,6 +204,10 @@ public class Board extends Observable {
 	}
 	
 	public List<BoardSquare> getPossiblePlaceByTile(Tile tile, List<Move> selectedMoves) throws SquareOutOfBoundsException {
+		
+		if(selectedMoves == null || selectedMoves.size() == 0) {
+			return this.getPossiblePlaceByTile(tile);
+		}
 		List<BoardSquare> retList = new ArrayList<BoardSquare>();
 		for(Entry<BoardSquare, List<Tile>> entry : getPossiblePlacesByMoves(selectedMoves).entrySet()) {
 			for(Tile t : entry.getValue()) {
