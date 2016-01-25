@@ -2,7 +2,7 @@ package players;
 
 import game.Turn;
 
-public class DummyPlayer extends ClientPlayer {
+public class DummyPlayer extends Player {
 
 	public DummyPlayer(String name) {
 		super(name);
