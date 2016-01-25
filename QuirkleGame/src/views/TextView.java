@@ -172,4 +172,10 @@ public class TextView extends Thread implements View {
 		Util.println(message);
 	}
 
+	@Override
+	public void connected() {
+		Util.println("You are connected to the server, " + this.client.getName() + ".");
+		Util.println("You can start a new game by typing 'game <int>'.");
+	}
+
 }

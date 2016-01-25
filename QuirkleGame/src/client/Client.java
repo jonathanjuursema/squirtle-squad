@@ -46,7 +46,7 @@ import views.View;
  *
  */
 public class Client {
-
+	
 	private View view;
 
 	private Socket socket;
@@ -68,7 +68,7 @@ public class Client {
 	public Status status;
 
 	public Client() throws IOException {
-
+		
 		this.status = Client.Status.INITIALIZING;
 
 		this.view = new TextView(this);
@@ -100,7 +100,8 @@ public class Client {
 	}
 
 	public void start() {
-
+		
+		this.getView().connected();
 		this.status = Client.Status.IN_LOBBY;
 
 	}
@@ -290,6 +291,13 @@ public class Client {
 	 */
 	public Status getStatus() {
 		return status;
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
 	}
 
 }

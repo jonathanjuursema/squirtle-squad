@@ -14,6 +14,9 @@ import server.Server;
  *
  */
 public class App {
+	
+	public static final boolean DEBUG = true;
+	public static final boolean VERBOSE = true;
 
 	public static final String name = "SquirtleSquad";
 

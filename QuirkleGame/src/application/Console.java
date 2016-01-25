@@ -31,7 +31,7 @@ public class Console {
 	 * @return read text (never null)
 	 */
 	static synchronized public String readString(String text) {
-		Util.log(text);
+		Util.print(text);
 		String antw = null;
 		try {
 			antw = in.readLine();
@@ -54,7 +54,7 @@ public class Console {
 	 * @return entered number
 	 */
 	static synchronized public int readInt(String text) {
-		return readInt(text, "Enter a integer");
+		return readInt(text, "Enter an integer");
 	}
 
 	/**

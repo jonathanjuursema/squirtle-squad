@@ -14,10 +14,15 @@ public class Util {
 	public static void log(String type, String message) {
 		switch (type) {
 		case "rx":
-			Util.log("[" + type + "] " + message);
-			break;
 		case "tx":
-			Util.log("[" + type + "] " + message);
+			if (App.VERBOSE) {
+				Util.log("[" + type + "] " + message);
+			}
+			break;
+		case "debug":
+			if (App.DEBUG) {
+				Util.log("[" + type + "] " + message);
+			}
 			break;
 		default:
 			Util.log("[" + type + "] " + message);
