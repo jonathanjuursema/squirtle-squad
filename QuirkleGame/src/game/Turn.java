@@ -7,9 +7,14 @@ import java.util.Map;
 
 import java.util.Observable;
 
+import exceptions.HandLimitReachedExeption;
 import exceptions.IllegalMoveException;
 import exceptions.IllegalTurnException;
 import exceptions.SquareOutOfBoundsException;
+import exceptions.TileNotInBagException;
+import exceptions.TileNotInHandException;
+import exceptions.TooFewTilesInBagException;
+import exceptions.TooManyTilesInBag;
 import players.Player;
 
 /**
@@ -61,7 +66,8 @@ public class Turn extends Observable {
 
 		if (this.getMoves().size() > 0) {
 
-			Move lastMove = this.getMoves().get(0); // TODO: Niet 0 maar laatste move
+			Move lastMove = this.getMoves().get(0); // TODO: Niet 0 maar laatste
+													// move
 
 			if (lastMove.getPosition().getX() == move.getPosition().getX()) {
 
@@ -186,11 +192,11 @@ public class Turn extends Observable {
 		// We first create 2 sequences to
 		// represent the horizontal line, the row
 		// and the vertical line, the column
-		
-		if(this.isSwapRequest()) {
+
+		if (this.isSwapRequest()) {
 			return 0;
 		}
-		
+
 		boolean baseIsRow = true;
 
 		if (this.getMoves().size() > 1) {
@@ -244,6 +250,44 @@ public class Turn extends Observable {
 		returnScore = rowScore + columnScore;
 
 		return returnScore;
+	}
+
+	/**
+	 * This function will apply the current turn to a specified board.
+	 * 
+	 * @param board
+	 *            The board to which the turn should be applied.
+	 * @param bag
+	 *            The bag which this turn uses.
+	 * 
+	 * @throws TileNotInHandException
+	 * @throws TooManyTilesInBag
+	 * @throws TileNotInBagException
+	 * @throws TooFewTilesInBagException
+	 * @throws IllegalTurnException
+	 * @throws SquareOutOfBoundsException
+	 * @throws HandLimitReachedExeption
+	 */
+	public List<Tile> applyTurn(Board board, Bag bag) throws TooFewTilesInBagException,
+					TileNotInBagException, TooManyTilesInBag, TileNotInHandException,
+					IllegalTurnException, SquareOutOfBoundsException, HandLimitReachedExeption {
+
+		if (this.isSwapRequest()) {
+			return bag.swapTiles(this.assignedPlayer.getHand(), this.getSwap());
+		} else if (this.isMoveRequest()) {
+			for (Move m : this.getMoves()) {
+				board.placeTile(m.getTile(), m.getPosition().getX(), m.getPosition().getY());
+				this.assignedPlayer.getHand().removeFromHand(m.getTile());
+			}
+			if (moves.size() > bag.getNumberOfTiles()) {
+				return bag.takeFromBag(this.assignedPlayer.getHand(), bag.getNumberOfTiles());
+			} else {
+				return bag.takeFromBag(this.assignedPlayer.getHand(), moves.size());
+			}
+		} else {
+			throw new IllegalTurnException();
+		}
+
 	}
 
 	/**
