@@ -3,9 +3,7 @@ package application;
 public class Util {
 
 	/**
-	 * A general log method. Policy is to keep logging to a minimal. Only
-	 * critical logging should occur. Messages are displayed as follows: [type]
-	 * message
+	 * A general log method. Messages are displayed as follows: [type] message
 	 * 
 	 * @param type
 	 *            The type of message. The developer is free to choose their own
@@ -16,15 +14,44 @@ public class Util {
 	public static void log(String type, String message) {
 		switch (type) {
 		case "rx":
-			Console.println("[" + type + "] " + message);
+			Util.log("[" + type + "] " + message);
 			break;
 		case "tx":
-			Console.println("[" + type + "] " + message);
+			Util.log("[" + type + "] " + message);
 			break;
 		default:
-			Console.println("[" + type + "] " + message);
+			Util.log("[" + type + "] " + message);
 			break;
 		}
+	}
+
+	/**
+	 * A shorthand for log if no specific type is desired.
+	 * 
+	 * @param message
+	 */
+	public static void log(String message) {
+		System.out.println(message);
+	}
+
+	/**
+	 * Same as log, but can print to a seperate output.
+	 * 
+	 * @param message
+	 *            The message.
+	 */
+	public static void println(String message) {
+		Util.print(message + System.lineSeparator());
+	}
+
+	/**
+	 * Same as println.
+	 * 
+	 * @param message
+	 *            The message.
+	 */
+	public static void print(String message) {
+		System.out.print(message);
 	}
 
 	/**
@@ -47,10 +74,10 @@ public class Util {
 		System.out.print(ANSI_CLS + ANSI_HOME);
 		System.out.flush();
 	}
-	
+
 	public static String joinStringArray(String[] string, char join) {
 		String result = "";
-		for (String s: string) {
+		for (String s : string) {
 			result = result.concat(s).concat(String.valueOf(join));
 		}
 		return result.substring(0, result.length() - 1);

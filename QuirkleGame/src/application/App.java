@@ -19,7 +19,7 @@ public class App {
 
 	public static void main(String[] args) {
 
-		Console.println("Welcome to the " + name + " Qwirkle application!"
+		Util.println("Welcome to the " + name + " Qwirkle application!"
 						+ System.lineSeparator());
 
 		String appType = "";
@@ -55,7 +55,7 @@ public class App {
 		try {
 			new Server(port);
 		} catch (IOException e) {
-			Console.println("Cannot assign this port number. See below for the reason.");
+			Util.println("Cannot assign this port number. See below for the reason.");
 			Util.log(e);
 			App.server();
 		}
@@ -64,30 +64,10 @@ public class App {
 
 	public static void client() {
 
-		InetAddress host = null;
-
-		while (host == null) {
-			try {
-				host = InetAddress
-								.getByName(Console.readString("What hostname should we connect to?"
-												+ System.lineSeparator() + "> "));
-			} catch (UnknownHostException e) {
-				Console.println("This hostname cannot be resolved. See below for the reason.");
-				Util.log(e);
-			}
-		}
-
-		int port = 0;
-
-		while (port < 2000 || port > 3000) {
-			port = Console.readInt("What port should we connect to? (2000..3000)"
-							+ System.lineSeparator() + "> ");
-		}
-
 		try {
-			new Client(host, port);
+			new Client();
 		} catch (IOException e) {
-			Console.println("Cannot connect to the server. See below for the reason.");
+			Util.println("Cannot connect to the server. See below for the reason.");
 			Util.log(e);
 			App.client();
 		}

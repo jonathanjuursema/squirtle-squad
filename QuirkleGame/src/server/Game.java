@@ -285,10 +285,10 @@ public class Game implements ActionListener {
 
 			for (ServerPlayer p : this.players) {
 				p.sendMessage(Protocol.Server.MOVE, args);
-				Console.print(p.getName() + "(" + p.getScore() + ") ");
+				Util.println(p.getName() + "(" + p.getScore() + ") ");
 			}
 
-			Console.print("\n" + this.board.toString());
+			Util.println("\n" + this.board.toString());
 
 			this.nextTurn(1);
 

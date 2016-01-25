@@ -1,7 +1,8 @@
 package players;
 
 import client.Client;
-import views.TUIview;
+import game.Turn;
+import views.TextView;
 import views.View;
 
 /**
@@ -17,7 +18,7 @@ import views.View;
 public abstract class ClientPlayer extends Player {
 
 	public Client client;
-	public TUIview view;
+	public TextView view;
 
 	public static enum Status {
 		IN_LOBBY, IN_GAME
@@ -33,42 +34,6 @@ public abstract class ClientPlayer extends Player {
 
 	public ClientPlayer(String name) {
 		super(name);
-		// this.getHand().addObserver(view);
-	}
-
-	public void applyTurn() {
-		this.client.sendTurnToServer();
-	}
-
-	/**
-	 * Pushes the error to the player
-	 * 
-	 * @param string
-	 *            The error that needs to be pushed to the player.
-	 */
-
-	public abstract void sendError(String string);
-
-	/**
-	 * This function asks the player for input.
-	 * 
-	 * @param type
-	 *            The type of message you want to ask. For example "chat" if the
-	 *            person can chat, or "game" if actions for the game are
-	 *            required.
-	 * @param message
-	 * @return
-	 */
-	public abstract String askForInput(String type, String message);
-
-	/**
-	 * Sets the view to a particular view class.
-	 * 
-	 * @param view
-	 *            The view that will be used by the client.
-	 */
-	public void setView(View view) {
-		this.view = (TUIview) view;
 	}
 
 	/**
@@ -77,7 +42,9 @@ public abstract class ClientPlayer extends Player {
 	 * @return The view class.
 	 */
 	public View getView() {
-		return (TUIview) this.view;
+		return this.view;
 	}
+	
+	public abstract void giveTurn(Turn turn);
 
 }

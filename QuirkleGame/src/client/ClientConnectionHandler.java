@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.Socket;
 
 import application.Util;
-import exceptions.SquareOutOfBoundsException;
 import networking.ConnectionHandler;
 import protocol.Protocol;
 
@@ -32,47 +31,48 @@ public class ClientConnectionHandler extends ConnectionHandler {
 	public void parse(String command, String[] args) {
 		switch (command) {
 		case Protocol.Server.ERROR:
-			client.pushErrorMessage(args);
-			break;
-		case Protocol.Server.ADDTOHAND:
-			client.addTilesToHand(args);
-			break;
-		case Protocol.Server.CHAT:
-			client.pushMessage(args[0]);
-			break;
-		case Protocol.Server.DECLINEINVITE:
-			client.pushErrorMessage("Sorry, the challenged player does not accept your invite.");
-			break;
-		case Protocol.Server.GAME_END:
-			client.pushErrorMessage("The game is finished.");
-			break;
-		case Protocol.Server.HALLO:
-			client.pushMessage("Welcome " + client.getNickname());
-			client.requestGame();
-			// TODO: arguments specifies which functionality is suitable
-			break;
-		case Protocol.Server.INVITE:
-			// TODO
-			break;
-		case Protocol.Server.LEADERBOARD:
-			// TODO
-			break;
-		case Protocol.Server.MOVE:
-			// TODO: Only update if in game
-			try {
-				client.registerTurn(args);
-			} catch (SquareOutOfBoundsException e) {
-				Util.log(e);
+			switch (Integer.parseInt(args[0])) {
+			case 4:
+				this.client.getView().sendNotification("error", "This nickname already exists.");
+				this.client.register();
+				break;
+			default:
+				this.client.getView().sendNotification("error", args[1]);
+				break;
 			}
 			break;
+		case Protocol.Server.ADDTOHAND:
+			client.addToHand(args);
+			break;
+		case Protocol.Server.CHAT:
+			client.chatFromServer(args);
+			break;
+		case Protocol.Server.DECLINEINVITE:
+			client.declineInvite();
+			break;
+		case Protocol.Server.GAME_END:
+			client.endGame(args);
+			break;
+		case Protocol.Server.HALLO:
+			client.start();
+			break;
+		case Protocol.Server.INVITE:
+			client.invite(args[0]);
+			break;
+		case Protocol.Server.LEADERBOARD:
+			client.leaderboard(args);
+			break;
+		case Protocol.Server.MOVE:
+			client.registerTurn(args);
+			break;
 		case Protocol.Server.OKWAITFOR:
-			client.pushErrorMessage("Waiting for more players to enter..");
+			client.getView().sendNotification("Waiting for more players to enter..");
 			break;
 		case Protocol.Server.STARTGAME:
-			client.enterGame();
+			client.startGame();
 			break;
 		case Protocol.Server.STONESINBAG:
-			// TODO
+			client.getView().sendNotification("There are " + args[0] + " stones in the bag.");
 			break;
 		default:
 			Util.log("protocol", "Received an unknown command from the server: " + command);

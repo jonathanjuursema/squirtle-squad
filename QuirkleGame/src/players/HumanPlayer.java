@@ -3,21 +3,19 @@ package players;
 import client.Client;
 import game.Hand;
 import game.Turn;
-import views.TUIview;
+import views.TextView;
 import views.View;
 
 public class HumanPlayer extends ClientPlayer {
 
-	/*
-	 * Initialize the human player
-	 */
+	private Turn turn;
 
 	public HumanPlayer(String name, Client client) {
 		super(name);
 		super.client = client;
 		Hand hand = new Hand();
 		super.assignHand(hand);
-		this.setView(new TUIview(client));
+		this.view = new TextView(client);
 	}
 
 	/**
@@ -27,27 +25,8 @@ public class HumanPlayer extends ClientPlayer {
 		return view;
 	}
 
-	/**
-	 * @param view
-	 *            the view to set
-	 */
-	public void setView(View view) {
-		this.view = (TUIview) view;
-	}
-
 	public void giveTurn(Turn turn) {
-		super.giveTurn(turn);
-		view.requestMoves(this.getName() + " it is your turn.");
-		// this.getTurn().addObserver((Observer) turn);
-	}
-
-	public void sendError(String string) {
-		view.printMessage("error", string);
-	}
-
-	@Override
-	public String askForInput(String type, String message) {
-		return view.askForInput(type, message);
+		this.turn = this.client.getView().requestMoves(turn);
 	}
 
 }

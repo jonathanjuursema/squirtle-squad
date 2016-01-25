@@ -24,26 +24,6 @@ public class Console {
 	}
 
 	/**
-	 * write a text on the default output
-	 * 
-	 * @param text
-	 *            text to be written
-	 */
-	static synchronized public void print(String text) {
-		out.print(text);
-	}
-
-	/**
-	 * write a text on the default output, ending with a new line
-	 * 
-	 * @param text
-	 *            text to be written
-	 */
-	static synchronized public void println(String text) {
-		out.println(text);
-	}
-
-	/**
 	 * Reads a line from the default input.
 	 * 
 	 * @param text
@@ -51,7 +31,7 @@ public class Console {
 	 * @return read text (never null)
 	 */
 	static synchronized public String readString(String text) {
-		print(text);
+		Util.log(text);
 		String antw = null;
 		try {
 			antw = in.readLine();
@@ -93,7 +73,7 @@ public class Console {
 			try {
 				return Integer.parseInt(ans);
 			} catch (NumberFormatException e) {
-				println(errorMessage);
+				Util.log(errorMessage);
 			}
 		} while (true);
 	}

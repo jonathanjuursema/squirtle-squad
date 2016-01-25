@@ -53,7 +53,7 @@ public class Server extends Thread {
 	 * The main functionality of the server.
 	 */
 	public void run() {
-		Console.println("Server is now accepting connections. Enjoy your game!");
+		Util.println("Server is now accepting connections. Enjoy your game!");
 		Util.log("debug", "Server thread has started.");
 		boolean running = true;
 		while (running) {
