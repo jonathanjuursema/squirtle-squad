@@ -1,14 +1,10 @@
 package client;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
-import application.App;
 import application.Util;
 import exceptions.HandLimitReachedExeption;
 import exceptions.IllegalMoveException;
@@ -20,7 +16,6 @@ import exceptions.TooFewTilesInBagException;
 import exceptions.TooManyTilesInBag;
 import game.Bag;
 import game.Board;
-import game.BoardSquare;
 import game.Hand;
 import game.Move;
 import game.Tile;
@@ -29,8 +24,6 @@ import players.ClientPlayer;
 import players.HumanPlayer;
 import players.Player;
 import protocol.Protocol;
-import server.Game;
-import server.Server;
 import views.TextView;
 import views.View;
 
@@ -45,7 +38,7 @@ import views.View;
  *
  */
 public class Client {
-	
+
 	private View view;
 
 	private Socket socket;
@@ -53,6 +46,7 @@ public class Client {
 
 	private Board boardCopy;
 	private ClientPlayer player;
+	private Turn turn;
 
 	private String name;
 
@@ -67,7 +61,7 @@ public class Client {
 	public Status status;
 
 	public Client() throws IOException {
-		
+
 		this.status = Client.Status.INITIALIZING;
 
 		this.view = new TextView(this);
@@ -99,18 +93,19 @@ public class Client {
 	}
 
 	public void start() {
-		
+
 		this.getView().connected();
 		this.status = Client.Status.IN_LOBBY;
 
 	}
 
-	public void submitTurn(Turn turn) {
-		if (turn.isMoveRequest()) {
+	public void submitTurn() {
+		if (this.turn.isMoveRequest()) {
 
-		} else if (turn.isSwapRequest()) {
+		} else if (this.turn.isSwapRequest()) {
 
 		}
+		this.status = Client.Status.IN_GAME;
 	}
 
 	public void requestGame(int no) {
@@ -143,13 +138,12 @@ public class Client {
 			if (this.getPlayerHand().getTilesInHand().size() > 0) {
 				this.status = Client.Status.IN_GAME_INITIAL;
 				this.boardCopy = new Board();
-				this.player.giveTurn(new Turn(boardCopy, this.player));
+				this.turn = new Turn(boardCopy, this.player);
+				this.player.giveTurn(this.turn);
 				this.getView().startGame();
 			} else {
 				Util.log("debug", "We wait for the hand to be filled.");
 			}
-		} else {
-			Util.log("debug", "We got a Game start, but don't know why.");
 		}
 	}
 
@@ -160,7 +154,7 @@ public class Client {
 		for (String tile : tiles) {
 			addList.add(new Tile(tile.charAt(0), tile.charAt(1)));
 		}
-		
+
 		try {
 			this.getPlayerHand().addTohand(addList);
 		} catch (HandLimitReachedExeption e) {
@@ -171,6 +165,47 @@ public class Client {
 			this.startGame();
 		}
 
+	}
+
+	public void requestSwap(String[] args) {
+	
+		if (this.status == Client.Status.IN_TURN) {
+	
+			boolean[] tilesFromHand = new boolean[Hand.LIMIT];
+	
+			for (String tile : args) {
+	
+				int no = Integer.parseInt(tile);
+				if (tilesFromHand[no] != true && no < Hand.LIMIT) {
+					tilesFromHand[no] = true;
+					try {
+						this.
+						turn.
+						addSwapRequest(
+										this.getPlayerHand().
+										getTilesInHand().
+										get(no)
+										);
+					} catch (IllegalTurnException e) {
+						this.getView().sendNotification("This swap is illegal: " + e.getMessage());
+						Util.log(e);
+						this.turn.getSwap().clear();
+						return;
+					}
+				}
+	
+			}
+			
+			this.getView().showTurn();
+			
+			Util.log("debug", "Registered swap request.");
+	
+		} else {
+			
+			this.getView().sendNotification("It is not your turn!");
+			
+		}
+	
 	}
 
 	public void chatFromClient(String[] args) {
@@ -189,7 +224,7 @@ public class Client {
 		this.getView().showChat(message);
 	}
 
-	public synchronized void  registerTurn(String[] args) {
+	public synchronized void registerTurn(String[] args) {
 
 		// TODO Implement so we can keep track of the scores.
 
@@ -235,7 +270,8 @@ public class Client {
 		}
 
 		if (args[1].equals(this.name)) {
-			this.player.giveTurn(new Turn(boardCopy, this.player));
+			this.turn = new Turn(boardCopy, this.player);
+			this.player.giveTurn(this.turn);
 		} else if (args[0].equals(this.name)) {
 			try {
 				this.getPlayerHand().removeFromHand(usedInPrevious);
@@ -293,13 +329,6 @@ public class Client {
 	}
 
 	/**
-	 * @return the status
-	 */
-	public Status getStatus() {
-		return status;
-	}
-
-	/**
 	 * @return the name
 	 */
 	public String getName() {
@@ -308,6 +337,13 @@ public class Client {
 
 	public Player getPlayer() {
 		return this.player;
+	}
+
+	/**
+	 * @return the turn
+	 */
+	public Turn getTurn() {
+		return turn;
 	}
 
 }

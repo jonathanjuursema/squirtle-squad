@@ -8,11 +8,8 @@ import views.View;
 
 public class HumanPlayer extends ClientPlayer {
 
-	private Turn turn;
-
 	public HumanPlayer(String name, Client client) {
-		super(name);
-		super.client = client;
+		super(client, name);
 		Hand hand = new Hand();
 		super.assignHand(hand);
 		this.view = new TextView(client);
@@ -25,11 +22,9 @@ public class HumanPlayer extends ClientPlayer {
 		return view;
 	}
 
-	public synchronized void giveTurn(Turn turn) {
-		this.turn = this.client.getView().requestMoves(turn);
-		if (this.turn != null) {
-			this.client.submitTurn(this.turn);
-		}
+	public synchronized void giveTurn() {
+		this.client.status = Client.Status.IN_TURN;
+		this.client.getView().giveTurn();
 	}
 
 }

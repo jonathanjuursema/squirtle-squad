@@ -66,7 +66,9 @@ public class ClientConnectionHandler extends ConnectionHandler {
 			client.registerTurn(args);
 			break;
 		case Protocol.Server.OKWAITFOR:
-			client.getView().sendNotification("Waiting for more players to enter..");
+			client.getView().sendNotification(
+							"Waiting for " + args[0] + " more players to enter..");
+			client.status = Client.Status.WAITINGFORGAME;
 			break;
 		case Protocol.Server.STARTGAME:
 			client.startGame();

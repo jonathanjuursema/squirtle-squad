@@ -2,20 +2,11 @@ package views;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Observable;
 
 import application.Util;
 import client.Client;
-import exceptions.HandLimitReachedExeption;
-import exceptions.IllegalTurnException;
-import exceptions.TileNotInHandException;
-import game.Board;
-import game.Hand;
-import game.Tile;
-import game.Turn;
 
 public class TextView extends Thread implements View {
 	private Client client;
@@ -29,7 +20,7 @@ public class TextView extends Thread implements View {
 
 		boolean running = true;
 		while (running) {
-			if (this.client.getStatus() == Client.Status.INITIALIZING) {
+			if (this.client.status == Client.Status.INITIALIZING) {
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
@@ -41,10 +32,52 @@ public class TextView extends Thread implements View {
 				String[] args = Arrays.copyOfRange(input, 1, input.length);
 				switch (command) {
 				case "help":
+
 					this.sendNotification(
 									"game <int>: request the server for a game with a certain amount of players");
+					this.sendNotification("move <tileno> <x> <y>: play a move.");
+					this.sendNotification("swap <tileno> [tileno] [tileno] ...: request swap.");
+					this.sendNotification("apply: send your move to the server.");
+					this.sendNotification("revert: restart your turn.");
+					this.sendNotification("");
 					this.sendNotification("chat <msg>: send a chat message");
 					break;
+
+				case "board":
+
+					if (this.client.status == Client.Status.IN_LOBBY) {
+						this.sendNotification("You're not in a game.");
+					} else {
+						Util.println(this.client.getBoard().toString());
+					}
+					break;
+
+				case "hand":
+
+					if (this.client.status == Client.Status.IN_LOBBY) {
+						this.sendNotification("You're not in a game.");
+					} else {
+						Util.println(this.client.getPlayerHand().toString());
+					}
+					break;
+
+				case "move":
+
+					if (args.length < 2) {
+
+					}
+
+				case "swap":
+
+					if (args.length < 1) {
+						Util.println("usage: swap <tileno> [tileno] [tileno] ...");
+						break;
+					}
+
+					this.client.requestSwap(args);
+
+					break;
+
 				case "game":
 					if (args.length < 1) {
 						this.sendNotification("error", "Usage: game <int>");
@@ -52,6 +85,7 @@ public class TextView extends Thread implements View {
 						this.client.requestGame(Integer.parseInt(args[0]));
 					}
 					break;
+					
 				case "chat":
 					if (args.length < 1) {
 						this.sendNotification("error", "Usage: chat <msg>");
@@ -59,9 +93,11 @@ public class TextView extends Thread implements View {
 						this.client.chatFromClient(args);
 					}
 					break;
+					
 				default:
 					this.sendNotification("Invalid command. Please type 'help' for a list.");
 					break;
+					
 				}
 			}
 		}
@@ -87,9 +123,8 @@ public class TextView extends Thread implements View {
 
 		while (host == null) {
 			try {
-				host = InetAddress
-								.getByName(Util.readString("What hostname should we connect to?"
-												+ System.lineSeparator() + "> "));
+				host = InetAddress.getByName(Util.readString("What hostname should we connect to?"
+								+ System.lineSeparator() + "> "));
 			} catch (UnknownHostException e) {
 				this.sendNotification("This hostname cannot be resolved.");
 				Util.log(e);
@@ -124,118 +159,6 @@ public class TextView extends Thread implements View {
 	}
 
 	@Override
-	public synchronized Turn requestMoves(Turn turn) {
-
-		Hand hand = this.client.getPlayerHand();
-		Board board = new Board();
-		board.setBoard(this.client.getBoard().copy(board));
-
-		List<Tile> removedFromHand = new ArrayList<Tile>();
-
-		boolean turndone = false;
-
-		while (!turndone) {
-
-			Util.println(this.client.getBoard().toString());
-			Util.println(this.client.getPlayerHand().toString());
-
-			while (true) {
-				String command = Util
-								.readString("What would you like to do? Type 'help' for a list of possibilities."
-												+ System.lineSeparator() + "> ");
-				String[] args = command.split(" ");
-				switch (args[0]) {
-
-				case "swap":
-
-					if (args.length < 2) {
-						Util.println("usage: swap <tileno>");
-						break;
-					}
-
-					int tileInt = Integer.parseInt(args[1]);
-					if (tileInt > hand.getTilesInHand().size()) {
-						Util.println("There are not so many tiles in your hand.");
-						break;
-					}
-
-					Tile t = hand.getTilesInHand().get(tileInt);
-					
-					try {
-						turn.addSwapRequest(t);
-					} catch (IllegalTurnException e) {
-						Util.log(e);
-						Util.println("Invalid move: " + e.getMessage());
-						break;
-					}
-					
-					try {
-						hand.removeFromHand(t);
-					} catch (TileNotInHandException e) {
-						Util.log(e);
-						Util.println("Could not remove tile.");
-						break;
-					}
-					
-					removedFromHand.add(t);
-					
-					Util.println(this.client.getPlayerHand().toString());
-					
-					break;
-
-				case "move":
-
-					if (args.length < 4) {
-						Util.println("usage: move <tileno> <x> <y>");
-						break;
-					}
-					
-					break;
-					
-				case "apply":
-					
-					return turn;
-
-				case "help":
-
-					Util.println("move <tileno> <x> <y>: Play a move.");
-					Util.println("swap <tileno>: Schedule a tile for swapping.");
-					Util.println("apply: Send your move to the server.");
-					Util.println("revert: Restart your turn.");
-					Util.println("stop: Stop your turn.");
-					break;
-
-				case "stop":
-
-					try {
-						hand.addTohand(removedFromHand);
-					} catch (HandLimitReachedExeption e) {
-						Util.log(e);
-					}
-					return null;
-
-				case "revert":
-
-					turn.getMoves().clear();
-					turn.getSwap().clear();
-					try {
-						hand.addTohand(removedFromHand);
-					} catch (HandLimitReachedExeption e) {
-						Util.log(e);
-					}
-					removedFromHand.clear();
-					board.setBoard(this.client.getBoard().copy(board));
-					break;
-
-				}
-			}
-
-		}
-
-		return turn;
-	}
-
-	@Override
 	public void sendLeaderboard(String[] args) {
 		// TODO Auto-generated method stub
 
@@ -255,6 +178,16 @@ public class TextView extends Thread implements View {
 	public void connected() {
 		Util.println("You are connected to the server, " + this.client.getName() + ".");
 		Util.println("You can start a new game by typing 'game <int>'.");
+	}
+
+	@Override
+	public void giveTurn() {
+		Util.println("It is your turn! See 'help' for info on how to submit your turn.");
+	}
+
+	@Override
+	public void showTurn() {
+		this.client.getTurn().toString();
 	}
 
 }

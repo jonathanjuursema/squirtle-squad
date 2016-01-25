@@ -32,8 +32,9 @@ public abstract class ClientPlayer extends Player {
 	 *            The name of the player.
 	 */
 
-	public ClientPlayer(String name) {
+	public ClientPlayer(Client client, String name) {
 		super(name);
+		this.client = client;
 	}
 
 	/**
@@ -45,6 +46,6 @@ public abstract class ClientPlayer extends Player {
 		return this.view;
 	}
 	
-	public abstract void giveTurn(Turn turn);
+	public abstract void giveTurn();
 
 }

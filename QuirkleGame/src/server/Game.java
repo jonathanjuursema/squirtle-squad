@@ -110,6 +110,11 @@ public class Game implements ActionListener {
 		this.parentServer.playerFromLobby(player);
 		if (players.size() == this.noOfPlayers) {
 			this.start();
+		} else {
+			for (ServerPlayer p : this.players) {
+				p.sendMessage(Protocol.Server.OKWAITFOR, new String[] {
+						"" + (this.getNoOfPlayers() - this.players.size()) });
+			}
 		}
 	}
 

@@ -3,7 +3,6 @@ package application;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 
 public class Util {
 
@@ -11,7 +10,6 @@ public class Util {
 	static public final char FOUT = '\u0004';
 
 	static private BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-	static private PrintStream out = System.out;
 
 	/**
 	 * A general log method. Messages are displayed as follows: [type] message
@@ -22,7 +20,7 @@ public class Util {
 	 * @param message
 	 *            The message.
 	 */
-	public synchronized static void log(String type, String message) {
+	public static void log(String type, String message) {
 		switch (type) {
 		case "rx":
 		case "tx":
@@ -46,7 +44,7 @@ public class Util {
 	 * 
 	 * @param message
 	 */
-	public synchronized static void log(String message) {
+	public static void log(String message) {
 		System.out.println(message);
 	}
 
@@ -56,7 +54,7 @@ public class Util {
 	 * @param message
 	 *            The message.
 	 */
-	public synchronized static void println(String message) {
+	public static void println(String message) {
 		Util.print(message + System.lineSeparator());
 	}
 
@@ -66,7 +64,7 @@ public class Util {
 	 * @param message
 	 *            The message.
 	 */
-	public synchronized static void print(String message) {
+	public static void print(String message) {
 		System.out.print(message);
 	}
 
@@ -77,7 +75,7 @@ public class Util {
 	 * @param e
 	 */
 
-	public synchronized static void log(Exception e) {
+	public static void log(Exception e) {
 		Util.log(e.getClass().getSimpleName(), e.getMessage());
 	}
 
@@ -106,7 +104,7 @@ public class Util {
 	 *            question
 	 * @return read text (never null)
 	 */
-	static synchronized public String readString(String text) {
+	static public String readString(String text) {
 		print(text);
 		String antw = null;
 		try {
@@ -114,7 +112,7 @@ public class Util {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	
+
 		if (antw == null) {
 			return "" + FOUT;
 		} else {
@@ -129,7 +127,7 @@ public class Util {
 	 *            question text
 	 * @return entered number
 	 */
-	static synchronized public int readInt(String text) {
+	static public int readInt(String text) {
 		return Util.readInt(text, "Enter an integer");
 	}
 
@@ -143,7 +141,7 @@ public class Util {
 	 *            error message for wrong input
 	 * @return number
 	 */
-	static synchronized public int readInt(String text, String errorMessage) {
+	static public int readInt(String text, String errorMessage) {
 		do {
 			String ans = readString(text);
 			try {
