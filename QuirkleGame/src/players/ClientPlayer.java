@@ -23,7 +23,11 @@ public abstract class ClientPlayer extends Player {
 
 	public ClientPlayer(String name) {
 		super(name);
-		//this.getHand().addObserver(view);
+		// this.getHand().addObserver(view);
+	}
+
+	public void applyTurn() {
+		this.client.sendTurnToServer();
 	}
 
 	/**
@@ -54,6 +58,5 @@ public abstract class ClientPlayer extends Player {
 	public View getView() {
 		return (TUIview) this.view;
 	}
-
 
 }

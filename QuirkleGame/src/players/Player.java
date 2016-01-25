@@ -54,10 +54,6 @@ public abstract class Player {
 		// IF COMPUTER PLAYER THE COMPUTER PLAYER WILL CALCULATE THE BEST TURN
 	}
 
-	public void applyTurn() {
-		this.client.sendTurnToServer();
-	}
-
 	/**
 	 * Allow subclass to access this player's private turn.
 	 * 

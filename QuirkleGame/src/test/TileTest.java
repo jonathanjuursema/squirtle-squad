@@ -8,7 +8,7 @@ import org.junit.Test;
 import game.Tile;
 
 public class TileTest {
-	
+
 	Tile t1, t2;
 
 	@Before
@@ -24,11 +24,11 @@ public class TileTest {
 		assertEquals(Tile.PLUS, t2.getShape());
 		assertEquals(Tile.DIAMOND, t1.getShape());
 	}
-	
+
 	@Test
 	public void testToString() {
-		assertEquals("[BLUE DIAMOND]", t1.toString());
-		assertEquals("[ORANGE PLUS]", t2.toString());
+		assertEquals("B5", t1.toString());
+		assertEquals("O4", t2.toString());
 	}
 
 }

@@ -62,7 +62,9 @@ public class TUIview extends Thread implements Observer, View {
 		action = printActions();
 
 		Tile dummyFeedbackTile = new Tile(Tile.BLACK, Tile.DUMMY);
-		while (action != 3) {
+
+		while (action != 3
+				|| !(client.getPlayer().getTurn().isSwapRequest() || client.getPlayer().getTurn().isMoveRequest())) {
 			if (action == 2 && !client.getPlayer().getTurn().isSwapRequest()) {
 				try {
 					Move moveToPlay = askForMove();
@@ -94,8 +96,9 @@ public class TUIview extends Thread implements Observer, View {
 
 					client.getPlayer().getHand().removeFromHand(tileToSwap);
 					client.getPlayer().getHand().getTilesInHand().add(index, dummyFeedbackTile);
-				
-				} catch (IllegalTurnException | NumberFormatException | NullPointerException | TileNotInHandException e) {
+
+				} catch (IllegalTurnException | NumberFormatException | NullPointerException
+						| TileNotInHandException e) {
 					if (e instanceof IllegalMoveException) {
 						this.printMessage("error", "This move is not possible");
 					} else if (e instanceof IllegalTurnException) {
@@ -123,16 +126,16 @@ public class TUIview extends Thread implements Observer, View {
 				}
 			}
 		}
-		
+
 		if (client.getPlayer().getTurn().isSwapRequest()) {
 			for (Tile t : client.getPlayer().getTurn().getSwap()) {
 				try {
 					client.getPlayer().getHand().removeFromHand(dummyFeedbackTile);
-					
+
 				} catch (TileNotInHandException e) {
-					//Util.log(e);
+					// Util.log(e);
 				}
-				
+
 				try {
 					client.getPlayer().getHand().addToHand(t);
 				} catch (HandLimitReachedExeption e) {
@@ -154,11 +157,14 @@ public class TUIview extends Thread implements Observer, View {
 		if (!client.getPlayer().getTurn().isMoveRequest()) {
 			printMessage("game", "[1] Add a tile to swap.");
 		}
+
 		if (!client.getPlayer().getTurn().isSwapRequest()) {
 			printMessage("game", "[2] Add a move.");
 		}
 
-		printMessage("game", "[3] Play this turn.");
+		if (client.getPlayer().getTurn().isSwapRequest() ^ client.getPlayer().getTurn().isMoveRequest()) {
+			printMessage("game", "[3] Play this turn.");
+		}
 
 		int action = Console.readInt("What action do you want? \n> ");
 		return action;
@@ -270,7 +276,11 @@ public class TUIview extends Thread implements Observer, View {
 	}
 
 	public String askForInput(String type, String message) {
-		String input = Console.readString(message + System.lineSeparator() + "> ");
+		if (!message.equals("")) {
+			Console.println("[" + type + "]: " + message);
+		}
+		
+		String input = Console.readString("> ");
 		printMessage("chat", input);
 		return input;
 	}

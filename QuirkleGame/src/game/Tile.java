@@ -111,7 +111,7 @@ public class Tile {
 		} else if (this.getColor() == Tile.PURPLE) {
 			response += "P";
 		} else if (this.getColor() == Tile.BLACK) {
-			response += " ";
+			response += "X";
 		}
 
 		// Editted getColor to getShape
@@ -128,7 +128,7 @@ public class Tile {
 		} else if (this.getShape() == Tile.PLUS) {
 			response += "4";
 		} else if (this.getShape() == Tile.DUMMY) {
-			response += "x";
+			response += "X";
 		}
 
 		return response;

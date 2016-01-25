@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+import application.App;
 import application.Console;
 import application.Util;
 import exceptions.HandLimitReachedExeption;
@@ -22,10 +23,15 @@ import players.ClientPlayer;
 import players.HumanPlayer;
 import players.Player;
 import protocol.Protocol;
+import server.Server;
 import views.TUIview;
 
 /**
- * TODO Write file header.
+ * The client will take the responsibility to inform the player about the
+ * commands send by the server. The client also contains a copy of the board and
+ * update this board according to the moves by all the players. Each player, no
+ * matter if the player is a computer player or a human player has its own
+ * client. This player is of type ClientPlayer.
  * 
  * @author Jonathan Juursema & Peter Wessels
  *
@@ -41,15 +47,17 @@ public class Client {
 	private ClientPlayer player;
 
 	public static enum Status {
-		IN_LOBBY, IN_GAME
+		IN_LOBBY, IN_GAME, IN_TURN
 	};
+
+	public static final String[] FUNCTIONS = { "CHAT", "CHALLENGE", "LEADERBORD" };
 
 	public Status status;
 
 	private String nickname;
 
 	/**
-	 * Setting up the client. The sockets will be initialised aswel as the
+	 * Setting up the client. The sockets will be initialised aswell as the
 	 * player and the view.
 	 * 
 	 * @param host
@@ -87,16 +95,27 @@ public class Client {
 	 * Register a client to the server
 	 */
 	public void register() {
-		String nickname = Console.readString(
-						"What nickname would you like to use?" + System.lineSeparator() + "> ");
+		String nickname = Console.readString("What nickname would you like to use?" + System.lineSeparator() + "> ");
 		this.setNickname(nickname);
-		this.server.send(Protocol.Client.HALLO, this.getNickname());
+
+		String[] resp = new String[Client.FUNCTIONS.length + 1];
+		resp[0] = this.getNickname();
+		for (int i = 1; i <= Client.FUNCTIONS.length; i++) {
+			resp[i] = Client.FUNCTIONS[i - 1];
+		}
+
+		this.server.send(Protocol.Client.HALLO, resp);
 	}
 
+	/**
+	 * When the player enters the lobby it can chose what kind of game the
+	 * player wants to play. This function will parse the input of the player
+	 * and will parse the input into a command accordingly to the protocol.
+	 */
 	public void requestGame() {
 
 		String amount = this.waitForInput("game",
-						"With how much players do you want to play? (2-4 players, type 1 for any kind of game)");
+				"With how much players do you want to play? (2-4 players, type 1 for any kind of game)");
 		if (amount != null) {
 			int choice = Integer.parseInt(amount);
 			if (choice >= 1 && choice <= 4) {
@@ -104,6 +123,8 @@ public class Client {
 				this.pushMessage("Waiting for the server to start a game.");
 			}
 		}
+
+		this.chat();
 
 	}
 
@@ -202,7 +223,7 @@ public class Client {
 
 				try {
 					this.boardCopy.placeTile(doneMove.getTile(), doneMove.getPosition().getX(),
-									doneMove.getPosition().getY());
+							doneMove.getPosition().getY());
 				} catch (SquareOutOfBoundsException e) {
 					Util.log(e);
 				}
@@ -253,8 +274,8 @@ public class Client {
 	public void addTilesToHand(String[] args) {
 		if (this.getPlayer().getTurn() != null) {
 			if (this.getPlayer().getTurn().isMoveRequest()) {
-				Util.log("debug", "" + this.getPlayer().getTurn().getMoves().size()
-								+ this.getPlayer().getTurn().toString());
+				Util.log("debug",
+						"" + this.getPlayer().getTurn().getMoves().size() + this.getPlayer().getTurn().toString());
 				List<Tile> tileList = new ArrayList<Tile>();
 				for (Move m : this.getPlayer().getTurn().getMoves()) {
 					tileList.add(m.getTile());
@@ -267,7 +288,7 @@ public class Client {
 				}
 			} else if (this.getPlayer().getTurn().isSwapRequest()) {
 				Util.log("debug", "" + this.getPlayer().getTurn().getSwap().size()
-								+ this.getPlayer().getTurn().getSwap().toString());
+						+ this.getPlayer().getTurn().getSwap().toString());
 				List<Tile> tileList = new ArrayList<Tile>();
 				for (Tile t : this.getPlayer().getTurn().getSwap()) {
 					tileList.add(t);
@@ -296,8 +317,7 @@ public class Client {
 				tries++;
 			} catch (HandLimitReachedExeption e) {
 				if (tries == 0) {
-					pushErrorMessage(
-									"Waiting for the server to take your stones and add new stones.");
+					pushErrorMessage("Waiting for the server to take your stones and add new stones.");
 				}
 				tries++;
 				Util.log(e);
@@ -376,8 +396,7 @@ public class Client {
 	 * @return The string that contains the Tile and the position
 	 */
 	public String parseMove(Move m) {
-		String position = "" + m.getPosition().getX() + Protocol.Server.Settings.DELIMITER2
-						+ m.getPosition().getY();
+		String position = "" + m.getPosition().getX() + Protocol.Server.Settings.DELIMITER2 + m.getPosition().getY();
 		String tile = "" + m.getTile().getColor() + m.getTile().getShape();
 		return tile + Protocol.Server.Settings.DELIMITER2 + position;
 	}
@@ -488,11 +507,11 @@ public class Client {
 
 			Turn thisClientTurn = new Turn(this.boardCopy, getPlayer());
 			this.getPlayer().giveTurn(thisClientTurn);
+			this.status = Client.Status.IN_TURN;
 
 		} else if (args[0].equals(getNickname())) {
-			String message = "You played a move and scored "
-							+ this.getPlayer().getTurn().calculateScore()
-							+ " points, wait for other players to make a move. \n";
+			String message = "You played a move and scored " + this.getPlayer().getTurn().calculateScore()
+					+ " points, wait for other players to make a move. \n";
 			this.pushMessage(message);
 		} else {
 			String message = "Player " + args[0] + " played his turn.";
@@ -501,14 +520,22 @@ public class Client {
 		}
 	}
 
+	/**
+	 * Pushes the error to the server according to the type of the error which
+	 * is specified by the protocol.
+	 * 
+	 * @param message
+	 *            The array which contains the number of the message and the
+	 *            custom message which is also send by the server.
+	 */
+
 	public void pushErrorMessage(String[] message) {
 		switch (Integer.parseInt(message[0])) {
 		case 1: // not your turn
 			this.player.sendError("It is not your turn at the moment, wait for your turn please.");
 			break;
 		case 2: // not your stone
-			this.player.sendError(
-							"This tile is not your tile, please pick a stone of your own hand.");
+			this.player.sendError("This tile is not your tile, please pick a stone of your own hand.");
 			break;
 		case 3: // not that many stones available
 			this.player.sendError("The bag doesn't have enough tiles to complete this action.");
@@ -532,6 +559,27 @@ public class Client {
 		}
 	}
 
+	/**
+	 * The buggy chat method TODO: updaten.
+	 */
+	public void chat() {
+		while (this.getStatus() != Client.Status.IN_TURN) {
+			String input = waitForInput("chat", "");
+		}
+	}
+
+	/**
+	 * This method asks for input from the player.
+	 * 
+	 * @param type
+	 *            The type of input the input needs to be, for example "Game"
+	 *            for actions that are needed to make an action for the
+	 *            gameplay.
+	 * 
+	 * @param message
+	 *            The message that asks the player for input.
+	 * @return The input of the user.
+	 */
 	public String waitForInput(String type, String message) {
 		String input = this.player.askForInput(type, message);
 		return input;

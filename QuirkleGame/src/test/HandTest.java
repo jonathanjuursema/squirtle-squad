@@ -23,7 +23,7 @@ public class HandTest {
 
 	@Before
 	public void setUp() throws Exception {
-		player = new HumanPlayer("Peter",null);
+		player = new HumanPlayer("Peter", null);
 	}
 
 	@Test
@@ -35,7 +35,7 @@ public class HandTest {
 
 	}
 
-	@Test (expected= HandLimitReachedExeption.class)
+	@Test(expected = HandLimitReachedExeption.class)
 	public void addTilesTest() throws HandLimitReachedExeption {
 		hand = new Hand();
 
@@ -47,7 +47,7 @@ public class HandTest {
 		Tile purpleCircle = new Tile(Tile.PURPLE, Tile.CIRCLE);
 		Tile orangeCircle = new Tile(Tile.ORANGE, Tile.CIRCLE);
 		Tile greenCircle = new Tile(Tile.GREEN, Tile.CIRCLE);
-		
+
 		Tile dummyTile = new Tile(Tile.PURPLE, Tile.SQUARE);
 
 		tilesToAdd.add(redCircle);
@@ -63,13 +63,13 @@ public class HandTest {
 		assertEquals(6, hand.getAmountOfTiles());
 		assertTrue(hand.hasInHand(redCircle));
 		assertTrue(hand.hasInHand(tilesToAdd));
-		
+
 		List<Tile> tilesNotAllInHand = new ArrayList<Tile>();
 		tilesNotAllInHand.add(orangeCircle);
 		tilesNotAllInHand.add(greenCircle);
 		tilesNotAllInHand.add(greenCircle);
 		tilesNotAllInHand.add(dummyTile);
-		
+
 		assertFalse(hand.hasInHand(tilesNotAllInHand));
 
 		// Sorting tiles to add and checking again.
@@ -95,7 +95,7 @@ public class HandTest {
 		tilesToAdd.add(blueCircle);
 
 		hand.addTohand(tilesToAdd);
-		
+
 		assertTrue(hand.hasInHand(redCircle));
 		assertTrue(hand.hasInHand(tilesToAdd));
 		assertEquals(3, hand.getAmountOfTiles());

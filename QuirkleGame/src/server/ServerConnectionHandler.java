@@ -88,6 +88,8 @@ public class ServerConnectionHandler extends ConnectionHandler {
 		case Protocol.Client.CHAT:
 			if (args.length < 1) {
 				this.send(Protocol.Server.ERROR, new String[] { "8", "TooFewArguments" });
+			} else if (!this.player.canChat()) {
+				this.send(Protocol.Server.ERROR, new String[] { "8", "#MixedSignals" });
 			} else {
 				this.server.chat(this.getPlayer(),
 								Util.joinStringArray(args, Protocol.Server.Settings.DELIMITER));
@@ -103,7 +105,11 @@ public class ServerConnectionHandler extends ConnectionHandler {
 			break;
 
 		case Protocol.Client.GETLEADERBOARD:
-			this.send(Protocol.Server.LEADERBOARD, this.server.leaderboardToProtocol());
+			if (!this.player.canLeaderBoard()) {
+				this.send(Protocol.Server.ERROR, new String[] { "8", "#MixedSignals" });
+			} else {
+				this.send(Protocol.Server.LEADERBOARD, this.server.leaderboardToProtocol());
+			}
 			break;
 
 		case Protocol.Client.GETSTONESINBAG:
@@ -122,6 +128,8 @@ public class ServerConnectionHandler extends ConnectionHandler {
 		case Protocol.Client.INVITE:
 			if (args.length < 1) {
 				this.send(Protocol.Server.ERROR, new String[] { "8", "TooFewArguments" });
+			} else if (!this.player.canInvite()) {
+				this.send(Protocol.Server.ERROR, new String[] { "8", "#MixedSignals" });
 			} else {
 				this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
 				// TODO

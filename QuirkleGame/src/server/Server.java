@@ -77,15 +77,16 @@ public class Server extends Thread {
 	public void chat(ServerPlayer player, String message) {
 		String text = "(" + player.getName() + ") " + message;
 		if (this.isInGame(player)) {
+			Util.log("debug", "Received game chat from " + player.getName() + ": " + message);
 			player.getGame().sendChat(text);
-		} else {
+		} else if (this.lobby.contains(player)) {
+			Util.log("debug", "Received lobby chat from " + player.getName() + ": " + message);
 			for (ServerPlayer p : this.lobby) {
 				if (p.canChat()) {
 					p.sendMessage(Protocol.Server.CHAT, new String[] { text });
 				}
 			}
 		}
-		Util.log("debug", "Received chat from " + player.getName() + ": " + message);
 	}
 
 	/**

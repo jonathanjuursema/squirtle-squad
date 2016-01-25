@@ -239,4 +239,8 @@ public class ServerPlayer extends Player {
 		this.canLeaderBoard = canLeaderBoard;
 	}
 
+	public void addToHand(List<Tile> tiles) {
+		this.sendMessage(Protocol.Server.ADDTOHAND, Tile.toArgs(tiles));
+	}
+
 }
