@@ -57,7 +57,7 @@ public class Turn extends Observable {
 		}
 
 		boolean unvalid = true;
-		
+
 		int count = 0;
 		// TODO: is niet 100% betrouwbaar deze constructie
 		if (this.getMoves().size() > 0) {
@@ -98,7 +98,7 @@ public class Turn extends Observable {
 
 					BoardSquare temp = move.getPosition();
 					unvalid = false;
-					
+
 					while (!temp.getNeighbour(3).isEmpty()) {
 						if (temp.getNeighbour(3) == lastMove.getPosition()) {
 							unvalid = true;
@@ -127,10 +127,9 @@ public class Turn extends Observable {
 			throw new IllegalMoveException(move,
 					"This move is not placed in the same row or column as the previous move.");
 		}
-		
+
 		if (count < this.getMoves().size()) {
-			throw new IllegalMoveException(move,
-					"The moves needs to be placed in the same row.");
+			throw new IllegalMoveException(move, "The moves needs to be placed in the same row.");
 		}
 
 		if (move.isValidMove(this.getBoardCopy())) {
@@ -145,6 +144,16 @@ public class Turn extends Observable {
 		// TODO: implement further
 	}
 
+	/**
+	 * Removes a move from the turn and updates the copy of the board
+	 * accordingly.
+	 * 
+	 * @param move
+	 *            The move that needs to be removed.
+	 * @throws SquareOutOfBoundsException
+	 *             Is thrown when the given BoardSquare cannot be found on the
+	 *             board.
+	 */
 	public void removeMove(Move move) throws SquareOutOfBoundsException {
 		this.boardCopy.removeTile(move.getPosition().getX(), move.getPosition().getY());
 		this.moves.remove(move);
@@ -170,16 +179,78 @@ public class Turn extends Observable {
 		notifyObservers("turn");
 	}
 
-	public List<Tile> getSwap() {
-		return this.swap;
+	/**
+	 * Removes swap request from the turn. Important to notice that the tile is
+	 * not automatically added to the hand, yet.
+	 * 
+	 * @param t The tile that needs to be removed.
+	 * @throws IllegalTurnException If tile is not in the turn. TODO: Make exception more specific
+	 */
+
+	public void removeSwapRequest(Tile t) throws IllegalTurnException {
+		if (this.getSwap().contains(t)) {
+			this.getSwap().remove(t);
+		} else {
+			throw new IllegalTurnException();
+		}
 	}
 
-	public boolean isSwapRequest() {
-		return this.swap.size() > 0;
-	}
-
-	public boolean isMoveRequest() {
-		return this.getMoves().size() > 0;
+	/**
+	 * This function maps the rows or columns that are affiliated with the
+	 * applied moves. These sequences are the basis of the check whether a
+	 * sequence is valid and is the basis of the calculation of the score.
+	 * 
+	 * @return A map with each move mapped to the tiles in te same row and
+	 *         coloumn.
+	 * @throws SquareOutOfBoundsException
+	 *             Thrown if the BoardSquare not exists
+	 */
+	public static Map<Move, Map<Integer, List<Tile>>> getSequencesByMovesAndBoard(Board board, List<Move> moves)
+			throws SquareOutOfBoundsException {
+		Map<Move, Map<Integer, List<Tile>>> sequences = new HashMap<Move, Map<Integer, List<Tile>>>();
+	
+		for (Move move : moves) {
+			BoardSquare currentSquare;
+	
+			Map<Integer, List<Tile>> directionMap = new HashMap<Integer, List<Tile>>();
+			for (int i = 0; i < 4; i++) {
+				List<Tile> currentList = new ArrayList<Tile>();
+	
+				currentSquare = board.getSquare(move.getPosition().getX(), move.getPosition().getY());
+	
+				currentList.add(currentSquare.getTile());
+	
+				while (!currentSquare.getNeighbour(i).isEmpty()) {
+					currentList.add(currentSquare.getNeighbour(i).getTile());
+					currentSquare = currentSquare.getNeighbour(i);
+	
+				}
+	
+				directionMap.put(i, currentList);
+			}
+	
+			sequences.put(move, directionMap);
+		}
+	
+		Map<Move, Map<Integer, List<Tile>>> cleanedMap = new HashMap<Move, Map<Integer, List<Tile>>>();
+	
+		for (Map.Entry<Move, Map<Integer, List<Tile>>> entry : sequences.entrySet()) {
+	
+			Move key = entry.getKey();
+	
+			entry.getValue().get(0).removeAll(entry.getValue().get(2));
+			entry.getValue().get(1).removeAll(entry.getValue().get(3));
+	
+			entry.getValue().get(0).addAll(entry.getValue().get(2));
+			entry.getValue().get(1).addAll(entry.getValue().get(3));
+	
+			Map<Integer, List<Tile>> rowAndColumn = new HashMap<Integer, List<Tile>>();
+			rowAndColumn.put(0, entry.getValue().get(0));
+			rowAndColumn.put(1, entry.getValue().get(1));
+	
+			cleanedMap.put(key, rowAndColumn);
+		}
+		return cleanedMap;
 	}
 
 	/**
@@ -226,15 +297,22 @@ public class Turn extends Observable {
 			int rowScoreTemp = cleanedMap.get(m).get(1).size();
 			int columnScoreTemp = cleanedMap.get(m).get(0).size();
 
+			// If 0, the row only contains the initial tile
 			if (rowScoreTemp == 1) {
 				rowScoreTemp = 0;
 			}
+
+			// If 0, the row only contains the initial tile
 			if (columnScoreTemp == 1) {
 				columnScoreTemp = 0;
 			}
+
+			// If 6, the score will be doubled.
 			if (rowScoreTemp == 6) {
 				rowScoreTemp = 12;
 			}
+
+			// If 6, the score will be doubled.
 			if (columnScoreTemp == 6) {
 				columnScoreTemp = 12;
 			}
@@ -254,55 +332,30 @@ public class Turn extends Observable {
 	}
 
 	/**
-	 * @return
-	 * @throws SquareOutOfBoundsException
+	 * Returns the tiles that are added as a swap request.
+	 * 
+	 * @return The list of tiles that are contained in the list.
 	 */
-	public static Map<Move, Map<Integer, List<Tile>>> getSequencesByMovesAndBoard(Board board, List<Move> moves)
-			throws SquareOutOfBoundsException {
-		Map<Move, Map<Integer, List<Tile>>> sequences = new HashMap<Move, Map<Integer, List<Tile>>>();
+	public List<Tile> getSwap() {
+		return this.swap;
+	}
 
-		for (Move move : moves) {
-			BoardSquare currentSquare;
+	/**
+	 * Returns whether this turn is a swap request or not.
+	 * 
+	 * @return True if the turn contains any tiles to swap.
+	 */
+	public boolean isSwapRequest() {
+		return this.swap.size() > 0;
+	}
 
-			Map<Integer, List<Tile>> directionMap = new HashMap<Integer, List<Tile>>();
-			for (int i = 0; i < 4; i++) {
-				List<Tile> currentList = new ArrayList<Tile>();
-
-				currentSquare = board.getSquare(move.getPosition().getX(), move.getPosition().getY());
-
-				currentList.add(currentSquare.getTile());
-
-				while (!currentSquare.getNeighbour(i).isEmpty()) {
-					currentList.add(currentSquare.getNeighbour(i).getTile());
-					currentSquare = currentSquare.getNeighbour(i);
-
-				}
-
-				directionMap.put(i, currentList);
-			}
-
-			sequences.put(move, directionMap);
-		}
-
-		Map<Move, Map<Integer, List<Tile>>> cleanedMap = new HashMap<Move, Map<Integer, List<Tile>>>();
-
-		for (Map.Entry<Move, Map<Integer, List<Tile>>> entry : sequences.entrySet()) {
-
-			Move key = entry.getKey();
-
-			entry.getValue().get(0).removeAll(entry.getValue().get(2));
-			entry.getValue().get(1).removeAll(entry.getValue().get(3));
-
-			entry.getValue().get(0).addAll(entry.getValue().get(2));
-			entry.getValue().get(1).addAll(entry.getValue().get(3));
-
-			Map<Integer, List<Tile>> rowAndColumn = new HashMap<Integer, List<Tile>>();
-			rowAndColumn.put(0, entry.getValue().get(0));
-			rowAndColumn.put(1, entry.getValue().get(1));
-
-			cleanedMap.put(key, rowAndColumn);
-		}
-		return cleanedMap;
+	/**
+	 * Returns whether this turn contained any moves.
+	 * 
+	 * @return True if the turn contains moves.
+	 */
+	public boolean isMoveRequest() {
+		return this.getMoves().size() > 0;
 	}
 
 	/**
@@ -315,22 +368,36 @@ public class Turn extends Observable {
 	}
 
 	/**
-	 * Get the representation of the board of current turn.
+	 * Get the representation of the board of current turn. This board also
+	 * contains any moves applied to the board.
 	 * 
-	 * @return
+	 * @return The copy of the board with the moves
 	 */
 	public Board getBoardCopy() {
 		return boardCopy;
 	}
 
+	/**
+	 * Returns the player that is in possession of the turn and is allowed to add
+	 * a move or swap request.
+	 * 
+	 * @return The player
+	 */
 	public Player getPlayer() {
 		return this.assignedPlayer;
 	}
 
+	/**
+	 * The toString function that returns a textual representation of the turn
+	 * with the added moves and tiles to request.
+	 */
 	public String toString() {
-		String message = getPlayer().getName() + " played the following approved moves: \n";
+		String message = getPlayer().getName() + " played the following approved actions: \n";
 		for (Move m : this.getMoves()) {
 			message += m.toString() + "\n";
+		}
+		for (Tile t : this.getSwap()) {
+			message += t.toString() + "\n";
 		}
 		return message;
 	}

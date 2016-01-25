@@ -4,6 +4,16 @@ import client.Client;
 import views.TUIview;
 import views.View;
 
+/**
+ * The player that is connected to the client. This player can be an computer
+ * player of a HumanPlayer, this is not specified here. The ClientPlayer is
+ * responsible for pushing the required actions from the client to the player
+ * that is linked to this ClientPlayer. 
+ * 
+ * @author Jonathan Juursema & Peter Wessels
+ *
+ */
+
 public abstract class ClientPlayer extends Player {
 
 	public Client client;
@@ -23,7 +33,7 @@ public abstract class ClientPlayer extends Player {
 
 	public ClientPlayer(String name) {
 		super(name);
-		//this.getHand().addObserver(view);
+		// this.getHand().addObserver(view);
 	}
 
 	/**
@@ -47,13 +57,23 @@ public abstract class ClientPlayer extends Player {
 	 */
 	public abstract String askForInput(String type, String message);
 
+	/**
+	 * Sets the view to a particular view class.
+	 * 
+	 * @param view
+	 *            The view that will be used by the client.
+	 */
 	public void setView(View view) {
 		this.view = (TUIview) view;
 	}
 
+	/**
+	 * Returns the view.
+	 * 
+	 * @return The view class.
+	 */
 	public View getView() {
 		return (TUIview) this.view;
 	}
-
 
 }
