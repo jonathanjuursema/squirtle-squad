@@ -39,13 +39,18 @@ public class Move {
 		this.position = position;
 	}
 
-	public boolean isValidMove(Board board)
-					throws SquareOutOfBoundsException, IllegalMoveException {
+	public boolean isValidMove(Board board) throws SquareOutOfBoundsException, IllegalMoveException {
 		// Check move in relation with the board
-
-		if (!board.getPossiblePlaces().contains(this.getPosition())) {
-			throw new IllegalMoveException(this,
-							"This place does not have a connection to an existing row or column.");
+		boolean isPossible = false;
+		for (Tile t : board.getAllPossiblePlaces().get(this.position)) {
+			if (t.getShape() == this.getTile().getShape()
+					&& t.getColor() == this.getTile().getColor()) {
+				isPossible = true;
+			}
+		}
+		
+		if (!isPossible) {
+			throw new IllegalMoveException(this, "This place does not have a connection to an existing row or column.");
 		}
 
 		board.placeTile(this.getTile(), this.getPosition().getX(), this.getPosition().getY());
@@ -54,8 +59,7 @@ public class Move {
 		List<Move> tempList = new ArrayList<Move>();
 		tempList.add(tempMove);
 
-		Map<Move, Map<Integer, List<Tile>>> cleanedMap = Turn.getSequencesByMovesAndBoard(board,
-						tempList);
+		Map<Move, Map<Integer, List<Tile>>> cleanedMap = Turn.getSequencesByMovesAndBoard(board, tempList);
 
 		// System.out.println(this.boardCopy);
 		board.removeTile(this.getPosition().getX(), this.getPosition().getY());
@@ -64,10 +68,9 @@ public class Move {
 		// both the row and column will be checked
 		// if the move is legal.
 
-		if (!checkSequence(cleanedMap.get(tempMove).get(0))
-						|| !checkSequence(cleanedMap.get(tempMove).get(1))) {
+		if (!checkSequence(cleanedMap.get(tempMove).get(0)) || !checkSequence(cleanedMap.get(tempMove).get(1))) {
 			throw new IllegalMoveException(this,
-							"This move is not valid because it conflicts current rows or columns.");
+					"This move is not valid because it conflicts current rows or columns.");
 		} else {
 			return true;
 		}
@@ -90,8 +93,7 @@ public class Move {
 			} else if (sequence.get(0).getShape() == sequence.get(1).getShape()) {
 				shape = sequence.get(0).getShape();
 			} else {
-				throw new IllegalMoveException(this,
-								"The identity of the row or column can not be identified.");
+				throw new IllegalMoveException(this, "The identity of the row or column can not be identified.");
 			}
 
 		}
@@ -107,7 +109,7 @@ public class Move {
 				// check if the same shape already exists.
 				if (shapes.contains(t.getShape())) {
 					throw new IllegalMoveException(this, "This shape (" + t.getShape()
-									+ ") is allready existing in the columns or rows it is connected too.");
+							+ ") is allready existing in the columns or rows it is connected too.");
 				} else {
 					// If not, add the shape to the list
 					shapes.add(t.getShape());
@@ -116,15 +118,14 @@ public class Move {
 				// check if the same colour already exists.
 				if (colors.contains(t.getColor())) {
 					throw new IllegalMoveException(this, "This color (" + t.getColor()
-									+ ") is allready existing in the columns or rows it is connected too.");
+							+ ") is allready existing in the columns or rows it is connected too.");
 				} else {
 					// If not, add the colour to the list
 					colors.add(t.getColor());
 				}
 			} else {
 				// If the sequence has no identity
-				throw new IllegalMoveException(this,
-								"The identity of the row or column can not be identified.");
+				throw new IllegalMoveException(this, "The identity of the row or column can not be identified.");
 			}
 		}
 

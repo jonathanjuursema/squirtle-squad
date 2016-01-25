@@ -99,7 +99,7 @@ public class BoardTest {
 		board.placeTile(new Tile(Tile.GREEN, Tile.CROSS), 0, -4);
 		board.placeTile(new Tile(Tile.ORANGE, Tile.PLUS), 0, -5);
 
-		assertEquals(12, board.getPossiblePlaces().size());
+		assertEquals(12, board.getAllPossiblePlaces().size());
 	}
 
 }
