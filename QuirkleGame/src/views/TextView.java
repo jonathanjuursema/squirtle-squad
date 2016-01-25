@@ -7,6 +7,10 @@ import java.util.Observable;
 
 import application.Util;
 import client.Client;
+import game.Board;
+import game.Hand;
+import game.Turn;
+import protocol.Protocol;
 
 public class TextView extends Thread implements View {
 	private Client client;
@@ -31,6 +35,7 @@ public class TextView extends Thread implements View {
 				String command = input[0];
 				String[] args = Arrays.copyOfRange(input, 1, input.length);
 				switch (command) {
+
 				case "help":
 
 					this.sendNotification(
@@ -40,6 +45,14 @@ public class TextView extends Thread implements View {
 					this.sendNotification("apply: send your move to the server.");
 					this.sendNotification("revert: restart your turn.");
 					this.sendNotification("");
+					this.sendNotification("board: show the current board.");
+					this.sendNotification("hand: show your hand.");
+					this.sendNotification("leaderboard: request the leaderboard.");
+					this.sendNotification("");
+					this.sendNotification("invite <nickname>: invite a nickname.");
+					this.sendNotification("accept: accept an invite.");
+					this.sendNotification("decline: decline an invite.");
+					this.sendNotification("");
 					this.sendNotification("chat <msg>: send a chat message");
 					break;
 
@@ -48,7 +61,7 @@ public class TextView extends Thread implements View {
 					if (this.client.status == Client.Status.IN_LOBBY) {
 						this.sendNotification("You're not in a game.");
 					} else {
-						Util.println(this.client.getBoard().toString());
+						this.showBoard();
 					}
 					break;
 
@@ -57,47 +70,83 @@ public class TextView extends Thread implements View {
 					if (this.client.status == Client.Status.IN_LOBBY) {
 						this.sendNotification("You're not in a game.");
 					} else {
-						Util.println(this.client.getPlayerHand().toString());
+						this.showHand();
 					}
 					break;
 
 				case "move":
 
-					if (args.length < 2) {
-
+					if (args.length < 3) {
+						Util.println("usage: move <tileno> <x> <y> ...");
+					} else {
+						this.client.addMove(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
+										Integer.parseInt(args[2]));
 					}
+
+					break;
 
 				case "swap":
 
 					if (args.length < 1) {
 						Util.println("usage: swap <tileno> [tileno] [tileno] ...");
 						break;
+					} else {
+						this.client.requestSwap(args);
 					}
-
-					this.client.requestSwap(args);
 
 					break;
 
+				case "apply":
+
+					this.client.submitTurn();
+					break;
+
+				case "invite":
+
+					if (args.length < 1) {
+						Util.println("usage: invite <nickname>");
+						break;
+					} else {
+						this.client.invite(args[0]);
+					}
+					break;
+
+				case "decline":
+					this.client.declineInvite();
+					break;
+
+				case "accept":
+					this.client.acceptInvite();
+					break;
+
+				case "leaderboard":
+
+					this.client.requestLeaderboard();
+					break;
+
 				case "game":
+
 					if (args.length < 1) {
 						this.sendNotification("error", "Usage: game <int>");
 					} else {
 						this.client.requestGame(Integer.parseInt(args[0]));
 					}
 					break;
-					
+
 				case "chat":
+
 					if (args.length < 1) {
 						this.sendNotification("error", "Usage: chat <msg>");
 					} else {
 						this.client.chatFromClient(args);
 					}
 					break;
-					
+
 				default:
+
 					this.sendNotification("Invalid command. Please type 'help' for a list.");
 					break;
-					
+
 				}
 			}
 		}
@@ -106,7 +155,13 @@ public class TextView extends Thread implements View {
 
 	@Override
 	public void update(Observable o, Object arg) {
-
+		if (o instanceof Hand) {
+			this.showHand();
+		} else if (o instanceof Board) {
+			this.showBoard();
+		} else if (o instanceof Turn) {
+			this.showTurn();
+		}
 	}
 
 	public void sendNotification(String message) {
@@ -160,8 +215,11 @@ public class TextView extends Thread implements View {
 
 	@Override
 	public void sendLeaderboard(String[] args) {
-		// TODO Auto-generated method stub
-
+		Util.println("--- LEADERBOARD ---");
+		for (int i = 0; i < args.length; i++) {
+			String[] info = args[0].split("\\" + Protocol.Server.Settings.DELIMITER2);
+			Util.println(i + ": " + info[0] + " (" + info[1] + ")");
+		}
 	}
 
 	@Override
@@ -187,7 +245,26 @@ public class TextView extends Thread implements View {
 
 	@Override
 	public void showTurn() {
-		this.client.getTurn().toString();
+		Util.println(this.client.getTurn().toString());
+	}
+
+	@Override
+	public void showBoard() {
+		if (this.client.getTurn().isMoveRequest()) {
+			Util.println(this.client.getTurn().getBoardCopy().toString());
+		} else {
+			Util.println(this.client.getBoard().toString());
+		}
+	}
+
+	@Override
+	public void showHand() {
+		Util.println(this.client.getPlayerHand().toString());
+	}
+
+	@Override
+	public void gotInvite(String string) {
+		this.sendNotification("You got an invite from " + string + ".");
 	}
 
 }

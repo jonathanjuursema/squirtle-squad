@@ -227,8 +227,21 @@ public class Server extends Thread {
 	 * @throws PlayerCannotBeChallengedException
 	 * @throws AlreadyChallengedSomeoneException
 	 */
-	public void challenge(ServerPlayer challenger, ServerPlayer challengee)
+	public void challenge(ServerPlayer challenger, String challengeeName)
 					throws PlayerCannotBeChallengedException, AlreadyChallengedSomeoneException {
+		
+		ServerPlayer challengee = null;
+		
+		for (ServerPlayer p : this.players) {
+			if (p.getName().equals(challengeeName)) {
+				challengee = p;
+			}
+		}
+		
+		if (challengee == null) {
+			throw new PlayerCannotBeChallengedException(challengee);
+		}
+		
 		if (!challengee.canInvite() || isChallengee(challengee)) {
 			throw new PlayerCannotBeChallengedException(challengee);
 		} else if (isChallenger(challenger)) {

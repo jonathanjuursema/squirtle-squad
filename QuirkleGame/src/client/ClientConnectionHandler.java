@@ -36,6 +36,10 @@ public class ClientConnectionHandler extends ConnectionHandler {
 				this.client.getView().sendNotification("error", "This nickname already exists.");
 				this.client.register();
 				break;
+			case 2:
+			case 7:
+				this.client.undoRemoveFromHand();
+				break;
 			default:
 				this.client.getView().sendNotification("error", args[1]);
 				break;
@@ -48,7 +52,7 @@ public class ClientConnectionHandler extends ConnectionHandler {
 			client.chatFromServer(args);
 			break;
 		case Protocol.Server.DECLINEINVITE:
-			client.declineInvite();
+			client.declineInviteFromServer();
 			break;
 		case Protocol.Server.GAME_END:
 			client.endGame(args);
@@ -57,7 +61,7 @@ public class ClientConnectionHandler extends ConnectionHandler {
 			client.start();
 			break;
 		case Protocol.Server.INVITE:
-			client.invite(args[0]);
+			client.gotInvite(args[0]);
 			break;
 		case Protocol.Server.LEADERBOARD:
 			client.leaderboard(args);

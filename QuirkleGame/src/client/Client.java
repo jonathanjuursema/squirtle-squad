@@ -56,7 +56,7 @@ public class Client {
 		INITIALIZING, IN_LOBBY, IN_GAME, IN_TURN, WAITINGFORGAME, IN_GAME_INITIAL
 	};
 
-	public static final String[] FUNCTIONS = { "CHAT", "CHALLENGE", "LEADERBORD" };
+	public static final String[] FUNCTIONS = { "CHAT", "CHALLENGE", "LEADERBOARD" };
 
 	public Status status;
 
@@ -99,22 +99,19 @@ public class Client {
 
 	}
 
-	public void submitTurn() {
-		if (this.turn.isMoveRequest()) {
-
-		} else if (this.turn.isSwapRequest()) {
-
-		}
-		this.status = Client.Status.IN_GAME;
-	}
-
 	public void requestGame(int no) {
-
 		if (this.status != Client.Status.IN_LOBBY) {
 			this.view.sendNotification("error", "You are not in the lobby.");
 			return;
 		}
 
+		this.preparePlayer();
+
+		this.status = Client.Status.WAITINGFORGAME;
+		this.server.send(Protocol.Client.REQUESTGAME, new String[] { "" + no });
+	}
+
+	private void preparePlayer() {
 		String playerType = this.view.askForPlayerType();
 
 		while (!playerType.equals("human") && !playerType.equals("computer")) {
@@ -128,12 +125,10 @@ public class Client {
 		}
 
 		this.player.getHand().hardResetHand();
-
-		this.status = Client.Status.WAITINGFORGAME;
-		this.server.send(Protocol.Client.REQUESTGAME, new String[] { "" + no });
 	}
 
 	public void startGame() {
+
 		if (this.status == Client.Status.WAITINGFORGAME) {
 			if (this.getPlayerHand().getTilesInHand().size() > 0) {
 				this.status = Client.Status.IN_GAME_INITIAL;
@@ -145,6 +140,7 @@ public class Client {
 				Util.log("debug", "We wait for the hand to be filled.");
 			}
 		}
+
 	}
 
 	public void addToHand(String[] tiles) {
@@ -167,25 +163,45 @@ public class Client {
 
 	}
 
+	public void addMove(int tileInHand, int x, int y) {
+
+		if (this.status == Client.Status.IN_TURN || this.status == Client.Status.IN_GAME_INITIAL) {
+
+			Tile t = this.getPlayerHand().getTilesInHand().get(tileInHand - 1);
+			try {
+				this.turn.addMove(new Move(t, this.boardCopy.getSquare(x, y)));
+			} catch (SquareOutOfBoundsException | IllegalMoveException | IllegalTurnException e) {
+				this.getView().sendNotification("Cannot do this move: " + e.getMessage());
+				return;
+			}
+
+			try {
+				this.getPlayerHand().removeFromHand(t);
+			} catch (TileNotInHandException e) {
+				Util.log(e);
+			}
+
+		} else {
+
+			this.getView().sendNotification("You cannot do that now.");
+
+		}
+
+	}
+
 	public void requestSwap(String[] args) {
-	
+
 		if (this.status == Client.Status.IN_TURN) {
-	
+
 			boolean[] tilesFromHand = new boolean[Hand.LIMIT];
-	
+
 			for (String tile : args) {
-	
+
 				int no = Integer.parseInt(tile);
 				if (tilesFromHand[no] != true && no < Hand.LIMIT) {
 					tilesFromHand[no] = true;
 					try {
-						this.
-						turn.
-						addSwapRequest(
-										this.getPlayerHand().
-										getTilesInHand().
-										get(no)
-										);
+						this.turn.addSwapRequest(this.getPlayerHand().getTilesInHand().get(no - 1));
 					} catch (IllegalTurnException e) {
 						this.getView().sendNotification("This swap is illegal: " + e.getMessage());
 						Util.log(e);
@@ -193,35 +209,39 @@ public class Client {
 						return;
 					}
 				}
-	
+
 			}
-			
-			this.getView().showTurn();
-			
+
 			Util.log("debug", "Registered swap request.");
-	
+
 		} else {
-			
-			this.getView().sendNotification("It is not your turn!");
-			
+
+			this.getView().sendNotification("You cannot do that now.");
+
 		}
-	
+
 	}
 
-	public void chatFromClient(String[] args) {
-		String message = "";
-		for (String arg : args) {
-			message = message.concat(" " + arg);
+	public void submitTurn() {
+		if (this.turn.isMoveRequest()) {
+			String[] args = new String[this.turn.getMoves().size()];
+			for (int i = 0; i < this.turn.getMoves().size(); i++) {
+				Move m = this.turn.getMoves().get(i);
+				args[i] = m.getTile().toProtocol() + Protocol.Server.Settings.DELIMITER2
+								+ m.getPosition().getX() + Protocol.Server.Settings.DELIMITER2
+								+ m.getPosition().getY();
+			}
+			this.server.send(Protocol.Client.MAKEMOVE, args);
+		} else if (this.turn.isSwapRequest()) {
+			String[] args = new String[this.turn.getSwap().size()];
+			for (int i = 0; i < this.turn.getSwap().size(); i++) {
+				args[i] = this.turn.getSwap().get(i).toProtocol();
+			}
+			this.server.send(Protocol.Client.CHANGESTONE, args);
+		} else {
+			this.getView().sendNotification("You have not specified a turn yet!");
 		}
-		this.server.send(Protocol.Client.CHAT, new String[] { message });
-	}
-
-	public void chatFromServer(String[] args) {
-		String message = "";
-		for (String arg : args) {
-			message = message.concat(arg);
-		}
-		this.getView().showChat(message);
+		this.status = Client.Status.IN_GAME;
 	}
 
 	public synchronized void registerTurn(String[] args) {
@@ -273,19 +293,9 @@ public class Client {
 			this.turn = new Turn(boardCopy, this.player);
 			this.player.giveTurn(this.turn);
 		} else if (args[0].equals(this.name)) {
-			try {
-				this.getPlayerHand().removeFromHand(usedInPrevious);
-			} catch (TileNotInHandException e) {
-				Util.log("error", "Could not remove tiles from player hand.");
-				Util.log(e);
-			}
 			usedInPrevious.clear();
 		}
 
-	}
-
-	public void declineInvite() {
-		// TODO Auto-generated method stub
 	}
 
 	public void endGame(String[] args) {
@@ -304,12 +314,52 @@ public class Client {
 		this.status = Client.Status.IN_LOBBY;
 	}
 
+	public void chatFromClient(String[] args) {
+		String message = "";
+		for (String arg : args) {
+			message = message.concat(" " + arg);
+		}
+		this.server.send(Protocol.Client.CHAT, new String[] { message });
+	}
+
+	public void chatFromServer(String[] args) {
+		String message = "";
+		for (String arg : args) {
+			message = message.concat(arg);
+		}
+		this.getView().showChat(message);
+	}
+
 	public void invite(String string) {
-		// TODO Auto-generated method stub
+		if (this.status == Client.Status.IN_LOBBY) {
+			this.status = Client.Status.WAITINGFORGAME;
+			this.preparePlayer();
+			this.server.send(Protocol.Client.INVITE, new String[] { string });
+		} else {
+			this.getView().sendNotification("You can only invite if you are in the lobby.");
+		}
+	}
+
+	public void declineInvite() {
+		this.server.send(Protocol.Client.DECLINEINVITE, new String[] {});
+	}
+
+	public void acceptInvite() {
+		if (this.status == Client.Status.IN_LOBBY) {
+			this.status = Client.Status.WAITINGFORGAME;
+			this.preparePlayer();
+			this.server.send(Protocol.Client.ACCEPTINVITE, new String[] {});
+		} else {
+			this.getView().sendNotification("You can only accept invites if you are in the lobby.");
+		}
 	}
 
 	public void leaderboard(String[] args) {
 		this.getView().sendLeaderboard(args);
+	}
+
+	public void requestLeaderboard() {
+		this.server.send(Protocol.Client.GETLEADERBOARD, new String[] {});
 	}
 
 	public View getView() {
@@ -344,6 +394,26 @@ public class Client {
 	 */
 	public Turn getTurn() {
 		return turn;
+	}
+
+	public void gotInvite(String string) {
+		this.getView().gotInvite(string);
+	}
+
+	public void undoRemoveFromHand() {
+		try {
+			this.getPlayerHand().addTohand(usedInPrevious);
+		} catch (HandLimitReachedExeption e) {
+			Util.log(e);
+		}
+		usedInPrevious.clear();
+		this.turn = new Turn(boardCopy, this.player);
+		this.player.giveTurn();
+	}
+
+	public void declineInviteFromServer() {
+		this.status = Client.Status.IN_LOBBY;
+		this.getView().sendNotification("Your challenge has been refused.");
 	}
 
 }

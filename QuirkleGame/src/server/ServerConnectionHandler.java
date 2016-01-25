@@ -5,11 +5,13 @@ import java.net.Socket;
 
 import application.App;
 import application.Util;
+import exceptions.AlreadyChallengedSomeoneException;
 import exceptions.IllegalMoveException;
 import exceptions.IllegalTurnException;
 import exceptions.NotInGameException;
 import exceptions.NotYourTurnException;
 import exceptions.PlayerAlreadyInGameException;
+import exceptions.PlayerCannotBeChallengedException;
 import exceptions.PlayerIsNoChallengeeException;
 import exceptions.SquareOutOfBoundsException;
 import exceptions.TileNotInHandException;
@@ -131,8 +133,13 @@ public class ServerConnectionHandler extends ConnectionHandler {
 			} else if (!this.player.canInvite()) {
 				this.send(Protocol.Server.ERROR, new String[] { "8", "#MixedSignals" });
 			} else {
-				this.send(Protocol.Server.ERROR, new String[] { "8", "NotYetImplemented" });
-				// TODO
+				try {
+					this.server.challenge(this.player, args[0]);
+				} catch (PlayerCannotBeChallengedException e) {
+					this.send(Protocol.Server.ERROR, new String[] { "5", "CannotChallengeThisPlayer" });
+				} catch (AlreadyChallengedSomeoneException e) {
+					this.send(Protocol.Server.ERROR, new String[] { "8", "AlreadyChallenging" });
+				}
 			}
 			break;
 

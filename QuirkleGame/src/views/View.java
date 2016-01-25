@@ -20,5 +20,8 @@ public interface View extends Observer {
 	public void connected();
 	public void giveTurn();
 	public void showTurn();
+	public void showBoard();
+	public void showHand();
+	public void gotInvite(String string);
 
 }
