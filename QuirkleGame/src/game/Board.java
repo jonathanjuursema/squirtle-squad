@@ -85,7 +85,7 @@ public class Board extends Observable {
 		this.getSquare(x, y).placeTile(tile);
 
 		setChanged();
-		notifyObservers("board");
+		notifyObservers("placeTile");
 	}
 
 	/**
@@ -103,6 +103,9 @@ public class Board extends Observable {
 	public void removeTile(int x, int y) throws SquareOutOfBoundsException {
 		// TODO Should throw exception when there is no tile.
 		this.getSquare(x, y).removeTile();
+		
+		setChanged();
+		notifyObservers("removeTile");
 	}
 
 	/**
