@@ -51,7 +51,7 @@ public class MoveTest {
 		Move move6 = new Move(greenCircle, turn.getBoardCopy().getSquare(5, 0));
 
 		try {
-			turn.addMove(move1);
+			turn.addMove(move1);			
 			turn.addMove(move2);
 			turn.addMove(move3);
 			turn.addMove(move4);
@@ -66,10 +66,9 @@ public class MoveTest {
 			turn.getBoardCopy().placeTile(m.getTile(), m.getPosition().getX(), m.getPosition().getY());
 		}
 
-		assertEquals(12, turn.getBoardCopy().getAllPossiblePlaces().size());
 		turn.getMoves().clear();
-		System.out.println(turn.getBoardCopy().toString());
-		System.out.println(turn.getBoardCopy().getAllPossiblePlaces().toString());
+		//System.out.println(turn.getBoardCopy().toString());
+		//System.out.println(turn.getBoardCopy().getAllPossiblePlaces().toString());
 
 	}
 
@@ -97,10 +96,10 @@ public class MoveTest {
 		for (Move m : turn.getMoves()) {
 			turn.getBoardCopy().placeTile(m.getTile(), m.getPosition().getX(), m.getPosition().getY());
 		}
-
-		List<BoardSquare> selected = new ArrayList<BoardSquare>();
-		selected.add(turn.getBoardCopy().getSquare(0, 2));
-		selected.add(turn.getBoardCopy().getSquare(0, 1));
+		Tile tileToPlace = new Tile(Tile.RED, Tile.PLUS);
+		Util.log("special debug", "" + tileToPlace + turn.getBoardCopy().getPossiblePlaceByTile(tileToPlace));
+		
+		System.out.println(turn.getBoardCopy().toString());
 
 		turn.getMoves().clear();
 
@@ -115,8 +114,7 @@ public class MoveTest {
 			e.printStackTrace();
 		}
 		
-		Util.log("special debug",new Tile(Tile.BLUE, Tile.CIRCLE) + "op " + turn.getBoardCopy().getPossiblePlaceByTile(new Tile(Tile.BLUE, Tile.CIRCLE),turn.getMoves()).toString());
-
+		Util.log("special debug", ""+ tileToPlace + turn.getBoardCopy().getPossiblePlaceByTile(tileToPlace,turn.getMoves()));
 		System.out.println(turn.getBoardCopy().toString());
 
 	}

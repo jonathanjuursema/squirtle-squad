@@ -18,11 +18,19 @@ public class ClientConnectionHandler extends ConnectionHandler {
 
 	Client client;
 
+	/**
+	 * Constructs a new Client connection handler, with a connection to the server and a Client object.
+	 * @param socket The socket with the server connection.
+	 * @param client The Client.
+	 */
 	public ClientConnectionHandler(Socket socket, Client client) {
 		super(socket);
 		this.client = client;
 	}
 
+	/**
+	 * Threaded code parsing remote input.
+	 */
 	public void run() {
 		super.run();
 	}
@@ -35,6 +43,9 @@ public class ClientConnectionHandler extends ConnectionHandler {
 			case 4:
 				this.client.getView().sendNotification("error", "This nickname already exists.");
 				this.client.register();
+				break;
+			case 5:
+				this.client.declineInviteFromServer();
 				break;
 			case 2:
 			case 7:
@@ -75,7 +86,7 @@ public class ClientConnectionHandler extends ConnectionHandler {
 			client.status = Client.Status.WAITINGFORGAME;
 			break;
 		case Protocol.Server.STARTGAME:
-			client.startGame();
+			client.startGame(args);
 			break;
 		case Protocol.Server.STONESINBAG:
 			client.getView().sendNotification("There are " + args[0] + " stones in the bag.");
@@ -90,6 +101,7 @@ public class ClientConnectionHandler extends ConnectionHandler {
 	@Override
 	public void shutdown(String reason) {
 		Util.log("debug", "Server socket closed: " + reason);
+		client.stop("Server socket closed: " + reason);
 		try {
 			this.getSocket().close();
 		} catch (IOException e) {

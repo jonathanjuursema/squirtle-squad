@@ -64,6 +64,11 @@ public class IllegalMoveException extends QwirkleException {
 		this.customMessage = customMessage;
 	}
 
+	public IllegalMoveException(String customMessage) {
+		// TODO Auto-generated constructor stub
+		this.customMessage = customMessage;
+	}
+
 	/**
 	 * Overrides the getMessage function of Exception. The message contains
 	 * information about the move with all the tiles that are contained by the

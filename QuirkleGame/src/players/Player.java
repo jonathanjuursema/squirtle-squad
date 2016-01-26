@@ -1,16 +1,11 @@
 package players;
 
-import exceptions.IllegalMoveException;
-import exceptions.IllegalTurnException;
-import exceptions.SquareOutOfBoundsException;
-import exceptions.TileNotInHandException;
 import game.Hand;
-import game.Move;
-import game.Tile;
-import game.Turn;
 
 /**
- * TODO Write file header.
+ * This is the general player class. All player should extend from this one. All
+ * core functionality regarding hands is embedded in the player, and both client
+ * and server can extend from there where necessary.
  * 
  * @author Jonathan Juursema & Peter Wessels
  *
@@ -19,46 +14,15 @@ public abstract class Player {
 
 	private Hand hand;
 	private String name;
-	private Turn turn;
 
 	private int score;
 
+	/**
+	 * Create a new player with the given name.
+	 * @param name The player name.
+	 */
 	public Player(String name) {
 		this.name = name;
-	}
-
-	public Player() {
-	}
-
-	public void placeMove(Move move) throws SquareOutOfBoundsException, IllegalMoveException,
-					IllegalTurnException, TileNotInHandException {
-		this.turn.addMove(move);
-	}
-
-	public void addSwap(Tile t) throws SquareOutOfBoundsException, IllegalMoveException,
-					IllegalTurnException, TileNotInHandException {
-		this.turn.addSwapRequest(t);
-	}
-
-	/**
-	 * Hands the turn to the player.
-	 * 
-	 * @param turn
-	 *            The Turn to be populated.
-	 */
-	public void giveTurn(Turn turn) {
-		this.turn = turn;
-		// IF HUMANPLAYER NOW THE TUI KICKS IN
-		// IF COMPUTER PLAYER THE COMPUTER PLAYER WILL CALCULATE THE BEST TURN
-	}
-
-	/**
-	 * Allow subclass to access this player's private turn.
-	 * 
-	 * @return The turn.
-	 */
-	public Turn getTurn() {
-		return this.turn;
 	}
 
 	/**

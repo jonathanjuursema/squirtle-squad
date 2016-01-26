@@ -101,6 +101,13 @@ public class BoardSquare {
 		}
 	}
 
+	/**
+	 * Returns whether this boardsquare has any filled neighbours.
+	 * 
+	 * @return True if one or more of the surrounding BoardSquares is occupied
+	 *         by a tile, false otherwise.
+	 * @throws SquareOutOfBoundsException
+	 */
 	public boolean hasNeighbour() throws SquareOutOfBoundsException {
 		for (int i = 0; i < 4; i++) {
 			if (!this.getNeighbour(i).isEmpty()) {
@@ -146,6 +153,9 @@ public class BoardSquare {
 		return this.y;
 	}
 
+	/**
+	 * Returns a textual representation of the board square.
+	 */
 	public String toString() {
 		if (!this.isEmpty()) {
 			return "BoardSquare on position X:" + this.x + " Y:" + this.y + " " + "with tile "

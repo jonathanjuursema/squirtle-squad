@@ -17,13 +17,13 @@ import exceptions.SquareOutOfBoundsException;
 import exceptions.TileNotInHandException;
 import exceptions.TooManyPlayersException;
 import networking.ConnectionHandler;
-import players.ServerPlayer;
+import players.ServerHuman;
 import protocol.Protocol;
 
 public class ServerConnectionHandler extends ConnectionHandler {
 
 	private Server server;
-	private ServerPlayer player = null;
+	private ServerHuman player = null;
 
 	/**
 	 * Initialize a new ConnectionHandler for the server.
@@ -38,6 +38,7 @@ public class ServerConnectionHandler extends ConnectionHandler {
 		this.server = server;
 	}
 
+	@Override
 	public void run() {
 		super.run();
 	}
@@ -223,7 +224,7 @@ public class ServerConnectionHandler extends ConnectionHandler {
 
 		this.send(Protocol.Server.HALLO, resp);
 
-		this.player = new ServerPlayer(args[0], this);
+		this.player = new ServerHuman(args[0], this);
 
 		for (int i = 1; i < args.length; i++) {
 			switch (args[i]) {
@@ -264,7 +265,7 @@ public class ServerConnectionHandler extends ConnectionHandler {
 	/**
 	 * @return the player
 	 */
-	public ServerPlayer getPlayer() {
+	public ServerHuman getPlayer() {
 		return player;
 	}
 

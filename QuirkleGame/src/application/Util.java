@@ -4,6 +4,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+/**
+ * This class provides verious utilitary functions related to logging mostly.
+ * 
+ * @author Jonathan Juursema & Peter Wessels.
+ *
+ */
 public class Util {
 
 	/** sign for wrong input */
@@ -73,6 +79,7 @@ public class Util {
 	 * consist of the type of exception and the message of the Exception.
 	 * 
 	 * @param e
+	 *            The exception to be logged.
 	 */
 
 	public static void log(Exception e) {

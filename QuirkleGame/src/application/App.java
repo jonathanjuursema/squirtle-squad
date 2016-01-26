@@ -44,6 +44,9 @@ public class App {
 
 	}
 
+	/**
+	 * Starting the server application.
+	 */
 	public static void server() {
 
 		int port = 0;
@@ -63,12 +66,15 @@ public class App {
 
 	}
 
+	/**
+	 * Starting the client application.
+	 */
 	public static void client() {
 
 		try {
 			new Client();
 		} catch (IOException e) {
-			Util.println("Cannot connect to the server. See below for the reason.");
+			Util.println("Cannot connect to the server: " + e.getMessage());
 			Util.log(e);
 			App.client();
 		}

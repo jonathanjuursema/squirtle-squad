@@ -2,6 +2,13 @@ package exceptions;
 
 import game.Hand;
 
+/**
+ * Exception can be thrown whener one tries to add more stones in a hand than
+ * allowed.
+ * 
+ * @author Jonathan Juursema & Peter Wessels
+ *
+ */
 @SuppressWarnings("serial")
 public class HandLimitReachedExeption extends QwirkleException {
 	Hand hand;

@@ -1,11 +1,15 @@
 package server;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.swing.Timer;
 
 import application.Util;
 import exceptions.AlreadyChallengedSomeoneException;
@@ -14,38 +18,70 @@ import exceptions.PlayerCannotBeChallengedException;
 import exceptions.PlayerIsNoChallengeeException;
 import exceptions.TooManyPlayersException;
 import players.Player;
-import players.ServerPlayer;
+import players.ServerAI;
+import players.ServerHuman;
 import protocol.Protocol;
+import strategies.SmartStrategy;
 
 /**
- * TODO Write file header.
+ * This is the server. The server is responsible for accepting incoming
+ * connections, managing games and players, and so one. The server holds a lobby
+ * of players not in a game, and a list of games and their associated players. A
+ * player can not be in the lobby and a game at the same time.
  * 
  * @author Jonathan Juursema & Peter Wessels
  *
  */
-public class Server extends Thread {
+public class Server extends Thread implements ActionListener {
 
-	public static final String[] FUNCTIONS = { "CHALLENGE", "CHAT", "LEADERBORD" };
+	public static final String[] FUNCTIONS = { "CHALLENGE", "CHAT", "LEADERBOARD" };
 
 	private static final int MAXLEADERBOARDLENGTH = 10;
 
-	private List<ServerPlayer> lobby;
-	private List<ServerPlayer> players;
+	private List<ServerHuman> lobby;
+	private List<ServerHuman> players;
 	private List<Game> games;
 
-	private Map<ServerPlayer, ServerPlayer> challenges;
+	private Map<ServerHuman, ServerHuman> challenges;
 	private List<LeaderboardEntry> leaderboard;
 
 	private ServerSocket socket;
 
 	public Server(int port) throws IOException {
-		this.lobby = new ArrayList<ServerPlayer>();
-		this.players = new ArrayList<ServerPlayer>();
+		this.lobby = new ArrayList<ServerHuman>();
+		this.players = new ArrayList<ServerHuman>();
 		this.socket = new ServerSocket(port);
 		this.games = new ArrayList<Game>();
-		this.challenges = new HashMap<ServerPlayer, ServerPlayer>();
+		this.challenges = new HashMap<ServerHuman, ServerHuman>();
 		this.leaderboard = new ArrayList<LeaderboardEntry>();
 		this.start();
+
+		(new Timer(5000, this)).start();
+	}
+
+	/**
+	 * Perform clean-up of empty games and disconnected players.
+	 */
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+		ArrayList<ServerHuman> cleanupPlayers = new ArrayList<ServerHuman>();
+		cleanupPlayers.addAll(players);
+		ArrayList<Game> cleanupGames = new ArrayList<Game>();
+		cleanupGames.addAll(games);
+
+		for (Game g : cleanupGames) {
+			if (g.gameOver()) {
+				Util.log("debug", "Game is lingering.");
+				this.removeGame(g);
+			}
+		}
+
+		for (ServerHuman p : cleanupPlayers) {
+			if (!p.isConnected()) {
+				Util.log("debug", "Player " + p.getName() + " is lingering.");
+				this.removePlayer(p);
+			}
+		}
 	}
 
 	/**
@@ -73,14 +109,14 @@ public class Server extends Thread {
 	 * @param player
 	 * @param message
 	 */
-	public void chat(ServerPlayer player, String message) {
-		String text = "(" + player.getName() + ") " + message;
+	public void chat(ServerHuman player, String message) {
+		String text = "<" + player.getName() + "> " + message;
 		if (this.isInGame(player)) {
 			Util.log("debug", "Received game chat from " + player.getName() + ": " + message);
 			player.getGame().sendChat(text);
-		} else if (this.lobby.contains(player)) {
+		} else {
 			Util.log("debug", "Received lobby chat from " + player.getName() + ": " + message);
-			for (ServerPlayer p : this.lobby) {
+			for (ServerHuman p : this.lobby) {
 				if (p.canChat()) {
 					p.sendMessage(Protocol.Server.CHAT, new String[] { text });
 				}
@@ -94,9 +130,20 @@ public class Server extends Thread {
 	 * @param player
 	 *            The player.
 	 */
-	public void playerToLobby(ServerPlayer player) {
-		lobby.add(player);
-		Util.log("debug", player.getName() + " joined the lobby.");
+	public void playerToLobby(ServerHuman player) {
+		if (!lobby.contains(player)) {
+			lobby.add(player);
+			this.chat(player, "< entered the lobby >");
+			if (player.canChat()) {
+				String inLobby = "";
+				for (ServerHuman p : this.lobby) {
+					inLobby += p.getName() + " ";
+				}
+				player.sendMessage(Protocol.Server.CHAT,
+								new String[] { "<Server> Currently in the lobby: " + inLobby });
+			}
+			Util.log("debug", player.getName() + " joined the lobby.");
+		}
 	}
 
 	/**
@@ -105,9 +152,12 @@ public class Server extends Thread {
 	 * @param player
 	 *            The player.
 	 */
-	public void playerFromLobby(ServerPlayer player) {
-		lobby.remove(player);
-		Util.log("debug", player.getName() + " left the lobby.");
+	public void playerFromLobby(ServerHuman player) {
+		if (lobby.contains(player)) {
+			lobby.remove(player);
+			this.chat(player, "< left the lobby >");
+			Util.log("debug", player.getName() + " left the lobby.");
+		}
 	}
 
 	/**
@@ -116,9 +166,11 @@ public class Server extends Thread {
 	 * @param player
 	 *            The player.
 	 */
-	public void addPlayer(ServerPlayer player) {
-		players.add(player);
-		Util.log("debug", player.getName() + " joined the server.");
+	public void addPlayer(ServerHuman player) {
+		if (!players.contains(player)) {
+			players.add(player);
+			Util.log("debug", player.getName() + " joined the server.");
+		}
 	}
 
 	/**
@@ -127,10 +179,12 @@ public class Server extends Thread {
 	 * @param player
 	 *            The player.
 	 */
-	public void removePlayer(ServerPlayer player) {
-		players.remove(player);
-		this.playerFromLobby(player);
-		Util.log("debug", player.getName() + " left the server.");
+	public void removePlayer(ServerHuman player) {
+		if (players.contains(player)) {
+			this.playerFromLobby(player);
+			players.remove(player);
+			Util.log("debug", player.getName() + " left the server.");
+		}
 	}
 
 	/**
@@ -156,6 +210,7 @@ public class Server extends Thread {
 	 *            The game to be removed.
 	 */
 	public void removeGame(Game game) {
+		game.playersToLobby();
 		games.remove(game);
 		Util.log("debug", "A game of " + game.getNoOfPlayers() + " has been removed.");
 	}
@@ -181,24 +236,33 @@ public class Server extends Thread {
 	 * @throws TooManyPlayersException
 	 * @throws PlayerAlreadyInGameException
 	 */
-	public void findGameFor(ServerPlayer player, int noOfPlayers)
+	public void findGameFor(ServerHuman player, int noOfPlayers)
 					throws TooManyPlayersException, PlayerAlreadyInGameException {
-		// TODO Support computer player.
-		for (Game game : this.games) {
-			if (game.getGameState() == Game.GameState.NOTSTARTED
-							&& game.getNoOfPlayers() == noOfPlayers) {
-				game.addPlayer(player);
-				return;
+
+		if (noOfPlayers == 1) {
+			Game game = new Game(this, 2);
+			game.addPlayer(player);
+			game.addPlayer(new ServerAI(new SmartStrategy()));
+			addGame(game);
+			Util.log("debug", "Created an AI game for "
+							+ player.getName() + ".");
+		} else {
+			for (Game game : this.games) {
+				if (game.getGameState() == Game.GameState.NOTSTARTED
+								&& game.getNoOfPlayers() == noOfPlayers) {
+					game.addPlayer(player);
+					return;
+				}
 			}
+			if (this.isInGame(player)) {
+				throw new PlayerAlreadyInGameException(player);
+			}
+			Game game = new Game(this, noOfPlayers);
+			game.addPlayer(player);
+			addGame(game);
+			Util.log("debug", "Created a game of " + game.getNoOfPlayers() + " for "
+							+ player.getName() + ".");
 		}
-		if (this.isInGame(player)) {
-			throw new PlayerAlreadyInGameException(player);
-		}
-		Game game = new Game(this, noOfPlayers);
-		game.addPlayer(player);
-		addGame(game);
-		Util.log("debug", "Created a game of " + game.getNoOfPlayers() + " for " + player.getName()
-						+ ".");
 	}
 
 	/**
@@ -208,7 +272,7 @@ public class Server extends Thread {
 	 *            The player.
 	 * @return True if the player is in a game, false otherwise.
 	 */
-	public boolean isInGame(ServerPlayer player) {
+	public boolean isInGame(ServerHuman player) {
 		for (Game game : this.games) {
 			if (game.isPlayer(player) == true) {
 				return true;
@@ -227,21 +291,21 @@ public class Server extends Thread {
 	 * @throws PlayerCannotBeChallengedException
 	 * @throws AlreadyChallengedSomeoneException
 	 */
-	public void challenge(ServerPlayer challenger, String challengeeName)
+	public void challenge(ServerHuman challenger, String challengeeName)
 					throws PlayerCannotBeChallengedException, AlreadyChallengedSomeoneException {
-		
-		ServerPlayer challengee = null;
-		
-		for (ServerPlayer p : this.players) {
+
+		ServerHuman challengee = null;
+
+		for (ServerHuman p : this.players) {
 			if (p.getName().equals(challengeeName)) {
 				challengee = p;
 			}
 		}
-		
+
 		if (challengee == null) {
 			throw new PlayerCannotBeChallengedException(challengee);
 		}
-		
+
 		if (!challengee.canInvite() || isChallengee(challengee)) {
 			throw new PlayerCannotBeChallengedException(challengee);
 		} else if (isChallenger(challenger)) {
@@ -258,7 +322,7 @@ public class Server extends Thread {
 	 *            The player.
 	 * @return True of the player is already being challenged, false otherwise.
 	 */
-	private boolean isChallengee(ServerPlayer challengee) {
+	private boolean isChallengee(ServerHuman challengee) {
 		return this.challenges.containsValue(challengee);
 	}
 
@@ -269,7 +333,7 @@ public class Server extends Thread {
 	 *            The player.
 	 * @return True of the player is already challenging, false otherwise.
 	 */
-	private boolean isChallenger(ServerPlayer challenger) {
+	private boolean isChallenger(ServerHuman challenger) {
 		return this.challenges.containsKey(challenger);
 	}
 
@@ -280,12 +344,12 @@ public class Server extends Thread {
 	 *            The player who was challenged.
 	 * @throws PlayerIsNoChallengeeException
 	 */
-	public void declineInvite(ServerPlayer challengee) throws PlayerIsNoChallengeeException {
+	public void declineInvite(ServerHuman challengee) throws PlayerIsNoChallengeeException {
 		if (!isChallengee(challengee)) {
 			throw new PlayerIsNoChallengeeException(challengee);
 		} else {
-			ServerPlayer challenger = null;
-			for (ServerPlayer p : this.challenges.keySet()) {
+			ServerHuman challenger = null;
+			for (ServerHuman p : this.challenges.keySet()) {
 				if (this.challenges.get(p) == challengee) {
 					challenger = p;
 				}
@@ -308,13 +372,13 @@ public class Server extends Thread {
 	 * @throws PlayerIsNoChallengeeException
 	 * @throws PlayerAlreadyInGameException
 	 */
-	public void acceptInvite(ServerPlayer challengee)
+	public void acceptInvite(ServerHuman challengee)
 					throws PlayerIsNoChallengeeException, PlayerAlreadyInGameException {
 		if (!isChallengee(challengee)) {
 			throw new PlayerIsNoChallengeeException(challengee);
 		} else {
-			ServerPlayer challenger = null;
-			for (ServerPlayer p : this.challenges.keySet()) {
+			ServerHuman challenger = null;
+			for (ServerHuman p : this.challenges.keySet()) {
 				if (this.challenges.get(p) == challengee) {
 					challenger = p;
 				}
@@ -340,10 +404,10 @@ public class Server extends Thread {
 	 * When either side of a challenge enters a game, we'll forfeit any
 	 * challenge.
 	 */
-	public void forfeitChallenge(ServerPlayer player) {
+	public void forfeitChallenge(ServerHuman player) {
 		if (isChallengee(player)) {
-			ServerPlayer challenger = null;
-			for (ServerPlayer p : this.challenges.keySet()) {
+			ServerHuman challenger = null;
+			for (ServerHuman p : this.challenges.keySet()) {
 				if (this.challenges.get(p) == player) {
 					challenger = p;
 				}
@@ -382,6 +446,12 @@ public class Server extends Thread {
 		}
 	}
 
+	/**
+	 * Convert the leaderboard object to protocol, so it can be send to clients.
+	 * 
+	 * @return Arguments that can be passed directly into the client message
+	 *         sender.
+	 */
 	public String[] leaderboardToProtocol() {
 		String[] args = new String[Server.MAXLEADERBOARDLENGTH];
 		for (int i = 0; i < Server.MAXLEADERBOARDLENGTH; i++) {

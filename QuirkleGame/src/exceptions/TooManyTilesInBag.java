@@ -2,6 +2,12 @@ package exceptions;
 
 import server.Game;
 
+/**
+ * This exception can be thrown when there are too many tiles in the bag.
+ * 
+ * @author Jonathan Juursema & Peter Wessels
+ *
+ */
 @SuppressWarnings("serial")
 public class TooManyTilesInBag extends QwirkleException {
 

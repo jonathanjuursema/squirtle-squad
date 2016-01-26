@@ -2,6 +2,12 @@ package exceptions;
 
 import players.Player;
 
+/**
+ * This exception can be thrown if a player is added to the same game twice.
+ * 
+ * @author Jonathan Juursema & Peter Wessels
+ *
+ */
 @SuppressWarnings("serial")
 public class PlayerAlreadyInGameException extends QwirkleException {
 	private Player player;

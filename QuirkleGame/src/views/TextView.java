@@ -2,8 +2,8 @@ package views;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.ClientInfoStatus;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Observable;
 
 import application.Util;
@@ -13,18 +13,33 @@ import game.Hand;
 import game.Turn;
 import protocol.Protocol;
 
+/**
+ * This is the TUI. The TUI makes no use of a graphical interface, and insteads
+ * accepts input using the standard input.
+ * 
+ * @author Jonathan Juursema & Peter Wessels
+ */
 public class TextView extends Thread implements View {
 	private Client client;
+	
+	private boolean running;
 
 	public TextView(Client client) {
 		this.client = client;
 		this.start();
+		this.running = true;
 	}
 
+	/**
+	 * This is the threaded listener to client input. Input will be split by
+	 * spaces and fed into the parser. The parser will then parse commands very
+	 * similar to how the ConnectionHandler does, and delegate actions to the
+	 * view or the client accordingly.
+	 */
+	@Override
 	public void run() {
 
-		boolean running = true;
-		while (running) {
+		while (this.running) {
 			if (this.client.status == Client.Status.INITIALIZING) {
 				try {
 					Thread.sleep(1000);
@@ -33,6 +48,9 @@ public class TextView extends Thread implements View {
 				}
 			} else {
 				String[] input = Util.readString("").split(" ");
+				if (!this.running) {
+					break;
+				}
 				String command = input[0];
 				String[] args = Arrays.copyOfRange(input, 1, input.length);
 				switch (command) {
@@ -42,7 +60,7 @@ public class TextView extends Thread implements View {
 					this.sendNotification(
 									"game <int>: request the server for a game with a certain amount of players");
 					this.sendNotification("move <tileno> <x> <y>: play a move.");
-					this.sendNotification("swap <tileno> [tileno] [tileno] ...: request swap.");
+					this.sendNotification("swap <tileno>: request swap.");
 					this.sendNotification("apply: send your move to the server.");
 					this.sendNotification("revert: restart your turn.");
 					this.sendNotification("");
@@ -88,11 +106,11 @@ public class TextView extends Thread implements View {
 
 				case "swap":
 
-					if (args.length < 1) {
-						Util.println("usage: swap <tileno> [tileno] [tileno] ...");
+					if (args.length != 1) {
+						Util.println("usage: swap <tileno>");
 						break;
 					} else {
-						this.client.requestSwap(args);
+						this.client.requestSwap(args[0]);
 					}
 
 					break;
@@ -159,6 +177,9 @@ public class TextView extends Thread implements View {
 
 	}
 
+	/**
+	 * Handle changes to observed objects.
+	 */
 	@Override
 	public void update(Observable o, Object arg) {
 		System.out.println(arg.toString());
@@ -174,14 +195,17 @@ public class TextView extends Thread implements View {
 		}
 	}
 
+	@Override
 	public void sendNotification(String message) {
 		Util.println(message);
 	}
 
+	@Override
 	public void sendNotification(String type, String message) {
 		this.sendNotification("[" + type + "]: " + message);
 	}
 
+	@Override
 	public synchronized InetAddress askForHost() {
 
 		InetAddress host = null;
@@ -200,6 +224,7 @@ public class TextView extends Thread implements View {
 
 	}
 
+	@Override
 	public synchronized int askForPort() {
 
 		int port = 0;
@@ -213,11 +238,13 @@ public class TextView extends Thread implements View {
 
 	}
 
+	@Override
 	public synchronized String requestNickname() {
 		return Util.readString(
 						"What nickname would you like to use?" + System.lineSeparator() + "> ");
 	}
 
+	@Override
 	public synchronized String askForPlayerType() {
 		return Util.readString("What type of player would you like to be? (human, computer)"
 						+ System.lineSeparator() + "> ");
@@ -260,7 +287,8 @@ public class TextView extends Thread implements View {
 
 	@Override
 	public void showBoard() {
-		if (this.client.status == Client.Status.IN_GAME_INITIAL || this.client.status == Client.Status.IN_TURN) {
+		if (this.client.status == Client.Status.IN_GAME_INITIAL
+						|| this.client.status == Client.Status.IN_TURN) {
 			Util.println(this.client.getTurn().getBoardCopy().toString());
 		} else {
 			Util.println(this.client.getBoard().toString());
@@ -275,6 +303,21 @@ public class TextView extends Thread implements View {
 	@Override
 	public void gotInvite(String string) {
 		this.sendNotification("You got an invite from " + string + ".");
+	}
+
+	@Override
+	public void sendScores(Map<String, Integer> scores) {
+		this.sendNotification("Score:");
+		for (String name : scores.keySet()) {
+			this.sendNotification(name + ": " + scores.get(name));
+		}
+	}
+
+	@Override
+	public void stop(String message) {
+		this.sendNotification("The TUI is shutting down.");
+		this.sendNotification(message);
+		this.running = false;
 	}
 
 }

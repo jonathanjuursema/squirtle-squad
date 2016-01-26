@@ -20,8 +20,6 @@ public class Hand extends Observable {
 
 	/**
 	 * Constructor. Sets this.ownerPlayer to ownerPlayer.
-	 * 
-	 * @param ownerPlayer
 	 */
 	public Hand() {
 
@@ -67,7 +65,7 @@ public class Hand extends Observable {
 		List<Tile> returnList = new ArrayList<Tile>();
 		returnList.addAll(this.tilesInHand);
 		this.tilesInHand.clear();
-		
+
 		setChanged();
 		notifyObservers("handReset");
 		return returnList;
@@ -78,7 +76,7 @@ public class Hand extends Observable {
 	 * 
 	 * @param tile
 	 *            The tile-object that needs to be added to the hand.
-	 * @return boolean True if succesful added.
+	 * 
 	 * @throws HandLimitReachedExeption
 	 */
 
@@ -98,7 +96,7 @@ public class Hand extends Observable {
 	 * 
 	 * @param tileArray
 	 *            An array with tile-object that needs to be added to the hand.
-	 * @return boolean True if succesful
+	 * 
 	 * @throws HandLimitReachedExeption
 	 */
 
@@ -113,7 +111,7 @@ public class Hand extends Observable {
 	 * 
 	 * @param The
 	 *            tile-object that needs to be removed from the hand.
-	 * @return true if succesful
+	 * 
 	 * @throws TileNotInHandException
 	 */
 
@@ -133,7 +131,7 @@ public class Hand extends Observable {
 	 * 
 	 * @param tileList
 	 *            The list of tiles that needs to be removed.
-	 * @return true if succesful
+	 * 
 	 * @throws TileNotInHandException
 	 */
 
@@ -170,6 +168,7 @@ public class Hand extends Observable {
 	}
 
 	/**
+	 * Return the amount of tiles in the hand.
 	 * 
 	 * @return Returns the amount of tiles that are currently in hand.
 	 */
@@ -179,6 +178,8 @@ public class Hand extends Observable {
 	}
 
 	/**
+	 * Get a textual representation of the current hand.
+	 * 
 	 * @return a textual representation of the current hand.
 	 */
 

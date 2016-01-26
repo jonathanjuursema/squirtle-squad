@@ -27,12 +27,13 @@ import game.Hand;
 import game.Move;
 import game.Tile;
 import game.Turn;
+import players.ServerHuman;
 import players.ServerPlayer;
 import protocol.Protocol;
 import server.Game;
 
 /**
- * This class manages an entire game, including their players. It is
+ * This class manages an entire game flow, including their players. It is
  * instantiated by the server several clients are put in it.
  * 
  * @author Jonathan Juursema & Peter Wessels
@@ -45,7 +46,7 @@ public class Game implements ActionListener {
 
 	public final static int TILESPERTYPE = 3;
 	public final static int MAXPLAYERS = 4;
-	public final int TURNTIMEOUT = 60;
+	public final int TURNTIMEOUT = 30;
 
 	private static final int BONUS_WHEN_FINISH_FIRST = 6;
 
@@ -107,13 +108,17 @@ public class Game implements ActionListener {
 		} else {
 			throw new PlayerAlreadyInGameException(player);
 		}
-		this.parentServer.playerFromLobby(player);
-		if (players.size() == this.noOfPlayers) {
-			this.start();
-		} else {
-			for (ServerPlayer p : this.players) {
-				p.sendMessage(Protocol.Server.OKWAITFOR, new String[] {
-						"" + (this.getNoOfPlayers() - this.players.size()) });
+		if (player instanceof ServerHuman) {
+			this.parentServer.playerFromLobby((ServerHuman) player);
+			if (players.size() == this.noOfPlayers) {
+				this.start();
+			} else {
+				for (ServerPlayer p : this.players) {
+					if (p instanceof ServerHuman) {
+						((ServerHuman) p).sendMessage(Protocol.Server.OKWAITFOR, new String[] {
+								"" + (this.getNoOfPlayers() - this.players.size()) });
+					}
+				}
 			}
 		}
 	}
@@ -134,6 +139,12 @@ public class Game implements ActionListener {
 
 		this.initialMoves = new HashMap<ServerPlayer, Turn>();
 
+		// Constructing player names to send to client.
+		String[] playerNames = new String[this.noOfPlayers];
+		for (int i = 0; i < this.noOfPlayers; i++) {
+			playerNames[i] = this.players.get(i).getName();
+		}
+
 		// Initialise player hands, send them, and request first turn.
 		for (ServerPlayer p : this.players) {
 			// Initialise hand
@@ -152,8 +163,10 @@ public class Game implements ActionListener {
 				args[i] = tiles.get(i).toProtocol();
 			}
 
-			p.sendMessage(Protocol.Server.ADDTOHAND, args);
-			p.sendMessage(Protocol.Server.STARTGAME, new String[] {});
+			if (p instanceof ServerHuman) {
+				((ServerHuman) p).sendMessage(Protocol.Server.ADDTOHAND, args);
+				((ServerHuman) p).sendMessage(Protocol.Server.STARTGAME, playerNames);
+			}
 
 			// Request initial turn
 			initialMoves.put(p, null);
@@ -162,6 +175,7 @@ public class Game implements ActionListener {
 		}
 
 		this.timeout = new Timer(this.TURNTIMEOUT * 1000, this);
+		this.timeout.start();
 
 	}
 
@@ -192,7 +206,10 @@ public class Game implements ActionListener {
 
 		} else {
 
-			player.sendMessage(Protocol.Server.ERROR, new String[] { "7", "NoSwapAllowed" });
+			if (player instanceof ServerHuman) {
+				((ServerHuman) player).sendMessage(Protocol.Server.ERROR,
+								new String[] { "7", "NoSwapAllowed" });
+			}
 
 		}
 
@@ -255,8 +272,10 @@ public class Game implements ActionListener {
 			this.disqualify(this.getCurrentPlayer());
 
 			for (ServerPlayer p : this.players) {
-				p.sendMessage(Protocol.Server.MOVE,
-								new String[] { "Disqualified", this.getNextPlayer(0).toString() });
+				if (p instanceof ServerHuman) {
+					((ServerHuman) p).sendMessage(Protocol.Server.MOVE, new String[] {
+							"Disqualified", this.getNextPlayer(0).toString() });
+				}
 			}
 
 			this.nextTurn(0);
@@ -288,11 +307,10 @@ public class Game implements ActionListener {
 			}
 
 			for (ServerPlayer p : this.players) {
-				p.sendMessage(Protocol.Server.MOVE, args);
-				Util.println(p.getName() + "(" + p.getScore() + ") ");
+				if (p instanceof ServerHuman) {
+					((ServerHuman) p).sendMessage(Protocol.Server.MOVE, args);
+				}
 			}
-
-			Util.println("\n" + this.board.toString());
 
 			this.nextTurn(1);
 
@@ -345,10 +363,13 @@ public class Game implements ActionListener {
 	 */
 	public boolean gameOver() {
 
+		// There is only one player left.
 		if (this.players.size() == 1) {
 			return true;
 		}
 
+		// The bag is empty, and at least one of the players emptied their
+		// hands.
 		if (this.bag.getNumberOfTiles() == 0) {
 			for (ServerPlayer p : this.players) {
 				if (p.getHand().getTilesInHand().size() == 0) {
@@ -356,6 +377,12 @@ public class Game implements ActionListener {
 					return true;
 				}
 			}
+		}
+
+		// There are no players left.
+		if (this.players.size() == 0) {
+			this.shutdown("We have no players left.");
+			return true;
 		}
 
 		return false;
@@ -370,6 +397,7 @@ public class Game implements ActionListener {
 	 *            The player to be disqualified.
 	 */
 	public void disqualify(ServerPlayer player) {
+		Util.log("debug", "Disqualifying " + player.getName() + ".");
 		if (this.isPlayer(player)) {
 			if (this.gameState != Game.GameState.NOTSTARTED) {
 				List<Tile> tiles = player.getHand().hardResetHand();
@@ -381,9 +409,10 @@ public class Game implements ActionListener {
 				}
 			}
 			this.removePlayer(player);
-			player.sendMessage(Protocol.Server.GAME_END,
-							new String[] { "DISCONNECT", "DISQUALIFIED" });
-			// TODO Hand over turn if it was disqualified player's turn.
+			if (player instanceof ServerHuman) {
+				((ServerHuman) player).sendMessage(Protocol.Server.GAME_END,
+								new String[] { "DISCONNECT", "DISQUALIFIED" });
+			}
 		}
 	}
 
@@ -407,15 +436,17 @@ public class Game implements ActionListener {
 		}
 
 		for (ServerPlayer p : this.players) {
-			if (winners.size() == 1) {
-				p.sendMessage(Protocol.Server.GAME_END,
-								new String[] { "WIN", winners.get(0).toString() });
-			} else if (winners.size() > 1) {
-				p.sendMessage(Protocol.Server.GAME_END,
-								new String[] { "DRAW", winners.size() + "Winners" });
-			} else {
-				p.sendMessage(Protocol.Server.GAME_END,
-								new String[] { "DISCONNECT", "FinishedButUncertainEnd" });
+			if (p instanceof ServerHuman) {
+				if (winners.size() == 1) {
+					((ServerHuman) p).sendMessage(Protocol.Server.GAME_END,
+									new String[] { "WIN", winners.get(0).toString() });
+				} else if (winners.size() > 1) {
+					((ServerHuman) p).sendMessage(Protocol.Server.GAME_END,
+									new String[] { "DRAW", winners.size() + "Winners" });
+				} else {
+					((ServerHuman) p).sendMessage(Protocol.Server.GAME_END,
+									new String[] { "DISCONNECT", "FinishedButUncertainEnd" });
+				}
 			}
 		}
 
@@ -431,8 +462,12 @@ public class Game implements ActionListener {
 	 */
 	public void shutdown(String message) {
 		for (ServerPlayer p : this.players) {
-			p.sendMessage(Protocol.Server.GAME_END, new String[] { "DISCONNECT", message });
+			if (p instanceof ServerHuman) {
+				((ServerHuman) p).sendMessage(Protocol.Server.GAME_END,
+								new String[] { "DISCONNECT", message });
+			}
 		}
+		Util.log("error", "Shutdown of game: " + message);
 		cleanUp();
 	}
 
@@ -440,12 +475,13 @@ public class Game implements ActionListener {
 	 * Cleans up the game after finishing or abandoning it.
 	 */
 	private void cleanUp() {
+		Util.log("debug", "Cleaning up game.");
 		for (ServerPlayer p : this.players) {
 			p.getHand().hardResetHand();
-			this.removePlayer(p);
-			this.parentServer.playerToLobby(p);
-			this.parentServer.removeGame(this);
 		}
+		this.playersToLobby();
+		this.players.clear();
+		this.parentServer.removeGame(this);
 	}
 
 	/**
@@ -457,8 +493,23 @@ public class Game implements ActionListener {
 	 */
 	public void sendChat(String text) {
 		for (ServerPlayer p : this.players) {
-			if (p.canChat()) {
-				p.sendMessage(Protocol.Server.CHAT, new String[] { text });
+			if (p instanceof ServerHuman) {
+				if (((ServerHuman) p).canChat()) {
+					((ServerHuman) p).sendMessage(Protocol.Server.CHAT, new String[] { text });
+				}
+			}
+		}
+	}
+
+	/**
+	 * Move all players to the lobby.
+	 */
+	public void playersToLobby() {
+		ArrayList<ServerPlayer> playersToMove = new ArrayList<ServerPlayer>();
+		playersToMove.addAll(this.players);
+		for (ServerPlayer p : playersToMove) {
+			if (p instanceof ServerHuman) {
+				this.parentServer.playerToLobby(((ServerHuman) p));
 			}
 		}
 	}
@@ -474,8 +525,25 @@ public class Game implements ActionListener {
 	 *            The player to be removed.
 	 */
 	public void removePlayer(ServerPlayer player) {
-		players.remove(player);
-		this.noOfPlayers--;
+		Util.log("debug", "Removing " + player.getName() + " from the game.");
+		int curPlayer = currentPlayer;
+		int playerNo = this.players.indexOf(player);
+
+		if (playerNo == players.size() - 1) {
+			this.currentPlayer = 0;
+			players.remove(player);
+			this.noOfPlayers--;
+			if (playerNo == curPlayer) {
+				this.nextTurn(0);
+			}
+		} else {
+			this.currentPlayer = playerNo;
+			players.remove(player);
+			this.noOfPlayers--;
+			if (playerNo == curPlayer) {
+				this.nextTurn(0);
+			}
+		}
 	}
 
 	/**
