@@ -328,6 +328,7 @@ public class Game implements ActionListener {
 			this.getCurrentPlayer().giveTurn(new Turn(this.board, this.getCurrentPlayer()));
 
 			timeout = new Timer(this.TURNTIMEOUT * 1000, this);
+			timeout.start();
 
 			this.gameState = Game.GameState.WAITING;
 
