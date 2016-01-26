@@ -103,7 +103,7 @@ public class Board extends Observable {
 	public void removeTile(int x, int y) throws SquareOutOfBoundsException {
 		// TODO Should throw exception when there is no tile.
 		this.getSquare(x, y).removeTile();
-		
+
 		setChanged();
 		notifyObservers("removeTile");
 	}
@@ -192,88 +192,92 @@ public class Board extends Observable {
 
 		return minmax;
 	}
-	
+
 	public List<BoardSquare> getPossiblePlaceByTile(Tile tile) throws SquareOutOfBoundsException {
 		List<BoardSquare> retList = new ArrayList<BoardSquare>();
-		
-		for(Entry<BoardSquare, List<Tile>> entry : this.getAllPossiblePlaces().entrySet()) {
-			for(Tile t : entry.getValue()) {
-				if(t.getColor() == tile.getColor() && t.getShape() == tile.getShape()) {
+
+		for (Entry<BoardSquare, List<Tile>> entry : this.getAllPossiblePlaces().entrySet()) {
+			for (Tile t : entry.getValue()) {
+				if (t.getColor() == tile.getColor() && t.getShape() == tile.getShape()) {
 					retList.add(entry.getKey());
 				}
 			}
 		}
-		
+
 		return retList;
 	}
-	
-	public List<BoardSquare> getPossiblePlaceByTile(Tile tile, List<Move> selectedMoves) throws SquareOutOfBoundsException {
-		
-		if(selectedMoves == null || selectedMoves.size() == 0) {
+
+	public List<BoardSquare> getPossiblePlaceByTile(Tile tile, List<Move> selectedMoves)
+			throws SquareOutOfBoundsException {
+
+		if (selectedMoves == null || selectedMoves.size() == 0) {
 			return this.getPossiblePlaceByTile(tile);
 		}
-		
+
 		List<BoardSquare> retList = new ArrayList<BoardSquare>();
-		for(Entry<BoardSquare, List<Tile>> entry : getPossiblePlacesByMoves(selectedMoves).entrySet()) {
-			for(Tile t : entry.getValue()) {
-				if(t.getColor() == tile.getColor() && t.getShape() == tile.getShape()) {
+		for (Entry<BoardSquare, List<Tile>> entry : getPossiblePlacesByMoves(selectedMoves).entrySet()) {
+			for (Tile t : entry.getValue()) {
+				if (t.getColor() == tile.getColor() && t.getShape() == tile.getShape()) {
 					retList.add(entry.getKey());
 				}
 			}
 		}
-		
+
 		return retList;
 	}
 
 	public Map<BoardSquare, List<Tile>> getAllPossiblePlaces() throws SquareOutOfBoundsException {
-		int[] minmax = this.getMinMax();
-		return getPossiblePlaces((minmax[0] - 1), (minmax[1] + 1), (minmax[2] - 1), (minmax[3] + 1));
-	}
-	
-	public Map<BoardSquare, List<Tile>> getPossiblePlacesByMoves(List<Move> selectedMoves) throws SquareOutOfBoundsException{
-		List<BoardSquare> retList = new ArrayList<BoardSquare>();
-		for(Move m : selectedMoves) {
-			retList.add(m.getPosition());
-		}
-		
-		return getPossiblePlacesBySquares(retList);
+		List<Move> moves = new ArrayList<Move>();
+		return getPossiblePlaces(moves, false, false);
 	}
 
-	public Map<BoardSquare, List<Tile>> getPossiblePlacesBySquares(List<BoardSquare> selected)
+	public Map<BoardSquare, List<Tile>> getPossiblePlacesByMoves(List<Move> selectedMoves)
 			throws SquareOutOfBoundsException {
-		int maxX = this.board.length * -1;
-		int minX = this.board.length;
-		int maxY = this.board.length * -1;
-		int minY = this.board.length;
+		return getPossiblePlacesBySquares(selectedMoves);
+	}
 
-		for (BoardSquare b : selected) {
-			if (b.getX() > maxX) {
-				maxX = b.getX();
+	public Map<BoardSquare, List<Tile>> getPossiblePlacesBySquares(List<Move> selected)
+			throws SquareOutOfBoundsException {
+		boolean isRow = false;
+		boolean isColumn = false;
+
+		if (selected.size() > 1) {
+			if (selected.get(0).getPosition().getX() == selected.get(1).getPosition().getX()) {
+				isRow = false;
+				isColumn = true;
 			}
-			if (b.getX() < minX) {
-				minX = b.getX();
-			}
-			if (b.getY() > maxY) {
-				maxY = b.getY();
-			}
-			if (b.getY() < minY) {
-				minY = b.getY();
+
+			if (selected.get(0).getPosition().getY() == selected.get(1).getPosition().getY()) {
+				isRow = true;
+				isColumn = false;
 			}
 		}
-		return getPossiblePlaces(minX, maxX, minY, maxY);
+
+		return getPossiblePlaces(selected, isRow, isColumn);
 	}
 
-	public Map<BoardSquare, List<Tile>> getPossiblePlaces(int minx, int maxx, int miny, int maxy)
+	public Map<BoardSquare, List<Tile>> getPossiblePlaces(List<Move> selected, boolean isRow, boolean isColumn)
 			throws SquareOutOfBoundsException {
+
 		Map<BoardSquare, List<Tile>> retList = new HashMap<BoardSquare, List<Tile>>();
+		// Util.log("debug", "\n Entered getPossiblePlaces function to check the
+		// possible moves in line with "+ selected + " with the following
+		// variables:");
+		// Util.log("debug", "isRow:" + isRow);
+		// Util.log("debug", "isColumn:" + isColumn);
 
 		if (this.getSquare(0, 0).isEmpty()) {
+			// Util.log("debug", "0,0 is the only place");
 			List<Tile> allTiles = new ArrayList<Tile>();
 			for (char i = Tile.FIRSTCOLOR; i <= Tile.LASTCOLOR; i++) {
 				for (char j = Tile.FIRSTSHAPE; j <= Tile.LASTSHAPE; j++) {
 					allTiles.add(new Tile(j, i));
 				}
 			}
+
+			// Util.log("debug", "You can put the following tiles on 0,0: " +
+			// allTiles.toString());
+			// Util.log("debug", "Left getPossiblePlaces funtion");
 			retList.put(this.getSquare(0, 0), allTiles);
 			return retList;
 		}
@@ -281,258 +285,316 @@ public class Board extends Observable {
 		Map<BoardSquare, List<Tile>> possibleTilesX = new HashMap<BoardSquare, List<Tile>>();
 		List<BoardSquare> igList = new ArrayList<BoardSquare>();
 
-		for (int y = maxy; y >= miny; y--) {
+		int[] minmax = this.getMinMax();
 
-			for (int x = minx; x <= maxx; x++) {
+		List<Integer> yList = new ArrayList<Integer>();
+		List<Integer> xList = new ArrayList<Integer>();
 
-				BoardSquare current = this.getSquare(x, y);
+		if (selected == null || selected.size() == 0) {
 
-				if (!current.isEmpty() && !igList.contains(current)) {
-					Map<BoardSquare, Tile> sequence = new HashMap<BoardSquare, Tile>();
+			for (int y = (minmax[3] + 1); y >= (minmax[2] - 1); y--) {
+				yList.add(y);
+			}
 
-					BoardSquare lefty = current.getNeighbour(3);
-					
-					while(!lefty.isEmpty()) {
-						sequence.put(lefty, lefty.getTile());
-						lefty = lefty.getNeighbour(3);
-					}
-					BoardSquare emptyLeft = lefty;
-					
-					sequence.put(current, current.getTile());
-
-					igList.add(current);
-					BoardSquare temp = this.getSquare(current.getX(), current.getY());
-
-					while (!temp.isEmpty()) {
-						sequence.put(temp, temp.getTile());
-						igList.add(temp);
-
-						temp = temp.getNeighbour(1);
-					}
-
-					BoardSquare emptyRight = temp;
-
-					List<Tile> nominatedTiles = new ArrayList<Tile>();
-
-					List<Character> colors = new ArrayList<Character>();
-					for (char i = Tile.FIRSTCOLOR; i <= Tile.LASTCOLOR; i++) {
-						colors.add(i);
-					}
-
-					List<Character> shapes = new ArrayList<Character>();
-					for (char j = Tile.FIRSTSHAPE; j <= Tile.LASTSHAPE; j++) {
-						shapes.add(j);
-					}
-
-					int count = 0;
-					Tile firstInSequence = null;
-					Tile secondInSequence = null;
-					boolean isSameColor = false;
-					for (Entry<BoardSquare, Tile> entry : sequence.entrySet()) {
-						if (count == 0) {
-							firstInSequence = entry.getValue();
-						}
-
-						if (count == 1) {
-							secondInSequence = entry.getValue();
-						}
-						count++;
-					}
-
-					if (count > 1 && (firstInSequence.getColor() == secondInSequence.getColor())) {
-						isSameColor = true;
-					} else if (count > 1 && (firstInSequence.getShape() == secondInSequence.getShape())) {
-						isSameColor = false;
-					}
-
-					if (sequence.size() > 1 && sequence.size() < 6) {
-						if (isSameColor) {
-
-							for (Entry<BoardSquare, Tile> entry : sequence.entrySet()) {
-								Character shapeToRemove = null;
-								for (Character shape : shapes) {
-									if (shape == entry.getValue().getShape()) {
-										shapeToRemove = shape;
-									}
-								}
-
-								shapes.remove(shapeToRemove);
-							}
-
-							for (Character shape : shapes) {
-								nominatedTiles.add(new Tile(firstInSequence.getColor(), shape));
-							}
-
-						} else {
-							for (Entry<BoardSquare, Tile> entry : sequence.entrySet()) {
-								Character colorToRemove = null;
-								for (Character color : colors) {
-									if (color == entry.getValue().getColor()) {
-										colorToRemove = color;
-									}
-								}
-
-								colors.remove(colorToRemove);
-							}
-
-							for (Character color : colors) {
-								nominatedTiles.add(new Tile(color, firstInSequence.getShape()));
-							}
-						}
-
-						possibleTilesX.put(emptyLeft, nominatedTiles);
-						possibleTilesX.put(emptyRight, nominatedTiles);
-					} else if (sequence.size() == 1) {
-						for (Character color : colors) {
-							if (firstInSequence.getColor() != color) {
-								nominatedTiles.add(new Tile(color, firstInSequence.getShape()));
-							}
-						}
-
-						for (Character shape : shapes) {
-							if (firstInSequence.getShape() != shape) {
-								nominatedTiles.add(new Tile(firstInSequence.getColor(), shape));
-							}
-						}
-
-						possibleTilesX.put(emptyLeft, nominatedTiles);
-						possibleTilesX.put(emptyRight, nominatedTiles);
-					} else if (sequence.size() == 6) {
-						possibleTilesX.put(emptyLeft, null);
-						possibleTilesX.put(emptyRight, null);
-					}
-				}
-
+			for (int x = minmax[0] - 1; x <= (minmax[1] + 1); x++) {
+				xList.add(x);
 			}
 		}
 
+		if (selected != null || selected.size() != 0) {
 
-		Map<BoardSquare, List<Tile>> possibleTilesY = new HashMap<BoardSquare, List<Tile>>();
-		igList.clear();
-		
-		for (int x = minx; x <= maxx; x++) {
-			for (int y = maxy; y >= miny; y--) {
+			for (Move m : selected) {
+				if (!yList.contains(m.getPosition().getY())) {
+					yList.add(m.getPosition().getY());
+				}
+				if (!xList.contains(m.getPosition().getX())) {
+					xList.add(m.getPosition().getX());
+				}
+			}
 
-				BoardSquare current = this.getSquare(x, y);
+		}
 
-				if (!current.isEmpty() && !igList.contains(current)) {
-					Map<BoardSquare, Tile> sequence = new HashMap<BoardSquare, Tile>();
+		if (!isColumn) {
+			// Util.log("debug", "The moves is not a column so we check all
+			// tiles in x direction.");
+			// Util.log("debug", "We check this x-coordinats: "+
+			// xList.toString());
+			for (Integer y : yList) {
 
-					BoardSquare upty = current.getNeighbour(0);
-					
-					while(!upty.isEmpty()) {
-						sequence.put(upty, upty.getTile());
-						upty = upty.getNeighbour(0);
-					}
-					BoardSquare emptyUp = upty;
-					
-					igList.add(current);
-					BoardSquare temp = this.getSquare(current.getX(), current.getY());
+				for (Integer x : xList) {
 
-					while (!temp.isEmpty()) {
-						sequence.put(temp, temp.getTile());
-						igList.add(temp);
+					BoardSquare current = this.getSquare(x, y);
 
-						temp = temp.getNeighbour(2);
-					}
+					if (!current.isEmpty() && !igList.contains(current)) {
 
-					BoardSquare emptyDown = temp;
+						// Util.log("debug", "Found a nonempty tile " +
+						// current.getTile() + " on " + current);
 
-					List<Tile> nominatedTiles = new ArrayList<Tile>();
+						Map<BoardSquare, Tile> sequence = new HashMap<BoardSquare, Tile>();
 
-					List<Character> colors = new ArrayList<Character>();
-					for (char i = Tile.FIRSTCOLOR; i <= Tile.LASTCOLOR; i++) {
-						colors.add(i);
-					}
+						BoardSquare lefty = current.getNeighbour(3);
 
-					List<Character> shapes = new ArrayList<Character>();
-					for (char j = Tile.FIRSTSHAPE; j <= Tile.LASTSHAPE; j++) {
-						shapes.add(j);
-					}
+						while (!lefty.isEmpty()) {
+							sequence.put(lefty, lefty.getTile());
+							lefty = lefty.getNeighbour(3);
+						}
+						BoardSquare emptyLeft = lefty;
+						// Util.log("debug", "Found the most left empty place "
+						// + lefty);
 
-					int count = 0;
-					Tile firstInSequence = null;
-					Tile secondInSequence = null;
-					boolean isSameColor = false;
-					for (Entry<BoardSquare, Tile> entry : sequence.entrySet()) {
-						if (count == 0) {
-							firstInSequence = entry.getValue();
+						sequence.put(current, current.getTile());
+
+						igList.add(current);
+						BoardSquare temp = this.getSquare(current.getX(), current.getY());
+
+						while (!temp.isEmpty()) {
+							sequence.put(temp, temp.getTile());
+							igList.add(temp);
+
+							temp = temp.getNeighbour(1);
 						}
 
-						if (count == 1) {
-							secondInSequence = entry.getValue();
+						BoardSquare emptyRight = temp;
+						// Util.log("debug", "Found the most right empty place "
+						// + emptyRight);
+
+						List<Tile> nominatedTiles = new ArrayList<Tile>();
+
+						List<Character> colors = new ArrayList<Character>();
+						for (char i = Tile.FIRSTCOLOR; i <= Tile.LASTCOLOR; i++) {
+							colors.add(i);
 						}
-						count++;
-					}
 
-					if (count > 1 && (firstInSequence.getColor() == secondInSequence.getColor())) {
-						isSameColor = true;
-					} else if (count > 1 && (firstInSequence.getShape() == secondInSequence.getShape())) {
-						isSameColor = false;
-					}
+						List<Character> shapes = new ArrayList<Character>();
+						for (char j = Tile.FIRSTSHAPE; j <= Tile.LASTSHAPE; j++) {
+							shapes.add(j);
+						}
 
-					if (sequence.size() > 1 && sequence.size() < 6) {
-						if (isSameColor) {
-							for (Entry<BoardSquare, Tile> entry : sequence.entrySet()) {
-								Character shapeToRemove = null;
-								for (Character shape : shapes) {
-									if (shape == entry.getValue().getShape()) {
-										shapeToRemove = shape;
+						int count = 0;
+						Tile firstInSequence = null;
+						Tile secondInSequence = null;
+						boolean isSameColor = false;
+						for (Entry<BoardSquare, Tile> entry : sequence.entrySet()) {
+							if (count == 0) {
+								firstInSequence = entry.getValue();
+							}
+
+							if (count == 1) {
+								secondInSequence = entry.getValue();
+							}
+							count++;
+						}
+
+						if (count > 1 && (firstInSequence.getColor() == secondInSequence.getColor())) {
+							isSameColor = true;
+						} else if (count > 1 && (firstInSequence.getShape() == secondInSequence.getShape())) {
+							isSameColor = false;
+						}
+
+						if (sequence.size() > 1 && sequence.size() < 6) {
+							if (isSameColor) {
+
+								for (Entry<BoardSquare, Tile> entry : sequence.entrySet()) {
+									Character shapeToRemove = null;
+									for (Character shape : shapes) {
+										if (shape == entry.getValue().getShape()) {
+											shapeToRemove = shape;
+										}
 									}
+
+									shapes.remove(shapeToRemove);
 								}
 
-								shapes.remove(shapeToRemove);
+								for (Character shape : shapes) {
+									nominatedTiles.add(new Tile(firstInSequence.getColor(), shape));
+								}
+
+							} else {
+								for (Entry<BoardSquare, Tile> entry : sequence.entrySet()) {
+									Character colorToRemove = null;
+									for (Character color : colors) {
+										if (color == entry.getValue().getColor()) {
+											colorToRemove = color;
+										}
+									}
+
+									colors.remove(colorToRemove);
+								}
+
+								for (Character color : colors) {
+									nominatedTiles.add(new Tile(color, firstInSequence.getShape()));
+								}
+							}
+
+							possibleTilesX.put(emptyLeft, nominatedTiles);
+							possibleTilesX.put(emptyRight, nominatedTiles);
+						} else if (sequence.size() == 1) {
+							for (Character color : colors) {
+								if (firstInSequence.getColor() != color) {
+									nominatedTiles.add(new Tile(color, firstInSequence.getShape()));
+								}
 							}
 
 							for (Character shape : shapes) {
-								nominatedTiles.add(new Tile(firstInSequence.getColor(), shape));
+								if (firstInSequence.getShape() != shape) {
+									nominatedTiles.add(new Tile(firstInSequence.getColor(), shape));
+								}
 							}
 
-						} else {
-							for (Entry<BoardSquare, Tile> entry : sequence.entrySet()) {
-								Character colorToRemove = null;
-								for (Character color : colors) {
-									if (color == entry.getValue().getColor()) {
-										colorToRemove = color;
+							possibleTilesX.put(emptyLeft, nominatedTiles);
+							possibleTilesX.put(emptyRight, nominatedTiles);
+						} else if (sequence.size() == 6) {
+							possibleTilesX.put(emptyLeft, null);
+							possibleTilesX.put(emptyRight, null);
+						}
+					}
+
+				}
+			}
+		}
+
+		Map<BoardSquare, List<Tile>> possibleTilesY = new HashMap<BoardSquare, List<Tile>>();
+		igList.clear();
+
+		if (!isRow) {
+			// Util.log("debug", "The moves is not a row so we check all tiles
+			// in y direction.");
+			// Util.log("debug", "We check this y-coordinats: "+
+			// yList.toString());
+			for (Integer x : xList) {
+				for (Integer y : yList) {
+
+					BoardSquare current = this.getSquare(x, y);
+
+					if (!current.isEmpty() && !igList.contains(current)) {
+						// Util.log("debug", "Found a nonempty tile + " +
+						// current.getTile() + " on " + current);
+
+						Map<BoardSquare, Tile> sequence = new HashMap<BoardSquare, Tile>();
+
+						BoardSquare upty = current.getNeighbour(0);
+
+						while (!upty.isEmpty()) {
+							sequence.put(upty, upty.getTile());
+							upty = upty.getNeighbour(0);
+						}
+						BoardSquare emptyUp = upty;
+
+						// Util.log("debug", "Found the most north empty place "
+						// + emptyUp);
+
+						igList.add(current);
+						BoardSquare temp = this.getSquare(current.getX(), current.getY());
+
+						while (!temp.isEmpty()) {
+							sequence.put(temp, temp.getTile());
+							igList.add(temp);
+
+							temp = temp.getNeighbour(2);
+						}
+
+						BoardSquare emptyDown = temp;
+						// Util.log("debug", "Found the most south empty place "
+						// + emptyDown);
+
+						List<Tile> nominatedTiles = new ArrayList<Tile>();
+
+						List<Character> colors = new ArrayList<Character>();
+						for (char i = Tile.FIRSTCOLOR; i <= Tile.LASTCOLOR; i++) {
+							colors.add(i);
+						}
+
+						List<Character> shapes = new ArrayList<Character>();
+						for (char j = Tile.FIRSTSHAPE; j <= Tile.LASTSHAPE; j++) {
+							shapes.add(j);
+						}
+
+						int count = 0;
+						Tile firstInSequence = null;
+						Tile secondInSequence = null;
+						boolean isSameColor = false;
+						for (Entry<BoardSquare, Tile> entry : sequence.entrySet()) {
+							if (count == 0) {
+								firstInSequence = entry.getValue();
+							}
+
+							if (count == 1) {
+								secondInSequence = entry.getValue();
+							}
+							count++;
+						}
+
+						if (count > 1 && (firstInSequence.getColor() == secondInSequence.getColor())) {
+							isSameColor = true;
+						} else if (count > 1 && (firstInSequence.getShape() == secondInSequence.getShape())) {
+							isSameColor = false;
+						}
+
+						if (sequence.size() > 1 && sequence.size() < 6) {
+							if (isSameColor) {
+								for (Entry<BoardSquare, Tile> entry : sequence.entrySet()) {
+									Character shapeToRemove = null;
+									for (Character shape : shapes) {
+										if (shape == entry.getValue().getShape()) {
+											shapeToRemove = shape;
+										}
 									}
+
+									shapes.remove(shapeToRemove);
 								}
 
-								colors.remove(colorToRemove);
+								for (Character shape : shapes) {
+									nominatedTiles.add(new Tile(firstInSequence.getColor(), shape));
+								}
+
+							} else {
+								for (Entry<BoardSquare, Tile> entry : sequence.entrySet()) {
+									Character colorToRemove = null;
+									for (Character color : colors) {
+										if (color == entry.getValue().getColor()) {
+											colorToRemove = color;
+										}
+									}
+
+									colors.remove(colorToRemove);
+								}
+
+								for (Character color : colors) {
+									nominatedTiles.add(new Tile(color, firstInSequence.getShape()));
+								}
 							}
+
+							possibleTilesY.put(emptyUp, nominatedTiles);
+							possibleTilesY.put(emptyDown, nominatedTiles);
+						} else if (sequence.size() == 1) {
+							// Util.log("debug", "Sequence is only 1 tile big");
 
 							for (Character color : colors) {
-								nominatedTiles.add(new Tile(color, firstInSequence.getShape()));
+								if (color != firstInSequence.getColor()) {
+									nominatedTiles.add(new Tile(color, firstInSequence.getShape()));
+								}
 							}
-						}
 
-						possibleTilesY.put(emptyUp, nominatedTiles);
-						possibleTilesY.put(emptyDown, nominatedTiles);
-					} else if (sequence.size() == 1) {
-
-						for (Character color : colors) {
-							if (color != firstInSequence.getColor()) {
-								nominatedTiles.add(new Tile(color, firstInSequence.getShape()));
+							for (Character shape : shapes) {
+								if (shape != firstInSequence.getShape()) {
+									nominatedTiles.add(new Tile(firstInSequence.getColor(), shape));
+								}
 							}
+							possibleTilesY.put(emptyUp, nominatedTiles);
+							possibleTilesY.put(emptyDown, nominatedTiles);
+						} else if (sequence.size() == 6) {
+							possibleTilesY.put(emptyUp, null);
+							possibleTilesY.put(emptyDown, null);
 						}
-
-						for (Character shape : shapes) {
-							if (shape != firstInSequence.getShape()) {
-								nominatedTiles.add(new Tile(firstInSequence.getColor(), shape));
-							}
-						}
-
-						possibleTilesY.put(emptyUp, nominatedTiles);
-						possibleTilesY.put(emptyDown, nominatedTiles);
-					} else if (sequence.size() == 6) {
-						possibleTilesY.put(emptyUp, null);
-						possibleTilesY.put(emptyDown, null);
 					}
-				}
 
+				}
 			}
 		}
 
 		Map<BoardSquare, List<Tile>> possiblePlaces = new HashMap<BoardSquare, List<Tile>>();
+		// Util.log("debug", "Possible places found: ." + possiblePlaces + "
+		// supposed to be empty\n");
 
 		possiblePlaces.putAll(possibleTilesX);
 		possiblePlaces.putAll(possibleTilesY);
@@ -543,16 +605,18 @@ public class Board extends Observable {
 
 				List<Tile> tilesWithSameKey = new ArrayList<Tile>();
 
-				for (Tile tilesInX : entry.getValue()) {
-					for (Tile tilesInY : possibleTilesY.get(entry.getKey())) {
+				if (possibleTilesY.get(entry.getKey()) != null && entry.getValue() != null) {
+					for (Tile tilesInX : entry.getValue()) {
+						for (Tile tilesInY : possibleTilesY.get(entry.getKey())) {
 
-						if (tilesInX.getColor() == tilesInY.getColor() && tilesInX.getShape() == tilesInY.getShape()) {
-							tilesWithSameKey.add(tilesInY);
+							if (tilesInX.getColor() == tilesInY.getColor()
+									&& tilesInX.getShape() == tilesInY.getShape()) {
+								tilesWithSameKey.add(tilesInY);
+							}
+
 						}
-
 					}
 				}
-
 				possiblePlaces.put(entry.getKey(), tilesWithSameKey);
 			}
 
@@ -568,6 +632,9 @@ public class Board extends Observable {
 		for (BoardSquare b : removeNull) {
 			possiblePlaces.remove(b);
 		}
+
+		// Util.log("debug", "Not empty possible places found: ." +
+		// possiblePlaces);
 
 		return possiblePlaces;
 
