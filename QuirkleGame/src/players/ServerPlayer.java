@@ -116,8 +116,8 @@ public class ServerPlayer extends Player {
 
 	}
 
-	public void playSwap(String[] tiles)
-					throws NotYourTurnException, NotInGameException, IllegalTurnException, TileNotInHandException {
+	public void playSwap(String[] tiles) throws NotYourTurnException, NotInGameException,
+					IllegalTurnException, TileNotInHandException {
 
 		this.getTurn().getMoves().clear();
 		this.getTurn().getSwap().clear();
@@ -195,50 +195,77 @@ public class ServerPlayer extends Player {
 	}
 
 	/**
-	 * @return the canInvite
+	 * Checks whether the client supports challenge functionality.
+	 * 
+	 * @return Whether the functionality is supported.
 	 */
 	public boolean canInvite() {
 		return canInvite;
 	}
 
 	/**
+	 * Sets whether the client supports challenge functionality.
+	 * 
 	 * @param canInvite
-	 *            the canInvite to set
+	 *            Whether the functionality is supported.
 	 */
 	public void canInvite(boolean canInvite) {
 		this.canInvite = canInvite;
 	}
 
 	/**
-	 * @return the chanChat
+	 * Checks whether the client can chat.
+	 * 
+	 * @return Whether the functionality is supported.
 	 */
 	public boolean canChat() {
 		return chanChat;
 	}
 
 	/**
+	 * Sets whether the client can chat.
+	 * 
 	 * @param chanChat
-	 *            the chanChat to set
+	 *            Whether the functionality is supported.
 	 */
 	public void canChat(boolean chanChat) {
 		this.chanChat = chanChat;
 	}
 
 	/**
-	 * @return the canLeaderBoard
+	 * Checks whether the client supports the leaderboard function.
+	 * 
+	 * @return Whether the functionality is supported.
 	 */
 	public boolean canLeaderBoard() {
 		return canLeaderBoard;
 	}
 
 	/**
+	 * Set whether the client supports the leaderboard function.
+	 * 
 	 * @param canLeaderBoard
-	 *            the canLeaderBoard to set
+	 *            Whether the functionality is supported.
 	 */
 	public void canLeaderBoard(boolean canLeaderBoard) {
 		this.canLeaderBoard = canLeaderBoard;
 	}
 
+	/**
+	 * Check if the player is still connected to a client.
+	 * 
+	 * @return True of the player is connected, false otherwise.
+	 */
+	public boolean isConnected() {
+		return !this.connection.getSocket().isClosed();
+	}
+
+	/**
+	 * Add the list of tiles to the hand of the player.
+	 * 
+	 * @param tiles
+	 *            A list of tiles.
+	 */
 	public void addToHand(List<Tile> tiles) {
 		this.sendMessage(Protocol.Server.ADDTOHAND, Tile.toArgs(tiles));
 	}

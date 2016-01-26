@@ -45,7 +45,7 @@ public class Game implements ActionListener {
 
 	public final static int TILESPERTYPE = 3;
 	public final static int MAXPLAYERS = 4;
-	public final int TURNTIMEOUT = 60;
+	public final int TURNTIMEOUT = 30;
 
 	private static final int BONUS_WHEN_FINISH_FIRST = 6;
 
@@ -133,7 +133,7 @@ public class Game implements ActionListener {
 		this.bag.fill();
 
 		this.initialMoves = new HashMap<ServerPlayer, Turn>();
-		
+
 		// Constructing player names to send to client.
 		String[] playerNames = new String[this.noOfPlayers];
 		for (int i = 0; i < this.noOfPlayers; i++) {
@@ -168,6 +168,7 @@ public class Game implements ActionListener {
 		}
 
 		this.timeout = new Timer(this.TURNTIMEOUT * 1000, this);
+		this.timeout.start();
 
 	}
 
@@ -331,6 +332,7 @@ public class Game implements ActionListener {
 			this.getCurrentPlayer().giveTurn(new Turn(this.board, this.getCurrentPlayer()));
 
 			timeout = new Timer(this.TURNTIMEOUT * 1000, this);
+			timeout.start();
 
 			this.gameState = Game.GameState.WAITING;
 
@@ -472,6 +474,12 @@ public class Game implements ActionListener {
 		}
 	}
 
+	public void playersToLobby() {
+		for (ServerPlayer p : this.players) {
+			this.parentServer.playerToLobby(p);
+		}
+	}
+
 	/*
 	 * Getters and setters below.
 	 */
@@ -486,7 +494,7 @@ public class Game implements ActionListener {
 		Util.log("debug", "Removing " + player.getName() + " from the game.");
 		int curPlayer = currentPlayer;
 		int playerNo = this.players.indexOf(player);
-		
+
 		if (playerNo == players.size() - 1) {
 			this.currentPlayer = 0;
 			players.remove(player);

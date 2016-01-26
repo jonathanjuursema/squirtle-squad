@@ -1,11 +1,15 @@
 package server;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.swing.Timer;
 
 import application.Util;
 import exceptions.AlreadyChallengedSomeoneException;
@@ -23,7 +27,7 @@ import protocol.Protocol;
  * @author Jonathan Juursema & Peter Wessels
  *
  */
-public class Server extends Thread {
+public class Server extends Thread implements ActionListener {
 
 	public static final String[] FUNCTIONS = { "CHALLENGE", "CHAT", "LEADERBOARD" };
 
@@ -46,6 +50,33 @@ public class Server extends Thread {
 		this.challenges = new HashMap<ServerPlayer, ServerPlayer>();
 		this.leaderboard = new ArrayList<LeaderboardEntry>();
 		this.start();
+
+		(new Timer(5000, this)).start();
+	}
+
+	/**
+	 * Perform clean-up of empty games and disconnected players.
+	 */
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+		ArrayList<ServerPlayer> cleanupPlayers = new ArrayList<ServerPlayer>();
+		cleanupPlayers.addAll(players);
+		ArrayList<Game> cleanupGames = new ArrayList<Game>();
+		cleanupGames.addAll(games);
+
+		for (Game g : cleanupGames) {
+			if (g.gameOver()) {
+				Util.log("debug", "Game is lingering.");
+				this.removeGame(g);
+			}
+		}
+
+		for (ServerPlayer p : cleanupPlayers) {
+			if (!p.isConnected()) {
+				Util.log("debug", "Player " + p.getName() + " is lingering.");
+				this.removePlayer(p);
+			}
+		}
 	}
 
 	/**
@@ -174,6 +205,7 @@ public class Server extends Thread {
 	 *            The game to be removed.
 	 */
 	public void removeGame(Game game) {
+		game.playersToLobby();
 		games.remove(game);
 		Util.log("debug", "A game of " + game.getNoOfPlayers() + " has been removed.");
 	}
