@@ -11,6 +11,7 @@ import exceptions.SquareOutOfBoundsException;
 import exceptions.TileNotInHandException;
 import game.Move;
 import game.Tile;
+import game.Turn;
 import protocol.Protocol;
 import server.Game;
 import server.ServerConnectionHandler;
@@ -20,6 +21,8 @@ public class ServerPlayer extends Player {
 	private boolean canInvite;
 	private boolean chanChat;
 	private boolean canLeaderBoard;
+
+	private Turn turn;
 
 	private Game game;
 	private ServerConnectionHandler connection;
@@ -268,6 +271,25 @@ public class ServerPlayer extends Player {
 	 */
 	public void addToHand(List<Tile> tiles) {
 		this.sendMessage(Protocol.Server.ADDTOHAND, Tile.toArgs(tiles));
+	}
+
+	/**
+	 * Hands the turn to the player.
+	 * 
+	 * @param turn
+	 *            The Turn to be populated.
+	 */
+	public void giveTurn(Turn turn) {
+		this.turn = turn;
+	}
+
+	/**
+	 * Allow subclass to access this player's private turn.
+	 * 
+	 * @return The turn.
+	 */
+	public Turn getTurn() {
+		return this.turn;
 	}
 
 }
