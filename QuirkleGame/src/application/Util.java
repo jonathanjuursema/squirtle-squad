@@ -83,7 +83,9 @@ public class Util {
 	 */
 
 	public static void log(Exception e) {
-		Util.log(e.getClass().getSimpleName(), e.getMessage());
+		if (App.EXCEPTION) {
+			Util.log(e.getClass().getSimpleName(), e.getMessage());
+		}
 	}
 
 	/**
