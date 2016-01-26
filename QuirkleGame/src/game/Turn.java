@@ -7,6 +7,7 @@ import java.util.Map;
 
 import java.util.Observable;
 
+import application.Util;
 import exceptions.HandLimitReachedExeption;
 import exceptions.IllegalMoveException;
 import exceptions.IllegalTurnException;
@@ -133,9 +134,10 @@ public class Turn extends Observable {
 	 *         coloumn.
 	 * @throws SquareOutOfBoundsException
 	 *             Thrown if the BoardSquare not exists
+	 * @throws IllegalMoveException 
 	 */
 	public static Map<Move, Map<Integer, List<Tile>>> getSequencesByMovesAndBoard(Board board, List<Move> moves)
-			throws SquareOutOfBoundsException {
+			throws SquareOutOfBoundsException, IllegalMoveException {
 		Map<Move, Map<Integer, List<Tile>>> sequences = new HashMap<Move, Map<Integer, List<Tile>>>();
 	
 		for (Move move : moves) {
@@ -166,7 +168,16 @@ public class Turn extends Observable {
 		for (Map.Entry<Move, Map<Integer, List<Tile>>> entry : sequences.entrySet()) {
 	
 			Move key = entry.getKey();
-	
+			
+			int southLength = entry.getValue().get(0).size();
+			int northLength = entry.getValue().get(2).size();
+			int eastLength = entry.getValue().get(1).size();
+			int westLength = entry.getValue().get(3).size();
+			
+
+			//Util.log("North length", entry.getValue().get(0).size() + "");
+			//Util.log("South length", entry.getValue().get(2).size() + "");
+			
 			entry.getValue().get(0).removeAll(entry.getValue().get(2));
 			entry.getValue().get(1).removeAll(entry.getValue().get(3));
 	
@@ -176,6 +187,14 @@ public class Turn extends Observable {
 			Map<Integer, List<Tile>> rowAndColumn = new HashMap<Integer, List<Tile>>();
 			rowAndColumn.put(0, entry.getValue().get(0));
 			rowAndColumn.put(1, entry.getValue().get(1));
+			
+			if((southLength + northLength - 1) != entry.getValue().get(0).size()) {
+				throw new IllegalMoveException("This tile is allready in this column");
+			}
+			
+			if((eastLength + westLength - 1) != entry.getValue().get(1).size()) {
+				throw new IllegalMoveException("This tile is allready in this row");
+			}
 	
 			cleanedMap.put(key, rowAndColumn);
 		}
@@ -190,9 +209,10 @@ public class Turn extends Observable {
 	 * 
 	 * @return The score of the whole turn.
 	 * @throws SquareOutOfBoundsException
+	 * @throws IllegalMoveException 
 	 */
 
-	public int calculateScore() throws SquareOutOfBoundsException {
+	public int calculateScore() throws SquareOutOfBoundsException, IllegalMoveException {
 		// We first create 2 sequences to
 		// represent the horizontal line, the row
 		// and the vertical line, the column
