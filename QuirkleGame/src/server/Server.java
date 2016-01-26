@@ -22,7 +22,10 @@ import players.ServerPlayer;
 import protocol.Protocol;
 
 /**
- * TODO Write file header.
+ * This is the server. The server is responsible for accepting incoming
+ * connections, managing games and players, and so one. The server holds a lobby
+ * of players not in a game, and a list of games and their associated players. A
+ * player can not be in the lobby and a game at the same time.
  * 
  * @author Jonathan Juursema & Peter Wessels
  *
@@ -432,6 +435,12 @@ public class Server extends Thread implements ActionListener {
 		}
 	}
 
+	/**
+	 * Convert the leaderboard object to protocol, so it can be send to clients.
+	 * 
+	 * @return Arguments that can be passed directly into the client message
+	 *         sender.
+	 */
 	public String[] leaderboardToProtocol() {
 		String[] args = new String[Server.MAXLEADERBOARDLENGTH];
 		for (int i = 0; i < Server.MAXLEADERBOARDLENGTH; i++) {

@@ -32,7 +32,7 @@ import protocol.Protocol;
 import server.Game;
 
 /**
- * This class manages an entire game, including their players. It is
+ * This class manages an entire game flow, including their players. It is
  * instantiated by the server several clients are put in it.
  * 
  * @author Jonathan Juursema & Peter Wessels
@@ -349,10 +349,13 @@ public class Game implements ActionListener {
 	 */
 	public boolean gameOver() {
 
+		// There is only one player left.
 		if (this.players.size() == 1) {
 			return true;
 		}
 
+		// The bag is empty, and at least one of the players emptied their
+		// hands.
 		if (this.bag.getNumberOfTiles() == 0) {
 			for (ServerPlayer p : this.players) {
 				if (p.getHand().getTilesInHand().size() == 0) {
@@ -362,6 +365,7 @@ public class Game implements ActionListener {
 			}
 		}
 
+		// There are no players left.
 		if (this.players.size() == 0) {
 			this.shutdown("We have no players left.");
 			return true;
@@ -453,8 +457,8 @@ public class Game implements ActionListener {
 		Util.log("debug", "Cleaning up game.");
 		for (ServerPlayer p : this.players) {
 			p.getHand().hardResetHand();
-			this.parentServer.playerToLobby(p);
 		}
+		this.playersToLobby();
 		this.players.clear();
 		this.parentServer.removeGame(this);
 	}
@@ -474,8 +478,13 @@ public class Game implements ActionListener {
 		}
 	}
 
+	/**
+	 * Move all players to the lobby.
+	 */
 	public void playersToLobby() {
-		for (ServerPlayer p : this.players) {
+		ArrayList<ServerPlayer> playersToMove = new ArrayList<ServerPlayer>();
+		playersToMove.addAll(this.players);
+		for (ServerPlayer p : playersToMove) {
 			this.parentServer.playerToLobby(p);
 		}
 	}
