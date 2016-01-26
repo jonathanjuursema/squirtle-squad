@@ -75,14 +75,19 @@ public class SmartStrategy implements StrategyInterface {
 			if (board.getPossiblePlaceByTile(t).size() > 0) {
 
 				for (BoardSquare b : board.getPossiblePlaceByTile(t)) {
+					
 					try {
 						board.placeTile(t, b.getX(), b.getY());
 					} catch (SquareOutOfBoundsException e) {
 						Util.log(e);
 					}
 					Move move = new Move(t, b);
+					
+					List<Move> firstStone = new ArrayList<Move>();
+					firstStone.add(move);
 					try {
 						simTurn.addMove(move);
+						turnsByScore.put(simTurn.calculateScore(), firstStone);
 					} catch (IllegalMoveException | IllegalTurnException e) {
 						Util.log(e);
 						continue;
