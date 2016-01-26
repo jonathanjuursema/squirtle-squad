@@ -31,7 +31,13 @@ public class SmartStrategy implements StrategyInterface {
 	}
 
 	@Override
-	public Turn requestTurn(Turn turn) {
+	public synchronized Turn requestTurn(Turn turn) {
+		try {
+			this.wait(1000);
+		} catch (InterruptedException e) {
+			Util.log(e);
+		}
+		
 		this.player = turn.getPlayer();
 		this.board = turn.getBoardCopy();
 
