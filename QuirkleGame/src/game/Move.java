@@ -41,9 +41,20 @@ public class Move {
 	}
 
 	public boolean isValidMove(Board board, Turn turn) throws SquareOutOfBoundsException, IllegalMoveException {
-		// Check move in relation with the board
-		if(board.getPossiblePlaceByTile(this.getTile(), turn.getMoves()).size() == 0) { 
-			throw new IllegalMoveException(this, "This place does not have a connection to an existing row or column.");
+		
+		boolean valid = false;
+		for(BoardSquare b : board.getPossiblePlaceByTile(this.getTile(), turn.getMoves())) {
+			if(b.getX() == this.getPosition().getX() && b.getY() == this.getPosition().getY()) {
+				valid = true;
+			}
+		}
+		
+		Util.log("Possible places: " + board.getPossiblePlaceByTile(this.getTile(), turn.getMoves()).toString());
+		
+		
+		if (!valid) {
+			throw new IllegalMoveException(this, "This place is not possible for this tile.");
+
 		}
 
 		board.placeTile(this.getTile(), this.getPosition().getX(), this.getPosition().getY());
