@@ -63,6 +63,7 @@ public class TextView extends Thread implements View {
 					this.sendNotification("swap <tileno>: request swap.");
 					this.sendNotification("apply: send your move to the server.");
 					this.sendNotification("revert: restart your turn.");
+					this.sendNotification("stones: get the amount of stones in the game bag.");
 					this.sendNotification("");
 					this.sendNotification("board: show the current board.");
 					this.sendNotification("hand: show your hand.");
@@ -113,6 +114,11 @@ public class TextView extends Thread implements View {
 						this.client.requestSwap(args[0]);
 					}
 
+					break;
+
+				case "stones":
+
+					this.client.getTilesInBag();
 					break;
 
 				case "apply":
@@ -254,7 +260,7 @@ public class TextView extends Thread implements View {
 	public void sendLeaderboard(String[] args) {
 		Util.println("--- LEADERBOARD ---");
 		for (int i = 0; i < args.length; i++) {
-			String[] info = args[0].split("\\" + Protocol.Server.Settings.DELIMITER2);
+			String[] info = args[i].split("\\" + Protocol.Server.Settings.DELIMITER2);
 			Util.println(i + ": " + info[0] + " (" + info[1] + ")");
 		}
 	}

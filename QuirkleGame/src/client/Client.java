@@ -616,6 +616,14 @@ public class Client {
 	}
 
 	/**
+	 * Get the amount of tiles in the bag from the server.
+	 */
+	public void getTilesInBag() {
+		this.server.send(Protocol.Client.GETSTONESINBAG, new String[] {});
+	}
+
+
+	/**
 	 * Return the view.
 	 * 
 	 * @return The view.

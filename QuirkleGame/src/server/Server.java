@@ -434,7 +434,7 @@ public class Server extends Thread implements ActionListener {
 		if (this.leaderboard.size() < 1) {
 			this.leaderboard.add(e);
 		} else {
-			for (int i = 0; i < this.leaderboard.size(); i++) {
+			for (int i = 0; i < Server.MAXLEADERBOARDLENGTH; i++) {
 				if (e.getScore() > this.leaderboard.get(i).getScore()) {
 					this.leaderboard.add(i, e);
 					return;
