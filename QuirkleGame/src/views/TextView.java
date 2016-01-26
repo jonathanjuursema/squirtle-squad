@@ -2,6 +2,7 @@ package views;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.sql.ClientInfoStatus;
 import java.util.Arrays;
 import java.util.Observable;
 
@@ -101,6 +102,11 @@ public class TextView extends Thread implements View {
 					this.client.submitTurn();
 					break;
 
+				case "revert":
+
+					this.client.revertTurn();
+					break;
+
 				case "invite":
 
 					if (args.length < 1) {
@@ -155,11 +161,15 @@ public class TextView extends Thread implements View {
 
 	@Override
 	public void update(Observable o, Object arg) {
+		System.out.println(arg.toString());
 		if (o instanceof Hand) {
+			this.sendNotification("Your hand has changed:");
 			this.showHand();
 		} else if (o instanceof Board) {
+			this.sendNotification("The board has changed:");
 			this.showBoard();
 		} else if (o instanceof Turn) {
+			this.sendNotification("Your turn is now as follows:");
 			this.showTurn();
 		}
 	}
@@ -250,7 +260,7 @@ public class TextView extends Thread implements View {
 
 	@Override
 	public void showBoard() {
-		if (this.client.getTurn().isMoveRequest()) {
+		if (this.client.status == Client.Status.IN_GAME_INITIAL || this.client.status == Client.Status.IN_TURN) {
 			Util.println(this.client.getTurn().getBoardCopy().toString());
 		} else {
 			Util.println(this.client.getBoard().toString());

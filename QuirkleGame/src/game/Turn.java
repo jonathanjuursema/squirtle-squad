@@ -69,7 +69,7 @@ public class Turn extends Observable {
 		}
 
 		setChanged();
-		notifyObservers("turn");
+		notifyObservers("moveAdded");
 		// TODO: implement further
 	}
 
@@ -105,7 +105,7 @@ public class Turn extends Observable {
 		}
 
 		setChanged();
-		notifyObservers("turn");
+		notifyObservers("swapAdded");
 	}
 
 	/**

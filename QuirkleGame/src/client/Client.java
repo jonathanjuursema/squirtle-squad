@@ -70,6 +70,8 @@ public class Client {
 
 		this.server = new ClientConnectionHandler(this.socket, this);
 		this.server.start();
+		
+		this.usedInPrevious = new ArrayList<Tile>();
 
 		register();
 
@@ -125,6 +127,8 @@ public class Client {
 		}
 
 		this.player.getHand().hardResetHand();
+		
+		this.getPlayerHand().addObserver(this.getView());
 	}
 
 	public void startGame() {
@@ -133,8 +137,11 @@ public class Client {
 			if (this.getPlayerHand().getTilesInHand().size() > 0) {
 				this.status = Client.Status.IN_GAME_INITIAL;
 				this.boardCopy = new Board();
+				this.boardCopy.addObserver(getView());
 				this.turn = new Turn(boardCopy, this.player);
-				this.player.giveTurn(this.turn);
+				this.turn.addObserver(getView());
+				this.turn.getBoardCopy().addObserver(getView());
+				this.player.giveTurn();
 				this.getView().startGame();
 			} else {
 				Util.log("debug", "We wait for the hand to be filled.");
@@ -240,11 +247,15 @@ public class Client {
 			this.server.send(Protocol.Client.CHANGESTONE, args);
 		} else {
 			this.getView().sendNotification("You have not specified a turn yet!");
+			return;
 		}
+		this.getView().sendNotification("Waiting for server confirmation...");
 		this.status = Client.Status.IN_GAME;
 	}
 
 	public synchronized void registerTurn(String[] args) {
+		
+		this.status = Client.Status.IN_GAME;
 
 		// TODO Implement so we can keep track of the scores.
 
@@ -288,10 +299,20 @@ public class Client {
 			Util.log("error", "Could not parse server move.");
 			Util.log(e);
 		}
+		
+		if (!args[0].equals(this.name)) {
+			try {
+				this.getPlayerHand().addTohand(usedInPrevious);
+			} catch (HandLimitReachedExeption e) {
+				Util.log(e);
+			}
+		}
 
 		if (args[1].equals(this.name)) {
 			this.turn = new Turn(boardCopy, this.player);
-			this.player.giveTurn(this.turn);
+			this.turn.addObserver(getView());
+			this.turn.getBoardCopy().addObserver(getView());
+			this.player.giveTurn();
 		} else if (args[0].equals(this.name)) {
 			usedInPrevious.clear();
 		}
@@ -414,6 +435,18 @@ public class Client {
 	public void declineInviteFromServer() {
 		this.status = Client.Status.IN_LOBBY;
 		this.getView().sendNotification("Your challenge has been refused.");
+	}
+
+	public void revertTurn() {
+		this.turn = new Turn(boardCopy, this.player);
+		this.turn.addObserver(getView());
+		this.turn.getBoardCopy().addObserver(getView());
+		try {
+			this.getPlayerHand().addTohand(usedInPrevious);
+		} catch (HandLimitReachedExeption e) {
+			Util.log(e);
+		}
+		this.usedInPrevious.clear();
 	}
 
 }

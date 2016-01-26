@@ -69,7 +69,7 @@ public class Hand extends Observable {
 		this.tilesInHand.clear();
 		
 		setChanged();
-		notifyObservers("hand");
+		notifyObservers("handReset");
 		return returnList;
 	}
 
@@ -90,7 +90,7 @@ public class Hand extends Observable {
 		}
 
 		setChanged();
-		notifyObservers("hand");
+		notifyObservers("addTileToHand");
 	}
 
 	/**
@@ -106,9 +106,6 @@ public class Hand extends Observable {
 		for (Tile t : tileList) {
 			this.addToHand(t);
 		}
-
-		setChanged();
-		notifyObservers("hand");
 	}
 
 	/**
