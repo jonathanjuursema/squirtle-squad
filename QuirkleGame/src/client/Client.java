@@ -3,7 +3,9 @@ package client;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import application.Util;
 import exceptions.HandLimitReachedExeption;
@@ -60,6 +62,8 @@ public class Client {
 
 	public Status status;
 
+	private Map<String, Integer> scores;
+
 	public Client() throws IOException {
 
 		this.status = Client.Status.INITIALIZING;
@@ -70,8 +74,10 @@ public class Client {
 
 		this.server = new ClientConnectionHandler(this.socket, this);
 		this.server.start();
-		
+
 		this.usedInPrevious = new ArrayList<Tile>();
+
+		this.scores = new HashMap<String, Integer>();
 
 		register();
 
@@ -126,8 +132,11 @@ public class Client {
 			this.player = new HumanPlayer(this.name, this);
 		}
 
+		Hand hand = new Hand();
+		this.player.assignHand(hand);
+
 		this.player.getHand().hardResetHand();
-		
+
 		this.getPlayerHand().addObserver(this.getView());
 	}
 
@@ -174,18 +183,25 @@ public class Client {
 
 		if (this.status == Client.Status.IN_TURN || this.status == Client.Status.IN_GAME_INITIAL) {
 
-			Tile t = this.getPlayerHand().getTilesInHand().get(tileInHand - 1);
-			try {
-				this.turn.addMove(new Move(t, this.boardCopy.getSquare(x, y)));
-			} catch (SquareOutOfBoundsException | IllegalMoveException | IllegalTurnException e) {
-				this.getView().sendNotification("Cannot do this move: " + e.getMessage());
-				return;
-			}
+			if (tileInHand <= this.getPlayerHand().getTilesInHand().size()) {
+				Tile t = this.getPlayerHand().getTilesInHand().get(tileInHand - 1);
+				try {
+					this.turn.addMove(new Move(t, this.boardCopy.getSquare(x, y)));
+				} catch (SquareOutOfBoundsException | IllegalMoveException
+								| IllegalTurnException e) {
+					this.getView().sendNotification("Cannot do this move: " + e.getMessage());
+					return;
+				}
 
-			try {
-				this.getPlayerHand().removeFromHand(t);
-			} catch (TileNotInHandException e) {
-				Util.log(e);
+				try {
+					this.getPlayerHand().removeFromHand(t);
+				} catch (TileNotInHandException e) {
+					Util.log(e);
+				}
+
+				this.usedInPrevious.add(t);
+			} else {
+				this.getView().sendNotification("This stone is not in your hand!");
 			}
 
 		} else {
@@ -196,27 +212,28 @@ public class Client {
 
 	}
 
-	public void requestSwap(String[] args) {
+	public void requestSwap(String tile) {
 
 		if (this.status == Client.Status.IN_TURN) {
 
-			boolean[] tilesFromHand = new boolean[Hand.LIMIT];
-
-			for (String tile : args) {
-
-				int no = Integer.parseInt(tile);
-				if (tilesFromHand[no] != true && no < Hand.LIMIT) {
-					tilesFromHand[no] = true;
-					try {
-						this.turn.addSwapRequest(this.getPlayerHand().getTilesInHand().get(no - 1));
-					} catch (IllegalTurnException e) {
-						this.getView().sendNotification("This swap is illegal: " + e.getMessage());
-						Util.log(e);
-						this.turn.getSwap().clear();
-						return;
-					}
+			int no = Integer.parseInt(tile);
+			if (no <= this.getPlayerHand().getTilesInHand().size()) {
+				Tile t = this.getPlayerHand().getTilesInHand().get(no - 1);
+				try {
+					this.turn.addSwapRequest(t);
+				} catch (IllegalTurnException e) {
+					this.getView().sendNotification("This swap is illegal: " + e.getMessage());
+					Util.log(e);
+					this.turn.getSwap().clear();
+					return;
+				}
+				try {
+					this.getPlayerHand().removeFromHand(t);
+				} catch (TileNotInHandException e) {
+					Util.log(e);
 				}
 
+				this.usedInPrevious.add(t);
 			}
 
 			Util.log("debug", "Registered swap request.");
@@ -254,52 +271,89 @@ public class Client {
 	}
 
 	public synchronized void registerTurn(String[] args) {
-		
+
 		this.status = Client.Status.IN_GAME;
 
-		// TODO Implement so we can keep track of the scores.
-
 		Player tempPlayer = new HumanPlayer("Temp", this);
+		tempPlayer.assignHand(new Hand());
 		Turn turn = new Turn(boardCopy, tempPlayer);
 
-		for (int i = 2; i < args.length; i++) {
+		if (args.length > 2) {
 
-			String arg = args[i];
+			for (int i = 2; i < args.length; i++) {
 
-			String[] move = arg.split("\\" + String.valueOf(Protocol.Server.Settings.DELIMITER2));
+				String arg = args[i];
 
-			Tile tile = new Tile(move[0].charAt(0), move[0].charAt(1));
+				String[] move = arg
+								.split("\\" + String.valueOf(Protocol.Server.Settings.DELIMITER2));
+
+				Tile tile = new Tile(move[0].charAt(0), move[0].charAt(1));
+
+				try {
+					tempPlayer.getHand().addToHand(tile);
+				} catch (HandLimitReachedExeption e) {
+					Util.log("error", "Could not parse server move.");
+					Util.log(e);
+				}
+
+				int x = Integer.parseInt(move[1]);
+				int y = Integer.parseInt(move[2]);
+
+				try {
+					turn.addMove(new Move(tile, this.boardCopy.getSquare(x, y)));
+				} catch (SquareOutOfBoundsException | IllegalMoveException
+								| IllegalTurnException e) {
+					Util.log("error", "Could not parse server move.");
+					Util.log(e);
+				}
+			}
+
+			Bag bag = new Bag();
+			bag.fill();
 
 			try {
-				tempPlayer.getHand().addToHand(tile);
-			} catch (HandLimitReachedExeption e) {
+				turn.applyTurn(boardCopy, bag);
+			} catch (TooFewTilesInBagException | TileNotInBagException | TooManyTilesInBag
+							| TileNotInHandException | IllegalTurnException
+							| SquareOutOfBoundsException | HandLimitReachedExeption e) {
 				Util.log("error", "Could not parse server move.");
 				Util.log(e);
 			}
 
-			int x = Integer.parseInt(move[1]);
-			int y = Integer.parseInt(move[2]);
-
 			try {
-				turn.addMove(new Move(tile, this.boardCopy.getSquare(x, y)));
-			} catch (SquareOutOfBoundsException | IllegalMoveException | IllegalTurnException e) {
-				Util.log("error", "Could not parse server move.");
+				this.getView().sendNotification(args[0] + " played " + (args.length - 2)
+								+ " tiles for " + turn.calculateScore() + " points.");
+			} catch (SquareOutOfBoundsException e) {
 				Util.log(e);
 			}
+
+			boolean noScoresYet = true;
+			for (String p : scores.keySet()) {
+				if (p.equals(args[0])) {
+					noScoresYet = false;
+					Integer score;
+					try {
+						score = scores.get(p) + turn.calculateScore();
+						scores.put(p, score);
+					} catch (SquareOutOfBoundsException e) {
+						Util.log(e);
+					}
+				}
+			}
+			if (noScoresYet) {
+				try {
+					scores.put(args[0], turn.calculateScore());
+				} catch (SquareOutOfBoundsException e) {
+					Util.log(e);
+				}
+			}
+
+		} else {
+
+			this.getView().sendNotification(args[0] + " swapped tiles.");
+
 		}
 
-		Bag bag = new Bag();
-		bag.fill();
-
-		try {
-			turn.applyTurn(boardCopy, bag);
-		} catch (TooFewTilesInBagException | TileNotInBagException | TooManyTilesInBag
-						| TileNotInHandException | IllegalTurnException | SquareOutOfBoundsException
-						| HandLimitReachedExeption e) {
-			Util.log("error", "Could not parse server move.");
-			Util.log(e);
-		}
-		
 		if (!args[0].equals(this.name)) {
 			try {
 				this.getPlayerHand().addTohand(usedInPrevious);
@@ -322,7 +376,8 @@ public class Client {
 	public void endGame(String[] args) {
 		switch (args[0]) {
 		case "WIN":
-			this.getView().sendNotification("The game is over. The winner is: " + args[1]);
+			this.getView().sendNotification("The game is over. The winner is: "
+							+ (args[1].equals(this.name) ? "YOU!" : args[1]));
 			break;
 		case "DRAW":
 			this.getView().sendNotification("The game is over and ended in a draw.");

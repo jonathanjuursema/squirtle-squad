@@ -289,10 +289,7 @@ public class Game implements ActionListener {
 
 			for (ServerPlayer p : this.players) {
 				p.sendMessage(Protocol.Server.MOVE, args);
-				Util.println(p.getName() + "(" + p.getScore() + ") ");
 			}
-
-			Util.println("\n" + this.board.toString());
 
 			this.nextTurn(1);
 
@@ -357,6 +354,10 @@ public class Game implements ActionListener {
 			}
 		}
 
+		if (this.players.size() == 0) {
+			this.shutdown("We have no players left.");
+		}
+
 		return false;
 
 	}
@@ -369,6 +370,7 @@ public class Game implements ActionListener {
 	 *            The player to be disqualified.
 	 */
 	public void disqualify(ServerPlayer player) {
+		Util.log("debug", "Disqualifying " + player.getName() + ".");
 		if (this.isPlayer(player)) {
 			if (this.gameState != Game.GameState.NOTSTARTED) {
 				List<Tile> tiles = player.getHand().hardResetHand();
@@ -382,7 +384,6 @@ public class Game implements ActionListener {
 			this.removePlayer(player);
 			player.sendMessage(Protocol.Server.GAME_END,
 							new String[] { "DISCONNECT", "DISQUALIFIED" });
-			// TODO Hand over turn if it was disqualified player's turn.
 		}
 	}
 
@@ -432,6 +433,7 @@ public class Game implements ActionListener {
 		for (ServerPlayer p : this.players) {
 			p.sendMessage(Protocol.Server.GAME_END, new String[] { "DISCONNECT", message });
 		}
+		Util.log("error", "Shutdown of game: " + message);
 		cleanUp();
 	}
 
@@ -439,12 +441,13 @@ public class Game implements ActionListener {
 	 * Cleans up the game after finishing or abandoning it.
 	 */
 	private void cleanUp() {
+		Util.log("debug", "Cleaning up game.");
 		for (ServerPlayer p : this.players) {
 			p.getHand().hardResetHand();
-			this.removePlayer(p);
 			this.parentServer.playerToLobby(p);
-			this.parentServer.removeGame(this);
 		}
+		this.players.clear();
+		this.parentServer.removeGame(this);
 	}
 
 	/**
@@ -473,8 +476,25 @@ public class Game implements ActionListener {
 	 *            The player to be removed.
 	 */
 	public void removePlayer(ServerPlayer player) {
-		players.remove(player);
-		this.noOfPlayers--;
+		Util.log("debug", "Removing " + player.getName() + " from the game.");
+		int curPlayer = currentPlayer;
+		int playerNo = this.players.indexOf(player);
+		
+		if (playerNo == players.size() - 1) {
+			this.currentPlayer = 0;
+			players.remove(player);
+			this.noOfPlayers--;
+			if (playerNo == curPlayer) {
+				this.nextTurn(0);
+			}
+		} else {
+			this.currentPlayer = playerNo;
+			players.remove(player);
+			this.noOfPlayers--;
+			if (playerNo == curPlayer) {
+				this.nextTurn(0);
+			}
+		}
 	}
 
 	/**

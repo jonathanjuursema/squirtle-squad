@@ -74,7 +74,7 @@ public class Server extends Thread {
 	 * @param message
 	 */
 	public void chat(ServerPlayer player, String message) {
-		String text = "(" + player.getName() + ") " + message;
+		String text = "<" + player.getName() + "> " + message;
 		if (this.isInGame(player)) {
 			Util.log("debug", "Received game chat from " + player.getName() + ": " + message);
 			player.getGame().sendChat(text);
@@ -96,6 +96,15 @@ public class Server extends Thread {
 	 */
 	public void playerToLobby(ServerPlayer player) {
 		lobby.add(player);
+		this.chat(player, "< entered the lobby >");
+		if (player.canChat()) {
+			String inLobby = "";
+			for (ServerPlayer p : this.lobby) {
+				inLobby += p.getName() + " ";
+			}
+			player.sendMessage(Protocol.Server.CHAT,
+							new String[] { "<Server> Currently in the lobby: " + inLobby });
+		}
 		Util.log("debug", player.getName() + " joined the lobby.");
 	}
 
@@ -106,6 +115,7 @@ public class Server extends Thread {
 	 *            The player.
 	 */
 	public void playerFromLobby(ServerPlayer player) {
+		this.chat(player, "< left the lobby >");
 		lobby.remove(player);
 		Util.log("debug", player.getName() + " left the lobby.");
 	}
@@ -229,19 +239,19 @@ public class Server extends Thread {
 	 */
 	public void challenge(ServerPlayer challenger, String challengeeName)
 					throws PlayerCannotBeChallengedException, AlreadyChallengedSomeoneException {
-		
+
 		ServerPlayer challengee = null;
-		
+
 		for (ServerPlayer p : this.players) {
 			if (p.getName().equals(challengeeName)) {
 				challengee = p;
 			}
 		}
-		
+
 		if (challengee == null) {
 			throw new PlayerCannotBeChallengedException(challengee);
 		}
-		
+
 		if (!challengee.canInvite() || isChallengee(challengee)) {
 			throw new PlayerCannotBeChallengedException(challengee);
 		} else if (isChallenger(challenger)) {

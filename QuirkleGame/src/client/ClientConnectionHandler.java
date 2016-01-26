@@ -36,6 +36,9 @@ public class ClientConnectionHandler extends ConnectionHandler {
 				this.client.getView().sendNotification("error", "This nickname already exists.");
 				this.client.register();
 				break;
+			case 5:
+				this.client.declineInviteFromServer();
+				break;
 			case 2:
 			case 7:
 				this.client.undoRemoveFromHand();

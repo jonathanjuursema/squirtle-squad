@@ -9,8 +9,6 @@ public class HumanPlayer extends ClientPlayer {
 
 	public HumanPlayer(String name, Client client) {
 		super(client, name);
-		Hand hand = new Hand();
-		super.assignHand(hand);
 		this.view = new TextView(client);
 	}
 

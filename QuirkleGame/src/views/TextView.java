@@ -42,7 +42,7 @@ public class TextView extends Thread implements View {
 					this.sendNotification(
 									"game <int>: request the server for a game with a certain amount of players");
 					this.sendNotification("move <tileno> <x> <y>: play a move.");
-					this.sendNotification("swap <tileno> [tileno] [tileno] ...: request swap.");
+					this.sendNotification("swap <tileno>: request swap.");
 					this.sendNotification("apply: send your move to the server.");
 					this.sendNotification("revert: restart your turn.");
 					this.sendNotification("");
@@ -88,11 +88,11 @@ public class TextView extends Thread implements View {
 
 				case "swap":
 
-					if (args.length < 1) {
-						Util.println("usage: swap <tileno> [tileno] [tileno] ...");
+					if (args.length != 1) {
+						Util.println("usage: swap <tileno>");
 						break;
 					} else {
-						this.client.requestSwap(args);
+						this.client.requestSwap(args[0]);
 					}
 
 					break;
