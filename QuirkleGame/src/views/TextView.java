@@ -13,6 +13,12 @@ import game.Hand;
 import game.Turn;
 import protocol.Protocol;
 
+/**
+ * This is the TUI. The TUI makes no use of a graphical interface, and insteads
+ * accepts input using the standard input.
+ * 
+ * @author Jonathan Juursema & Peter Wessels
+ */
 public class TextView extends Thread implements View {
 	private Client client;
 
@@ -21,6 +27,12 @@ public class TextView extends Thread implements View {
 		this.start();
 	}
 
+	/**
+	 * This is the threaded listener to client input. Input will be split by
+	 * spaces and fed into the parser. The parser will then parse commands very
+	 * similar to how the ConnectionHandler does, and delegate actions to the
+	 * view or the client accordingly.
+	 */
 	@Override
 	public void run() {
 
@@ -160,6 +172,9 @@ public class TextView extends Thread implements View {
 
 	}
 
+	/**
+	 * Handle changes to observed objects.
+	 */
 	@Override
 	public void update(Observable o, Object arg) {
 		System.out.println(arg.toString());
@@ -267,7 +282,8 @@ public class TextView extends Thread implements View {
 
 	@Override
 	public void showBoard() {
-		if (this.client.status == Client.Status.IN_GAME_INITIAL || this.client.status == Client.Status.IN_TURN) {
+		if (this.client.status == Client.Status.IN_GAME_INITIAL
+						|| this.client.status == Client.Status.IN_TURN) {
 			Util.println(this.client.getTurn().getBoardCopy().toString());
 		} else {
 			Util.println(this.client.getBoard().toString());
