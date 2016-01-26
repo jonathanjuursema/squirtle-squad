@@ -18,11 +18,19 @@ public class ClientConnectionHandler extends ConnectionHandler {
 
 	Client client;
 
+	/**
+	 * Constructs a new Client connection handler, with a connection to the server and a Client object.
+	 * @param socket The socket with the server connection.
+	 * @param client The Client.
+	 */
 	public ClientConnectionHandler(Socket socket, Client client) {
 		super(socket);
 		this.client = client;
 	}
 
+	/**
+	 * Threaded code parsing remote input.
+	 */
 	public void run() {
 		super.run();
 	}
