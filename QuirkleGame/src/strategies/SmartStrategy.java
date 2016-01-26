@@ -37,7 +37,7 @@ public class SmartStrategy implements StrategyInterface {
 		} catch (InterruptedException e) {
 			Util.log(e);
 		}
-		
+
 		this.player = turn.getPlayer();
 		this.board = turn.getBoardCopy();
 
@@ -49,10 +49,21 @@ public class SmartStrategy implements StrategyInterface {
 
 		SortedSet<Integer> keys = new TreeSet<Integer>(turnsByScore.keySet());
 		List<Move> highestScore = null;
-		highestScore = turnsByScore.get(keys.last());
-
 		turn.getMoves().clear();
-		if (highestScore.size() == 0) {
+		if (turnsByScore.size() > 0) {
+			highestScore = turnsByScore.get(keys.last());
+			if (highestScore.size() == 0) {
+				for (Tile t : player.getHand().getTilesInHand()) {
+					try {
+						turn.addSwapRequest(t);
+					} catch (IllegalTurnException e) {
+						Util.log(e);
+					}
+				}
+			} else {
+				turn.getMoves().addAll(highestScore);
+			}
+		} else {
 			for (Tile t : player.getHand().getTilesInHand()) {
 				try {
 					turn.addSwapRequest(t);
@@ -60,8 +71,6 @@ public class SmartStrategy implements StrategyInterface {
 					Util.log(e);
 				}
 			}
-		} else {
-			turn.getMoves().addAll(highestScore);
 		}
 
 		return turn;
@@ -75,14 +84,14 @@ public class SmartStrategy implements StrategyInterface {
 			if (board.getPossiblePlaceByTile(t).size() > 0) {
 
 				for (BoardSquare b : board.getPossiblePlaceByTile(t)) {
-					
+
 					try {
 						board.placeTile(t, b.getX(), b.getY());
 					} catch (SquareOutOfBoundsException e) {
 						Util.log(e);
 					}
 					Move move = new Move(t, b);
-					
+
 					List<Move> firstStone = new ArrayList<Move>();
 					firstStone.add(move);
 					try {
