@@ -70,7 +70,7 @@ public class Server extends Thread implements ActionListener {
 		cleanupGames.addAll(games);
 
 		for (Game g : cleanupGames) {
-			if (g.gameOver()) {
+			if (g.gameOver() && g.getGameState() != Game.GameState.NOTSTARTED) {
 				Util.log("debug", "Game is lingering.");
 				this.removeGame(g);
 			}

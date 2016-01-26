@@ -23,6 +23,7 @@ import game.Move;
 import game.Tile;
 import game.Turn;
 import players.ClientPlayer;
+import players.ComputerPlayer;
 import players.HumanPlayer;
 import players.Player;
 import protocol.Protocol;
@@ -53,7 +54,7 @@ public class Client {
 
 	private String name;
 
-	List<Tile> usedInPrevious;
+	public List<Tile> usedInPrevious;
 
 	public static enum Status {
 		INITIALIZING, IN_LOBBY, IN_GAME, IN_TURN, WAITINGFORGAME, IN_GAME_INITIAL
@@ -150,7 +151,7 @@ public class Client {
 		if (playerType.equals("human")) {
 			this.player = new HumanPlayer(this.name, this);
 		} else if (playerType.equals("computer")) {
-			this.player = new HumanPlayer(this.name, this);
+			this.player = new ComputerPlayer(this);
 		}
 
 		Hand hand = new Hand();
@@ -261,6 +262,14 @@ public class Client {
 
 		}
 
+	}
+	
+	/**
+	 * Bypass for requestSwap and addMove for the computer to use.
+	 * @param turn The new turn.
+	 */
+	public void setTurn(Turn turn) {
+		this.turn = turn;
 	}
 
 	/**

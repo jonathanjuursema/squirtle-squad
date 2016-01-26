@@ -47,7 +47,7 @@ public class Game implements ActionListener {
 
 	public final static int TILESPERTYPE = 3;
 	public final static int MAXPLAYERS = 4;
-	public final int TURNTIMEOUT = 30;
+	public final int TURNTIMEOUT = 3000;
 
 	private static final int BONUS_WHEN_FINISH_FIRST = 6;
 
