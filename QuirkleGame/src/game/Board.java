@@ -6,11 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import application.Util;
-
 import java.util.Observable;
 
-import exceptions.IllegalMoveException;
 import exceptions.SquareOutOfBoundsException;
 import server.Game;
 
