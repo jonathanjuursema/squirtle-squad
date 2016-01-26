@@ -12,6 +12,7 @@ import javax.swing.Timer;
 
 import application.Util;
 import exceptions.HandLimitReachedExeption;
+import exceptions.IllegalMoveException;
 import exceptions.IllegalTurnException;
 import exceptions.PlayerAlreadyInGameException;
 import exceptions.SquareOutOfBoundsException;
@@ -235,7 +236,7 @@ public class Game implements ActionListener {
 										.get(highestScoring).calculateScore()) {
 							highestScoring = p;
 						}
-					} catch (SquareOutOfBoundsException e) {
+					} catch (SquareOutOfBoundsException | IllegalMoveException e) {
 						Util.log(e);
 						shutdown("Unrecoverable exception in determinging scores of first moves.");
 					}
@@ -316,7 +317,7 @@ public class Game implements ActionListener {
 
 		} catch (TooFewTilesInBagException | TileNotInBagException | TooManyTilesInBag
 						| TileNotInHandException | IllegalTurnException | SquareOutOfBoundsException
-						| HandLimitReachedExeption e) {
+						| HandLimitReachedExeption | IllegalMoveException e) {
 
 			Util.log(e);
 			this.shutdown("Unrecoverable exception during move application.");

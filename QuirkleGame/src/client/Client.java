@@ -404,7 +404,7 @@ public class Client {
 			try {
 				this.getView().sendNotification(args[0] + " played " + (args.length - 2)
 								+ " tiles for " + turn.calculateScore() + " points.");
-			} catch (SquareOutOfBoundsException e) {
+			} catch (SquareOutOfBoundsException | IllegalMoveException e) {
 				Util.log(e);
 			}
 
@@ -412,7 +412,7 @@ public class Client {
 			try {
 				Integer score = scores.get(args[0]) + turn.calculateScore();
 				scores.put(args[0], score);
-			} catch (SquareOutOfBoundsException e) {
+			} catch (SquareOutOfBoundsException | IllegalMoveException e) {
 				Util.log(e);
 			}
 			

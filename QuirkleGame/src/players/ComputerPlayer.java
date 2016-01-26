@@ -66,7 +66,7 @@ public class ComputerPlayer extends ClientPlayer {
 			}
 			try {
 				movesByScore.put(simulatedTurn.calculateScore(), entry.getValue());
-			} catch (SquareOutOfBoundsException e) {
+			} catch (SquareOutOfBoundsException | IllegalMoveException e) {
 				Util.log(e);
 				continue;
 			}
