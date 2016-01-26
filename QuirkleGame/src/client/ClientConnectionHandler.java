@@ -86,7 +86,7 @@ public class ClientConnectionHandler extends ConnectionHandler {
 			client.status = Client.Status.WAITINGFORGAME;
 			break;
 		case Protocol.Server.STARTGAME:
-			client.startGame();
+			client.startGame(args);
 			break;
 		case Protocol.Server.STONESINBAG:
 			client.getView().sendNotification("There are " + args[0] + " stones in the bag.");

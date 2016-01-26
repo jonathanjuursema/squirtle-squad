@@ -133,6 +133,12 @@ public class Game implements ActionListener {
 		this.bag.fill();
 
 		this.initialMoves = new HashMap<ServerPlayer, Turn>();
+		
+		// Constructing player names to send to client.
+		String[] playerNames = new String[this.noOfPlayers];
+		for (int i = 0; i < this.noOfPlayers; i++) {
+			playerNames[i] = this.players.get(i).getName();
+		}
 
 		// Initialise player hands, send them, and request first turn.
 		for (ServerPlayer p : this.players) {
@@ -153,7 +159,7 @@ public class Game implements ActionListener {
 			}
 
 			p.sendMessage(Protocol.Server.ADDTOHAND, args);
-			p.sendMessage(Protocol.Server.STARTGAME, new String[] {});
+			p.sendMessage(Protocol.Server.STARTGAME, playerNames);
 
 			// Request initial turn
 			initialMoves.put(p, null);
@@ -356,6 +362,7 @@ public class Game implements ActionListener {
 
 		if (this.players.size() == 0) {
 			this.shutdown("We have no players left.");
+			return true;
 		}
 
 		return false;

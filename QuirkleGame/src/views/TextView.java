@@ -3,6 +3,7 @@ package views;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Observable;
 
 import application.Util;
@@ -20,6 +21,7 @@ public class TextView extends Thread implements View {
 		this.start();
 	}
 
+	@Override
 	public void run() {
 
 		boolean running = true;
@@ -173,14 +175,17 @@ public class TextView extends Thread implements View {
 		}
 	}
 
+	@Override
 	public void sendNotification(String message) {
 		Util.println(message);
 	}
 
+	@Override
 	public void sendNotification(String type, String message) {
 		this.sendNotification("[" + type + "]: " + message);
 	}
 
+	@Override
 	public synchronized InetAddress askForHost() {
 
 		InetAddress host = null;
@@ -199,6 +204,7 @@ public class TextView extends Thread implements View {
 
 	}
 
+	@Override
 	public synchronized int askForPort() {
 
 		int port = 0;
@@ -212,11 +218,13 @@ public class TextView extends Thread implements View {
 
 	}
 
+	@Override
 	public synchronized String requestNickname() {
 		return Util.readString(
 						"What nickname would you like to use?" + System.lineSeparator() + "> ");
 	}
 
+	@Override
 	public synchronized String askForPlayerType() {
 		return Util.readString("What type of player would you like to be? (human, computer)"
 						+ System.lineSeparator() + "> ");
@@ -274,6 +282,14 @@ public class TextView extends Thread implements View {
 	@Override
 	public void gotInvite(String string) {
 		this.sendNotification("You got an invite from " + string + ".");
+	}
+
+	@Override
+	public void sendScores(Map<String, Integer> scores) {
+		this.sendNotification("Score:");
+		for (String name : scores.keySet()) {
+			this.sendNotification(name + ": " + scores.get(name));
+		}
 	}
 
 }

@@ -164,8 +164,15 @@ public class Client {
 	/**
 	 * Start a game. Should only be called after the hand has been filled, but
 	 * could also be called before depending on server implementation.
+	 * 
+	 * @param args
+	 *            The server arguments.
 	 */
-	public void startGame() {
+	public void startGame(String[] args) {
+		
+		for (String pname : args) {
+			this.scores.put(pname, 0);
+		}
 
 		if (this.status == Client.Status.WAITINGFORGAME) {
 			if (this.getPlayerHand().getTilesInHand().size() > 0) {
@@ -174,7 +181,7 @@ public class Client {
 				this.boardCopy.addObserver(getView());
 				this.turn = new Turn(boardCopy, this.player);
 				this.turn.addObserver(getView());
-				this.turn.getBoardCopy().addObserver(getView());
+				this.turn.getBoardCopy().addObserver(getView());				
 				this.player.giveTurn();
 				this.getView().startGame();
 			} else {
@@ -205,7 +212,7 @@ public class Client {
 		}
 
 		if (this.status == Client.Status.WAITINGFORGAME) {
-			this.startGame();
+			this.startGame(this.scores.keySet().toArray(new String[0]));
 		}
 
 	}
@@ -402,26 +409,14 @@ public class Client {
 			}
 
 			// Try to keep track of the score.
-			boolean noScoresYet = true;
-			for (String p : scores.keySet()) {
-				if (p.equals(args[0])) {
-					noScoresYet = false;
-					Integer score;
-					try {
-						score = scores.get(p) + turn.calculateScore();
-						scores.put(p, score);
-					} catch (SquareOutOfBoundsException e) {
-						Util.log(e);
-					}
-				}
+			try {
+				Integer score = scores.get(args[0]) + turn.calculateScore();
+				scores.put(args[0], score);
+			} catch (SquareOutOfBoundsException e) {
+				Util.log(e);
 			}
-			if (noScoresYet) {
-				try {
-					scores.put(args[0], turn.calculateScore());
-				} catch (SquareOutOfBoundsException e) {
-					Util.log(e);
-				}
-			}
+			
+			this.getView().sendScores(scores);
 
 			// There are only two arguments, the players, so the player swapped
 			// tiles.
@@ -473,6 +468,8 @@ public class Client {
 							"The game has been ended by the server: " + args[1] + ".");
 			break;
 		}
+		this.getView().sendScores(this.scores);
+		this.scores.clear();
 		this.status = Client.Status.IN_LOBBY;
 	}
 

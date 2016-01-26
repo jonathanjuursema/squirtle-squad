@@ -25,7 +25,7 @@ import protocol.Protocol;
  */
 public class Server extends Thread {
 
-	public static final String[] FUNCTIONS = { "CHALLENGE", "CHAT", "LEADERBORD" };
+	public static final String[] FUNCTIONS = { "CHALLENGE", "CHAT", "LEADERBOARD" };
 
 	private static final int MAXLEADERBOARDLENGTH = 10;
 
@@ -78,7 +78,7 @@ public class Server extends Thread {
 		if (this.isInGame(player)) {
 			Util.log("debug", "Received game chat from " + player.getName() + ": " + message);
 			player.getGame().sendChat(text);
-		} else if (this.lobby.contains(player)) {
+		} else {
 			Util.log("debug", "Received lobby chat from " + player.getName() + ": " + message);
 			for (ServerPlayer p : this.lobby) {
 				if (p.canChat()) {
@@ -95,17 +95,19 @@ public class Server extends Thread {
 	 *            The player.
 	 */
 	public void playerToLobby(ServerPlayer player) {
-		lobby.add(player);
-		this.chat(player, "< entered the lobby >");
-		if (player.canChat()) {
-			String inLobby = "";
-			for (ServerPlayer p : this.lobby) {
-				inLobby += p.getName() + " ";
+		if (!lobby.contains(player)) {
+			lobby.add(player);
+			this.chat(player, "< entered the lobby >");
+			if (player.canChat()) {
+				String inLobby = "";
+				for (ServerPlayer p : this.lobby) {
+					inLobby += p.getName() + " ";
+				}
+				player.sendMessage(Protocol.Server.CHAT,
+								new String[] { "<Server> Currently in the lobby: " + inLobby });
 			}
-			player.sendMessage(Protocol.Server.CHAT,
-							new String[] { "<Server> Currently in the lobby: " + inLobby });
+			Util.log("debug", player.getName() + " joined the lobby.");
 		}
-		Util.log("debug", player.getName() + " joined the lobby.");
 	}
 
 	/**
@@ -115,9 +117,11 @@ public class Server extends Thread {
 	 *            The player.
 	 */
 	public void playerFromLobby(ServerPlayer player) {
-		this.chat(player, "< left the lobby >");
-		lobby.remove(player);
-		Util.log("debug", player.getName() + " left the lobby.");
+		if (lobby.contains(player)) {
+			lobby.remove(player);
+			this.chat(player, "< left the lobby >");
+			Util.log("debug", player.getName() + " left the lobby.");
+		}
 	}
 
 	/**
@@ -127,8 +131,10 @@ public class Server extends Thread {
 	 *            The player.
 	 */
 	public void addPlayer(ServerPlayer player) {
-		players.add(player);
-		Util.log("debug", player.getName() + " joined the server.");
+		if (!players.contains(player)) {
+			players.add(player);
+			Util.log("debug", player.getName() + " joined the server.");
+		}
 	}
 
 	/**
@@ -138,9 +144,11 @@ public class Server extends Thread {
 	 *            The player.
 	 */
 	public void removePlayer(ServerPlayer player) {
-		players.remove(player);
-		this.playerFromLobby(player);
-		Util.log("debug", player.getName() + " left the server.");
+		if (players.contains(player)) {
+			this.playerFromLobby(player);
+			players.remove(player);
+			Util.log("debug", player.getName() + " left the server.");
+		}
 	}
 
 	/**
