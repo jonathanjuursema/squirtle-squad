@@ -27,6 +27,7 @@ import game.Hand;
 import game.Move;
 import game.Tile;
 import game.Turn;
+import players.ServerHuman;
 import players.ServerPlayer;
 import protocol.Protocol;
 import server.Game;
@@ -107,13 +108,17 @@ public class Game implements ActionListener {
 		} else {
 			throw new PlayerAlreadyInGameException(player);
 		}
-		this.parentServer.playerFromLobby(player);
-		if (players.size() == this.noOfPlayers) {
-			this.start();
-		} else {
-			for (ServerPlayer p : this.players) {
-				p.sendMessage(Protocol.Server.OKWAITFOR, new String[] {
-						"" + (this.getNoOfPlayers() - this.players.size()) });
+		if (player instanceof ServerHuman) {
+			this.parentServer.playerFromLobby((ServerHuman) player);
+			if (players.size() == this.noOfPlayers) {
+				this.start();
+			} else {
+				for (ServerPlayer p : this.players) {
+					if (p instanceof ServerHuman) {
+						((ServerHuman) p).sendMessage(Protocol.Server.OKWAITFOR, new String[] {
+								"" + (this.getNoOfPlayers() - this.players.size()) });
+					}
+				}
 			}
 		}
 	}
@@ -158,8 +163,10 @@ public class Game implements ActionListener {
 				args[i] = tiles.get(i).toProtocol();
 			}
 
-			p.sendMessage(Protocol.Server.ADDTOHAND, args);
-			p.sendMessage(Protocol.Server.STARTGAME, playerNames);
+			if (p instanceof ServerHuman) {
+				((ServerHuman) p).sendMessage(Protocol.Server.ADDTOHAND, args);
+				((ServerHuman) p).sendMessage(Protocol.Server.STARTGAME, playerNames);
+			}
 
 			// Request initial turn
 			initialMoves.put(p, null);
@@ -199,7 +206,10 @@ public class Game implements ActionListener {
 
 		} else {
 
-			player.sendMessage(Protocol.Server.ERROR, new String[] { "7", "NoSwapAllowed" });
+			if (player instanceof ServerHuman) {
+				((ServerHuman) player).sendMessage(Protocol.Server.ERROR,
+								new String[] { "7", "NoSwapAllowed" });
+			}
 
 		}
 
@@ -262,8 +272,10 @@ public class Game implements ActionListener {
 			this.disqualify(this.getCurrentPlayer());
 
 			for (ServerPlayer p : this.players) {
-				p.sendMessage(Protocol.Server.MOVE,
-								new String[] { "Disqualified", this.getNextPlayer(0).toString() });
+				if (p instanceof ServerHuman) {
+					((ServerHuman) p).sendMessage(Protocol.Server.MOVE, new String[] {
+							"Disqualified", this.getNextPlayer(0).toString() });
+				}
 			}
 
 			this.nextTurn(0);
@@ -295,7 +307,9 @@ public class Game implements ActionListener {
 			}
 
 			for (ServerPlayer p : this.players) {
-				p.sendMessage(Protocol.Server.MOVE, args);
+				if (p instanceof ServerHuman) {
+					((ServerHuman) p).sendMessage(Protocol.Server.MOVE, args);
+				}
 			}
 
 			this.nextTurn(1);
@@ -395,8 +409,10 @@ public class Game implements ActionListener {
 				}
 			}
 			this.removePlayer(player);
-			player.sendMessage(Protocol.Server.GAME_END,
-							new String[] { "DISCONNECT", "DISQUALIFIED" });
+			if (player instanceof ServerHuman) {
+				((ServerHuman) player).sendMessage(Protocol.Server.GAME_END,
+								new String[] { "DISCONNECT", "DISQUALIFIED" });
+			}
 		}
 	}
 
@@ -420,15 +436,17 @@ public class Game implements ActionListener {
 		}
 
 		for (ServerPlayer p : this.players) {
-			if (winners.size() == 1) {
-				p.sendMessage(Protocol.Server.GAME_END,
-								new String[] { "WIN", winners.get(0).toString() });
-			} else if (winners.size() > 1) {
-				p.sendMessage(Protocol.Server.GAME_END,
-								new String[] { "DRAW", winners.size() + "Winners" });
-			} else {
-				p.sendMessage(Protocol.Server.GAME_END,
-								new String[] { "DISCONNECT", "FinishedButUncertainEnd" });
+			if (p instanceof ServerHuman) {
+				if (winners.size() == 1) {
+					((ServerHuman) p).sendMessage(Protocol.Server.GAME_END,
+									new String[] { "WIN", winners.get(0).toString() });
+				} else if (winners.size() > 1) {
+					((ServerHuman) p).sendMessage(Protocol.Server.GAME_END,
+									new String[] { "DRAW", winners.size() + "Winners" });
+				} else {
+					((ServerHuman) p).sendMessage(Protocol.Server.GAME_END,
+									new String[] { "DISCONNECT", "FinishedButUncertainEnd" });
+				}
 			}
 		}
 
@@ -444,7 +462,10 @@ public class Game implements ActionListener {
 	 */
 	public void shutdown(String message) {
 		for (ServerPlayer p : this.players) {
-			p.sendMessage(Protocol.Server.GAME_END, new String[] { "DISCONNECT", message });
+			if (p instanceof ServerHuman) {
+				((ServerHuman) p).sendMessage(Protocol.Server.GAME_END,
+								new String[] { "DISCONNECT", message });
+			}
 		}
 		Util.log("error", "Shutdown of game: " + message);
 		cleanUp();
@@ -472,8 +493,10 @@ public class Game implements ActionListener {
 	 */
 	public void sendChat(String text) {
 		for (ServerPlayer p : this.players) {
-			if (p.canChat()) {
-				p.sendMessage(Protocol.Server.CHAT, new String[] { text });
+			if (p instanceof ServerHuman) {
+				if (((ServerHuman) p).canChat()) {
+					((ServerHuman) p).sendMessage(Protocol.Server.CHAT, new String[] { text });
+				}
 			}
 		}
 	}
@@ -485,7 +508,9 @@ public class Game implements ActionListener {
 		ArrayList<ServerPlayer> playersToMove = new ArrayList<ServerPlayer>();
 		playersToMove.addAll(this.players);
 		for (ServerPlayer p : playersToMove) {
-			this.parentServer.playerToLobby(p);
+			if (p instanceof ServerHuman) {
+				this.parentServer.playerToLobby(((ServerHuman) p));
+			}
 		}
 	}
 

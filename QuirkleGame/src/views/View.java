@@ -127,4 +127,12 @@ public interface View extends Observer {
 	 */
 	public void sendScores(Map<String, Integer> scores);
 
+	/**
+	 * Instructs the view that the client is to be closed.
+	 * 
+	 * @param message
+	 *            A message for the user.
+	 */
+	public void stop(String message);
+
 }

@@ -21,10 +21,13 @@ import protocol.Protocol;
  */
 public class TextView extends Thread implements View {
 	private Client client;
+	
+	private boolean running;
 
 	public TextView(Client client) {
 		this.client = client;
 		this.start();
+		this.running = true;
 	}
 
 	/**
@@ -36,8 +39,7 @@ public class TextView extends Thread implements View {
 	@Override
 	public void run() {
 
-		boolean running = true;
-		while (running) {
+		while (this.running) {
 			if (this.client.status == Client.Status.INITIALIZING) {
 				try {
 					Thread.sleep(1000);
@@ -46,6 +48,9 @@ public class TextView extends Thread implements View {
 				}
 			} else {
 				String[] input = Util.readString("").split(" ");
+				if (!this.running) {
+					break;
+				}
 				String command = input[0];
 				String[] args = Arrays.copyOfRange(input, 1, input.length);
 				switch (command) {
@@ -306,6 +311,13 @@ public class TextView extends Thread implements View {
 		for (String name : scores.keySet()) {
 			this.sendNotification(name + ": " + scores.get(name));
 		}
+	}
+
+	@Override
+	public void stop(String message) {
+		this.sendNotification("The TUI is shutting down.");
+		this.sendNotification(message);
+		this.running = false;
 	}
 
 }

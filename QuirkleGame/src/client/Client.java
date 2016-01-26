@@ -664,4 +664,8 @@ public class Client {
 		return turn;
 	}
 
+	public void stop(String message) {
+		this.getView().stop(message);		
+	}
+
 }

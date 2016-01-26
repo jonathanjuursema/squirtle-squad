@@ -56,14 +56,16 @@ public class Turn extends Observable {
 	 * @throws IllegalTurnException
 	 */
 
-	public void addMove(Move move) throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException {
+	public void addMove(Move move)
+					throws SquareOutOfBoundsException, IllegalMoveException, IllegalTurnException {
 		if (this.swap.size() != 0) {
 			throw new IllegalTurnException();
 		}
 
 		if (move.isValidMove(this.getBoardCopy(), this)) {
 			this.moves.add(move);
-			this.boardCopy.placeTile(move.getTile(), move.getPosition().getX(), move.getPosition().getY());
+			this.boardCopy.placeTile(move.getTile(), move.getPosition().getX(),
+							move.getPosition().getY());
 		} else {
 			throw new IllegalMoveException(move);
 		}
@@ -112,8 +114,11 @@ public class Turn extends Observable {
 	 * Removes swap request from the turn. Important to notice that the tile is
 	 * not automatically added to the hand, yet.
 	 * 
-	 * @param t The tile that needs to be removed.
-	 * @throws IllegalTurnException If tile is not in the turn. TODO: Make exception more specific
+	 * @param t
+	 *            The tile that needs to be removed.
+	 * @throws IllegalTurnException
+	 *             If tile is not in the turn. TODO: Make exception more
+	 *             specific
 	 */
 
 	public void removeSwapRequest(Tile t) throws IllegalTurnException {
@@ -134,49 +139,50 @@ public class Turn extends Observable {
 	 * @throws SquareOutOfBoundsException
 	 *             Thrown if the BoardSquare not exists
 	 */
-	public static Map<Move, Map<Integer, List<Tile>>> getSequencesByMovesAndBoard(Board board, List<Move> moves)
-			throws SquareOutOfBoundsException {
+	public static Map<Move, Map<Integer, List<Tile>>> getSequencesByMovesAndBoard(Board board,
+					List<Move> moves) throws SquareOutOfBoundsException {
 		Map<Move, Map<Integer, List<Tile>>> sequences = new HashMap<Move, Map<Integer, List<Tile>>>();
-	
+
 		for (Move move : moves) {
 			BoardSquare currentSquare;
-	
+
 			Map<Integer, List<Tile>> directionMap = new HashMap<Integer, List<Tile>>();
 			for (int i = 0; i < 4; i++) {
 				List<Tile> currentList = new ArrayList<Tile>();
-	
-				currentSquare = board.getSquare(move.getPosition().getX(), move.getPosition().getY());
-	
+
+				currentSquare = board.getSquare(move.getPosition().getX(),
+								move.getPosition().getY());
+
 				currentList.add(currentSquare.getTile());
-	
+
 				while (!currentSquare.getNeighbour(i).isEmpty()) {
 					currentList.add(currentSquare.getNeighbour(i).getTile());
 					currentSquare = currentSquare.getNeighbour(i);
-	
+
 				}
-	
+
 				directionMap.put(i, currentList);
 			}
-	
+
 			sequences.put(move, directionMap);
 		}
-	
+
 		Map<Move, Map<Integer, List<Tile>>> cleanedMap = new HashMap<Move, Map<Integer, List<Tile>>>();
-	
+
 		for (Map.Entry<Move, Map<Integer, List<Tile>>> entry : sequences.entrySet()) {
-	
+
 			Move key = entry.getKey();
-	
+
 			entry.getValue().get(0).removeAll(entry.getValue().get(2));
 			entry.getValue().get(1).removeAll(entry.getValue().get(3));
-	
+
 			entry.getValue().get(0).addAll(entry.getValue().get(2));
 			entry.getValue().get(1).addAll(entry.getValue().get(3));
-	
+
 			Map<Integer, List<Tile>> rowAndColumn = new HashMap<Integer, List<Tile>>();
 			rowAndColumn.put(0, entry.getValue().get(0));
 			rowAndColumn.put(1, entry.getValue().get(1));
-	
+
 			cleanedMap.put(key, rowAndColumn);
 		}
 		return cleanedMap;
@@ -204,10 +210,12 @@ public class Turn extends Observable {
 		boolean baseIsRow = true;
 
 		if (this.getMoves().size() > 1) {
-			if (this.getMoves().get(0).getPosition().getX() == this.getMoves().get(1).getPosition().getX()) {
+			if (this.getMoves().get(0).getPosition().getX() == this.getMoves().get(1).getPosition()
+							.getX()) {
 				// If the sequence is a column, then the row needs to be checked
 				baseIsRow = false;
-			} else if (this.getMoves().get(0).getPosition().getY() == this.getMoves().get(1).getPosition().getY()) {
+			} else if (this.getMoves().get(0).getPosition().getY() == this.getMoves().get(1)
+							.getPosition().getY()) {
 				// If the sequence is a row, then the columns needs to be
 				// checked
 				// System.out.println("[debug] Base sequence is row");
@@ -217,7 +225,8 @@ public class Turn extends Observable {
 
 		int returnScore = 0;
 
-		Map<Move, Map<Integer, List<Tile>>> cleanedMap = getSequencesByMovesAndBoard(this.boardCopy, this.getMoves());
+		Map<Move, Map<Integer, List<Tile>>> cleanedMap = getSequencesByMovesAndBoard(this.boardCopy,
+						this.getMoves());
 
 		int rowScore = 0;
 		int columnScore = 0;
@@ -267,6 +276,8 @@ public class Turn extends Observable {
 	 *            The board to which the turn should be applied.
 	 * @param bag
 	 *            The bag which this turn uses.
+	 * 
+	 * @return The list of tiles the player gets back from the bag.
 	 * 
 	 * @throws TileNotInHandException
 	 * @throws TooManyTilesInBag
@@ -345,8 +356,8 @@ public class Turn extends Observable {
 	}
 
 	/**
-	 * Returns the player that is in possession of the turn and is allowed to add
-	 * a move or swap request.
+	 * Returns the player that is in possession of the turn and is allowed to
+	 * add a move or swap request.
 	 * 
 	 * @return The player
 	 */

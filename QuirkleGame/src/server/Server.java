@@ -18,8 +18,10 @@ import exceptions.PlayerCannotBeChallengedException;
 import exceptions.PlayerIsNoChallengeeException;
 import exceptions.TooManyPlayersException;
 import players.Player;
-import players.ServerPlayer;
+import players.ServerAI;
+import players.ServerHuman;
 import protocol.Protocol;
+import strategies.SmartStrategy;
 
 /**
  * This is the server. The server is responsible for accepting incoming
@@ -36,21 +38,21 @@ public class Server extends Thread implements ActionListener {
 
 	private static final int MAXLEADERBOARDLENGTH = 10;
 
-	private List<ServerPlayer> lobby;
-	private List<ServerPlayer> players;
+	private List<ServerHuman> lobby;
+	private List<ServerHuman> players;
 	private List<Game> games;
 
-	private Map<ServerPlayer, ServerPlayer> challenges;
+	private Map<ServerHuman, ServerHuman> challenges;
 	private List<LeaderboardEntry> leaderboard;
 
 	private ServerSocket socket;
 
 	public Server(int port) throws IOException {
-		this.lobby = new ArrayList<ServerPlayer>();
-		this.players = new ArrayList<ServerPlayer>();
+		this.lobby = new ArrayList<ServerHuman>();
+		this.players = new ArrayList<ServerHuman>();
 		this.socket = new ServerSocket(port);
 		this.games = new ArrayList<Game>();
-		this.challenges = new HashMap<ServerPlayer, ServerPlayer>();
+		this.challenges = new HashMap<ServerHuman, ServerHuman>();
 		this.leaderboard = new ArrayList<LeaderboardEntry>();
 		this.start();
 
@@ -62,7 +64,7 @@ public class Server extends Thread implements ActionListener {
 	 */
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		ArrayList<ServerPlayer> cleanupPlayers = new ArrayList<ServerPlayer>();
+		ArrayList<ServerHuman> cleanupPlayers = new ArrayList<ServerHuman>();
 		cleanupPlayers.addAll(players);
 		ArrayList<Game> cleanupGames = new ArrayList<Game>();
 		cleanupGames.addAll(games);
@@ -74,7 +76,7 @@ public class Server extends Thread implements ActionListener {
 			}
 		}
 
-		for (ServerPlayer p : cleanupPlayers) {
+		for (ServerHuman p : cleanupPlayers) {
 			if (!p.isConnected()) {
 				Util.log("debug", "Player " + p.getName() + " is lingering.");
 				this.removePlayer(p);
@@ -107,14 +109,14 @@ public class Server extends Thread implements ActionListener {
 	 * @param player
 	 * @param message
 	 */
-	public void chat(ServerPlayer player, String message) {
+	public void chat(ServerHuman player, String message) {
 		String text = "<" + player.getName() + "> " + message;
 		if (this.isInGame(player)) {
 			Util.log("debug", "Received game chat from " + player.getName() + ": " + message);
 			player.getGame().sendChat(text);
 		} else {
 			Util.log("debug", "Received lobby chat from " + player.getName() + ": " + message);
-			for (ServerPlayer p : this.lobby) {
+			for (ServerHuman p : this.lobby) {
 				if (p.canChat()) {
 					p.sendMessage(Protocol.Server.CHAT, new String[] { text });
 				}
@@ -128,13 +130,13 @@ public class Server extends Thread implements ActionListener {
 	 * @param player
 	 *            The player.
 	 */
-	public void playerToLobby(ServerPlayer player) {
+	public void playerToLobby(ServerHuman player) {
 		if (!lobby.contains(player)) {
 			lobby.add(player);
 			this.chat(player, "< entered the lobby >");
 			if (player.canChat()) {
 				String inLobby = "";
-				for (ServerPlayer p : this.lobby) {
+				for (ServerHuman p : this.lobby) {
 					inLobby += p.getName() + " ";
 				}
 				player.sendMessage(Protocol.Server.CHAT,
@@ -150,7 +152,7 @@ public class Server extends Thread implements ActionListener {
 	 * @param player
 	 *            The player.
 	 */
-	public void playerFromLobby(ServerPlayer player) {
+	public void playerFromLobby(ServerHuman player) {
 		if (lobby.contains(player)) {
 			lobby.remove(player);
 			this.chat(player, "< left the lobby >");
@@ -164,7 +166,7 @@ public class Server extends Thread implements ActionListener {
 	 * @param player
 	 *            The player.
 	 */
-	public void addPlayer(ServerPlayer player) {
+	public void addPlayer(ServerHuman player) {
 		if (!players.contains(player)) {
 			players.add(player);
 			Util.log("debug", player.getName() + " joined the server.");
@@ -177,7 +179,7 @@ public class Server extends Thread implements ActionListener {
 	 * @param player
 	 *            The player.
 	 */
-	public void removePlayer(ServerPlayer player) {
+	public void removePlayer(ServerHuman player) {
 		if (players.contains(player)) {
 			this.playerFromLobby(player);
 			players.remove(player);
@@ -234,24 +236,33 @@ public class Server extends Thread implements ActionListener {
 	 * @throws TooManyPlayersException
 	 * @throws PlayerAlreadyInGameException
 	 */
-	public void findGameFor(ServerPlayer player, int noOfPlayers)
+	public void findGameFor(ServerHuman player, int noOfPlayers)
 					throws TooManyPlayersException, PlayerAlreadyInGameException {
-		// TODO Support computer player.
-		for (Game game : this.games) {
-			if (game.getGameState() == Game.GameState.NOTSTARTED
-							&& game.getNoOfPlayers() == noOfPlayers) {
-				game.addPlayer(player);
-				return;
+
+		if (noOfPlayers == 1) {
+			Game game = new Game(this, 2);
+			game.addPlayer(player);
+			game.addPlayer(new ServerAI(new SmartStrategy()));
+			addGame(game);
+			Util.log("debug", "Created an AI game for "
+							+ player.getName() + ".");
+		} else {
+			for (Game game : this.games) {
+				if (game.getGameState() == Game.GameState.NOTSTARTED
+								&& game.getNoOfPlayers() == noOfPlayers) {
+					game.addPlayer(player);
+					return;
+				}
 			}
+			if (this.isInGame(player)) {
+				throw new PlayerAlreadyInGameException(player);
+			}
+			Game game = new Game(this, noOfPlayers);
+			game.addPlayer(player);
+			addGame(game);
+			Util.log("debug", "Created a game of " + game.getNoOfPlayers() + " for "
+							+ player.getName() + ".");
 		}
-		if (this.isInGame(player)) {
-			throw new PlayerAlreadyInGameException(player);
-		}
-		Game game = new Game(this, noOfPlayers);
-		game.addPlayer(player);
-		addGame(game);
-		Util.log("debug", "Created a game of " + game.getNoOfPlayers() + " for " + player.getName()
-						+ ".");
 	}
 
 	/**
@@ -261,7 +272,7 @@ public class Server extends Thread implements ActionListener {
 	 *            The player.
 	 * @return True if the player is in a game, false otherwise.
 	 */
-	public boolean isInGame(ServerPlayer player) {
+	public boolean isInGame(ServerHuman player) {
 		for (Game game : this.games) {
 			if (game.isPlayer(player) == true) {
 				return true;
@@ -280,12 +291,12 @@ public class Server extends Thread implements ActionListener {
 	 * @throws PlayerCannotBeChallengedException
 	 * @throws AlreadyChallengedSomeoneException
 	 */
-	public void challenge(ServerPlayer challenger, String challengeeName)
+	public void challenge(ServerHuman challenger, String challengeeName)
 					throws PlayerCannotBeChallengedException, AlreadyChallengedSomeoneException {
 
-		ServerPlayer challengee = null;
+		ServerHuman challengee = null;
 
-		for (ServerPlayer p : this.players) {
+		for (ServerHuman p : this.players) {
 			if (p.getName().equals(challengeeName)) {
 				challengee = p;
 			}
@@ -311,7 +322,7 @@ public class Server extends Thread implements ActionListener {
 	 *            The player.
 	 * @return True of the player is already being challenged, false otherwise.
 	 */
-	private boolean isChallengee(ServerPlayer challengee) {
+	private boolean isChallengee(ServerHuman challengee) {
 		return this.challenges.containsValue(challengee);
 	}
 
@@ -322,7 +333,7 @@ public class Server extends Thread implements ActionListener {
 	 *            The player.
 	 * @return True of the player is already challenging, false otherwise.
 	 */
-	private boolean isChallenger(ServerPlayer challenger) {
+	private boolean isChallenger(ServerHuman challenger) {
 		return this.challenges.containsKey(challenger);
 	}
 
@@ -333,12 +344,12 @@ public class Server extends Thread implements ActionListener {
 	 *            The player who was challenged.
 	 * @throws PlayerIsNoChallengeeException
 	 */
-	public void declineInvite(ServerPlayer challengee) throws PlayerIsNoChallengeeException {
+	public void declineInvite(ServerHuman challengee) throws PlayerIsNoChallengeeException {
 		if (!isChallengee(challengee)) {
 			throw new PlayerIsNoChallengeeException(challengee);
 		} else {
-			ServerPlayer challenger = null;
-			for (ServerPlayer p : this.challenges.keySet()) {
+			ServerHuman challenger = null;
+			for (ServerHuman p : this.challenges.keySet()) {
 				if (this.challenges.get(p) == challengee) {
 					challenger = p;
 				}
@@ -361,13 +372,13 @@ public class Server extends Thread implements ActionListener {
 	 * @throws PlayerIsNoChallengeeException
 	 * @throws PlayerAlreadyInGameException
 	 */
-	public void acceptInvite(ServerPlayer challengee)
+	public void acceptInvite(ServerHuman challengee)
 					throws PlayerIsNoChallengeeException, PlayerAlreadyInGameException {
 		if (!isChallengee(challengee)) {
 			throw new PlayerIsNoChallengeeException(challengee);
 		} else {
-			ServerPlayer challenger = null;
-			for (ServerPlayer p : this.challenges.keySet()) {
+			ServerHuman challenger = null;
+			for (ServerHuman p : this.challenges.keySet()) {
 				if (this.challenges.get(p) == challengee) {
 					challenger = p;
 				}
@@ -393,10 +404,10 @@ public class Server extends Thread implements ActionListener {
 	 * When either side of a challenge enters a game, we'll forfeit any
 	 * challenge.
 	 */
-	public void forfeitChallenge(ServerPlayer player) {
+	public void forfeitChallenge(ServerHuman player) {
 		if (isChallengee(player)) {
-			ServerPlayer challenger = null;
-			for (ServerPlayer p : this.challenges.keySet()) {
+			ServerHuman challenger = null;
+			for (ServerHuman p : this.challenges.keySet()) {
 				if (this.challenges.get(p) == player) {
 					challenger = p;
 				}
