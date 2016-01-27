@@ -132,7 +132,6 @@ public class Client {
 		}
 
 		this.preparePlayer();
-
 		this.status = Client.Status.WAITINGFORGAME;
 		this.server.send(Protocol.Client.REQUESTGAME, new String[] { "" + no });
 	}
@@ -143,11 +142,9 @@ public class Client {
 	 */
 	private void preparePlayer() {
 		String playerType = this.view.askForPlayerType();
-
 		while (!playerType.equals("human") && !playerType.equals("computer")) {
 			playerType = this.view.askForPlayerType();
 		}
-
 		if (playerType.equals("human")) {
 			this.player = new HumanPlayer(this.name, this);
 		} else if (playerType.equals("computer")) {
@@ -170,7 +167,7 @@ public class Client {
 	 *            The server arguments.
 	 */
 	public void startGame(String[] args) {
-		
+
 		for (String pname : args) {
 			this.scores.put(pname, 0);
 		}
@@ -182,7 +179,7 @@ public class Client {
 				this.boardCopy.addObserver(getView());
 				this.turn = new Turn(boardCopy, this.player);
 				this.turn.addObserver(getView());
-				this.turn.getBoardCopy().addObserver(getView());				
+				this.turn.getBoardCopy().addObserver(getView());
 				this.player.giveTurn();
 				this.getView().startGame();
 			} else {
@@ -263,10 +260,12 @@ public class Client {
 		}
 
 	}
-	
+
 	/**
 	 * Bypass for requestSwap and addMove for the computer to use.
-	 * @param turn The new turn.
+	 * 
+	 * @param turn
+	 *            The new turn.
 	 */
 	public void setTurn(Turn turn) {
 		this.turn = turn;
@@ -424,7 +423,7 @@ public class Client {
 			} catch (SquareOutOfBoundsException | IllegalMoveException e) {
 				Util.log(e);
 			}
-			
+
 			this.getView().sendScores(scores);
 
 			// There are only two arguments, the players, so the player swapped
@@ -622,7 +621,6 @@ public class Client {
 		this.server.send(Protocol.Client.GETSTONESINBAG, new String[] {});
 	}
 
-
 	/**
 	 * Return the view.
 	 * 
@@ -682,7 +680,7 @@ public class Client {
 	}
 
 	public void stop(String message) {
-		this.getView().stop(message);		
+		this.getView().stop(message);
 	}
 
 }

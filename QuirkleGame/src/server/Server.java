@@ -43,7 +43,7 @@ public class Server extends Thread implements ActionListener {
 	private List<Game> games;
 
 	private Map<ServerHuman, ServerHuman> challenges;
-	private List<LeaderboardEntry> leaderboard;
+	private HashMap<String, Integer> leaderboard;
 
 	private ServerSocket socket;
 
@@ -53,7 +53,7 @@ public class Server extends Thread implements ActionListener {
 		this.socket = new ServerSocket(port);
 		this.games = new ArrayList<Game>();
 		this.challenges = new HashMap<ServerHuman, ServerHuman>();
-		this.leaderboard = new ArrayList<LeaderboardEntry>();
+		this.leaderboard = new HashMap<String, Integer>();
 		this.start();
 
 		(new Timer(5000, this)).start();
@@ -430,20 +430,7 @@ public class Server extends Thread implements ActionListener {
 	 *            The score of the player.
 	 */
 	public void submitToLeaderboard(String name, int score) {
-		LeaderboardEntry e = new LeaderboardEntry(name, score);
-		if (this.leaderboard.size() < 1) {
-			this.leaderboard.add(e);
-		} else {
-			for (int i = 0; i < Server.MAXLEADERBOARDLENGTH; i++) {
-				if (i > this.leaderboard.size() || i >= Server.MAXLEADERBOARDLENGTH) {
-					return;
-				}
-				if (e.getScore() > this.leaderboard.get(i).getScore()) {
-					this.leaderboard.add(i, e);
-					return;
-				}
-			}
-		}
+		this.leaderboard.put(name, score);
 	}
 
 	/**
@@ -453,41 +440,17 @@ public class Server extends Thread implements ActionListener {
 	 *         sender.
 	 */
 	public String[] leaderboardToProtocol() {
-		String[] args = new String[Server.MAXLEADERBOARDLENGTH];
-		for (int i = 0; i < Server.MAXLEADERBOARDLENGTH; i++) {
-			if (i >= this.leaderboard.size()) {
-				args[i] = "<empty>" + Protocol.Server.Settings.DELIMITER2 + "0";
-			} else {
-				args[i] = this.leaderboard.get(i).getName() + Protocol.Server.Settings.DELIMITER2
-								+ this.leaderboard.get(i).getScore();
+		this.leaderboard = Util.sortLeaderboard(leaderboard);
+		String[] args = new String[(this.leaderboard.keySet().size() < Server.MAXLEADERBOARDLENGTH ? this.leaderboard.keySet().size() : Server.MAXLEADERBOARDLENGTH)];
+		int i = 0;
+		for (String name : this.leaderboard.keySet()) {
+			if (i < Server.MAXLEADERBOARDLENGTH) {
+				args[i] = name + Protocol.Server.Settings.DELIMITER2
+								+ this.leaderboard.get(name);
 			}
+			i++;
 		}
 		return args;
-	}
-
-	/**
-	 * This is a small sub-class for the leaderboard.
-	 * 
-	 * @author Jonathan Juursema & Peter Wessels
-	 */
-	class LeaderboardEntry {
-
-		private String name;
-		private int score;
-
-		public LeaderboardEntry(String name, int score) {
-			this.name = name;
-			this.score = score;
-		}
-
-		public int getScore() {
-			return this.score;
-		}
-
-		public String getName() {
-			return this.name;
-		}
-
 	}
 
 }
