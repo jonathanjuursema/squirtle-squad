@@ -125,6 +125,7 @@ public class Client {
 	 * @param no
 	 *            The number of players for the game.
 	 */
+	/*@ require no > 0 && no < Game.LIMIT */
 	public void requestGame(int no) {
 		if (this.status != Client.Status.IN_LOBBY) {
 			this.view.sendNotification("error", "You are not in the lobby.");
@@ -195,8 +196,10 @@ public class Client {
 	 * @param tiles
 	 *            The server arguments.
 	 */
+	/*@ requires player.getHand().getAmountOfTiles() + tiles.length <= Hand.LIMIT
+	 */
 	public void addToHand(String[] tiles) {
-
+		
 		List<Tile> addList = new ArrayList<Tile>();
 
 		for (String tile : tiles) {
@@ -228,6 +231,7 @@ public class Client {
 	 * @param y
 	 *            The y-coordinate.
 	 */
+
 	public void addMove(int tileInHand, int x, int y) {
 
 		if (this.status == Client.Status.IN_TURN || this.status == Client.Status.IN_GAME_INITIAL) {

@@ -8,7 +8,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import application.Util;
 import exceptions.HandLimitReachedExeption;
 import exceptions.TileNotInBagException;
 import exceptions.TileNotInHandException;

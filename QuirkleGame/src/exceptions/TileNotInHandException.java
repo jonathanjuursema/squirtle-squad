@@ -4,7 +4,7 @@ import game.Hand;
 import game.Tile;
 
 /**
- * TODO Write file header.
+ * When the tile is not in hand, this exception will be thrown.
  * 
  * @author Jonathan Juursema & Peter Wessels
  *

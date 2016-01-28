@@ -1,7 +1,7 @@
 package players;
 
 /**
- * TODO REMOVE
+ * Only used for debug purposes.
  */
 public class DummyPlayer extends Player {
 

@@ -15,6 +15,11 @@ import protocol.Protocol;
 import server.Game;
 import server.ServerConnectionHandler;
 
+/**
+ * The model of the player, constructed by the server.
+ * @author Jonathan Juursema & Peter Wessels
+ */
+
 public class ServerHuman extends ServerPlayer {
 
 	private boolean canInvite;

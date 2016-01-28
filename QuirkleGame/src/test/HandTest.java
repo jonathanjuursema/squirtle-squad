@@ -13,17 +13,15 @@ import exceptions.HandLimitReachedExeption;
 import exceptions.TileNotInHandException;
 import game.Hand;
 import game.Tile;
-import players.ClientPlayer;
-import players.HumanPlayer;
-import players.Player;
+import players.DummyPlayer;
 
 public class HandTest {
-	public ClientPlayer player;
+	public DummyPlayer player;
 	public Hand hand;
 
 	@Before
 	public void setUp() throws Exception {
-		player = new HumanPlayer("Peter", null);
+		player = new DummyPlayer("Peter");
 	}
 
 	@Test
@@ -86,9 +84,6 @@ public class HandTest {
 		Tile redCircle = new Tile(Tile.RED, Tile.CIRCLE);
 		Tile yellowCircle = new Tile(Tile.YELLOW, Tile.CIRCLE);
 		Tile blueCircle = new Tile(Tile.BLUE, Tile.CIRCLE);
-		Tile purpleCircle = new Tile(Tile.PURPLE, Tile.CIRCLE);
-		Tile orangeCircle = new Tile(Tile.ORANGE, Tile.CIRCLE);
-		Tile greenCircle = new Tile(Tile.GREEN, Tile.CIRCLE);
 
 		tilesToAdd.add(redCircle);
 		tilesToAdd.add(yellowCircle);

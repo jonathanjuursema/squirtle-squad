@@ -97,7 +97,7 @@ public class ClientConnectionHandler extends ConnectionHandler {
 		}
 
 	}
-
+	
 	@Override
 	public void shutdown(String reason) {
 		Util.log("debug", "Server socket closed: " + reason);

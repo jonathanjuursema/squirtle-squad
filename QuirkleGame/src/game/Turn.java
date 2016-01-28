@@ -7,7 +7,6 @@ import java.util.Map;
 
 import java.util.Observable;
 
-import application.Util;
 import exceptions.HandLimitReachedExeption;
 import exceptions.IllegalMoveException;
 import exceptions.IllegalTurnException;
@@ -73,7 +72,6 @@ public class Turn extends Observable {
 
 		setChanged();
 		notifyObservers("moveAdded");
-		// TODO: implement further
 	}
 
 	/**
@@ -144,14 +142,17 @@ public class Turn extends Observable {
 
 	public static Map<Move, Map<Integer, List<Tile>>> getSequencesByMovesAndBoard(Board board,
 					List<Move> moves) throws SquareOutOfBoundsException, IllegalMoveException {
-
+		
+		// Creates a map which maps the moves to a map with tiles found in the corresponding direction
 		Map<Move, Map<Integer, List<Tile>>> sequences = new HashMap<Move, Map<Integer, List<Tile>>>();
 
 		for (Move move : moves) {
 			BoardSquare currentSquare;
-
+			
+			// Looping over each direction
 			Map<Integer, List<Tile>> directionMap = new HashMap<Integer, List<Tile>>();
 			for (int i = 0; i < 4; i++) {
+				// Creates a list of tiles in the same direction.
 				List<Tile> currentList = new ArrayList<Tile>();
 
 				currentSquare = board.getSquare(move.getPosition().getX(),
@@ -159,35 +160,34 @@ public class Turn extends Observable {
 
 				currentList.add(currentSquare.getTile());
 
+				// Searching for the tiles in the direction.
 				while (!currentSquare.getNeighbour(i).isEmpty()) {
 					currentList.add(currentSquare.getNeighbour(i).getTile());
 					currentSquare = currentSquare.getNeighbour(i);
-
 				}
-
+				
+				// Put all the tiles found in the map.
 				directionMap.put(i, currentList);
 			}
-
+			
+			// Put the direction map into the sequences map
 			sequences.put(move, directionMap);
 		}
-
+		
+		// Creating a new map which will be filled with the merged arrays in the row and column direction
 		Map<Move, Map<Integer, List<Tile>>> cleanedMap = new HashMap<Move, Map<Integer, List<Tile>>>();
-
+		
+		// For each move the map will be cleared
 		for (Map.Entry<Move, Map<Integer, List<Tile>>> entry : sequences.entrySet()) {
 
 			Move key = entry.getKey();
 
-			
 			int southLength = entry.getValue().get(0).size();
 			int northLength = entry.getValue().get(2).size();
 			int eastLength = entry.getValue().get(1).size();
 			int westLength = entry.getValue().get(3).size();
 			
-
-			//Util.log("North length", entry.getValue().get(0).size() + "");
-			//Util.log("South length", entry.getValue().get(2).size() + "");
-			
-
+			// The lists will be merged and duplicates will be removed.
 			entry.getValue().get(0).removeAll(entry.getValue().get(2));
 			entry.getValue().get(1).removeAll(entry.getValue().get(3));
 
@@ -198,7 +198,7 @@ public class Turn extends Observable {
 			rowAndColumn.put(0, entry.getValue().get(0));
 			rowAndColumn.put(1, entry.getValue().get(1));
 
-			
+			// A hotfix to fix the bug that will delete too much duplicates.
 			if((southLength + northLength - 1) != entry.getValue().get(0).size()) {
 				throw new IllegalMoveException("This tile is allready in this column");
 			}
@@ -206,7 +206,8 @@ public class Turn extends Observable {
 			if((eastLength + westLength - 1) != entry.getValue().get(1).size()) {
 				throw new IllegalMoveException("This tile is allready in this row");
 			}
-	
+			
+			// Put the merged arrays in the cleaned map.
 			cleanedMap.put(key, rowAndColumn);
 		}
 		return cleanedMap;
@@ -255,7 +256,7 @@ public class Turn extends Observable {
 
 		int rowScore = 0;
 		int columnScore = 0;
-
+		
 		for (Move m : this.getMoves()) {
 			int rowScoreTemp = cleanedMap.get(m).get(1).size();
 			int columnScoreTemp = cleanedMap.get(m).get(0).size();
@@ -279,7 +280,8 @@ public class Turn extends Observable {
 			if (columnScoreTemp == 6) {
 				columnScoreTemp = 12;
 			}
-
+			
+			// If the moves form a row, the score of the row will only be added once.
 			if (baseIsRow) {
 				rowScore = rowScoreTemp;
 				columnScore += columnScoreTemp;
@@ -288,7 +290,7 @@ public class Turn extends Observable {
 				columnScore = columnScoreTemp;
 			}
 		}
-
+		
 		returnScore = rowScore + columnScore;
 
 		return returnScore;

@@ -18,6 +18,23 @@ import game.Tile;
 import game.Turn;
 import players.Player;
 
+/**
+ * The SmartStrategy is used to determine the most valuable set of moves. The
+ * strategy implements the bruteforce algorithm that uses the function
+ * board.GetPossiblePlaces. The set of moves will be determined by a recursive
+ * method that will place all the tiles in the hand on a possible board squares
+ * and checks if another tile can be added. If so, the tile will be added and
+ * another tile from the hand will be selected to add to the sequence. If no
+ * tiles can be added, the sequence of tiles will be added to the map which maps
+ * the score of a set of moves to the list of moves. This way all the
+ * possibilities will be stored in a single map. The map then will be sorted to
+ * get the move with the most points. This set of moves will be added to a turn
+ * and this turn will be send to the server.
+ * 
+ * @author Peter Wessels & Jonathan Juursema
+ *
+ */
+
 public class SmartStrategy implements StrategyInterface {
 
 	private Player player;
@@ -102,8 +119,7 @@ public class SmartStrategy implements StrategyInterface {
 						continue;
 					}
 
-					board.placeTile(move.getTile(), move.getPosition().getX(),
-									move.getPosition().getY());
+					board.placeTile(move.getTile(), move.getPosition().getX(), move.getPosition().getY());
 					recursiveMove(t, simTurn);
 
 					board.removeTile(b.getX(), b.getY());
@@ -142,8 +158,7 @@ public class SmartStrategy implements StrategyInterface {
 						continue;
 					}
 
-					board.placeTile(move.getTile(), move.getPosition().getX(),
-									move.getPosition().getY());
+					board.placeTile(move.getTile(), move.getPosition().getX(), move.getPosition().getY());
 					recursiveMove(t, turn);
 					board.removeTile(b.getX(), b.getY());
 					List<Move> copy = new ArrayList<Move>();

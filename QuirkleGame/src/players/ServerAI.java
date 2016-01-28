@@ -6,6 +6,11 @@ import game.Tile;
 import game.Turn;
 import strategies.StrategyInterface;
 
+/**
+ * Under construction.
+ * @author Jonathan Juursema & Peter Wessels
+ */
+
 public class ServerAI extends ServerPlayer {
 	
 	private StrategyInterface strategy;

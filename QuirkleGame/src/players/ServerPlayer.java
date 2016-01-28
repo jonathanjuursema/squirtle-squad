@@ -6,6 +6,11 @@ import game.Tile;
 import game.Turn;
 import server.Game;
 
+/**
+ * The abstract class which defines the methods for the player on the server side.
+ * @author Jonathan Juursema & Peter Wessels
+ *
+ */
 public abstract class ServerPlayer extends Player {
 
 	private Turn turn;

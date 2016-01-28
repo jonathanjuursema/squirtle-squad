@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import game.Tile;
+import game.Tile; 
 
 public class TileTest {
 
@@ -29,6 +29,16 @@ public class TileTest {
 	public void testToString() {
 		assertEquals("B5", t1.toString());
 		assertEquals("O4", t2.toString());
+	}
+	
+	@Test
+	public void createAllTiles() {
+		for (char i = Tile.FIRSTCOLOR; i <= Tile.LASTCOLOR; i++) {
+			for (char j = Tile.FIRSTSHAPE; j <= Tile.LASTSHAPE; j++) {
+				Tile t = new Tile(i,j);
+				t.getColor(); 
+			}
+		}
 	}
 
 }

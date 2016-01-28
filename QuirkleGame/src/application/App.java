@@ -6,29 +6,37 @@ import client.Client;
 import server.Server;
 
 /**
- * TODO Write file header.
+ * The main class of the application is the App.Java class. This class is the
+ * only class that contains the main method and can be run by the user. The app
+ * defines if debug messages, raw communication information and self-defined
+ * messages of exceptions should be printed in the console. The class starts the
+ * client or the server according to the input of the user.
  * 
  * @author Jonathan Juursema & Peter Wessels
  *
  */
 public class App {
-	
+
 	public static final boolean DEBUG = false;
 	public static final boolean VERBOSE = false;
 	public static final boolean EXCEPTION = false;
 
 	public static final String name = "SquirtleSquad";
 
+	/**
+	 * The main method of the application. This method starts the application
+	 * and asks the user if the client or server needs to be started.
+	 * 
+	 * @param args
+	 */
 	public static void main(String[] args) {
 
-		Util.println("Welcome to the " + name + " Qwirkle application!"
-						+ System.lineSeparator());
+		Util.println("Welcome to the " + name + " Qwirkle application!" + System.lineSeparator());
 
 		String appType = "";
 
 		while (!appType.equals("server") && !appType.equals("client")) {
-			appType = Util.readString("Would you like to run a client or a server?"
-							+ System.lineSeparator() + "> ");
+			appType = Util.readString("Would you like to run a client or a server?" + System.lineSeparator() + "> ");
 		}
 
 		// Util.clearScreen();
@@ -53,8 +61,7 @@ public class App {
 		int port = 0;
 
 		while (port < 2000 || port > 3000) {
-			port = Util.readInt("What port should the server run on? (2000..3000)"
-							+ System.lineSeparator() + "> ");
+			port = Util.readInt("What port should the server run on? (2000..3000)" + System.lineSeparator() + "> ");
 		}
 
 		try {

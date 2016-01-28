@@ -8,6 +8,11 @@ import game.Turn;
 import strategies.SmartStrategy;
 import strategies.StrategyInterface;
 
+/**
+ * The computer player that will use the strategy which is assigned. 
+ * @author Jonathan Juursema & Peter Wessels
+ */
+
 public class ComputerPlayer extends ClientPlayer {
 
 	public ComputerPlayer(Client client) {

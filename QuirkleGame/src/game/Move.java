@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import application.Util;
 import exceptions.IllegalMoveException;
 import exceptions.SquareOutOfBoundsException;
 
@@ -19,65 +18,101 @@ public class Move {
 	public Tile tileToPlay;
 	public BoardSquare position;
 
+	/**
+	 * The constructor set the tileToPlay and the boardsquare on which the tile
+	 * will be placed (if possible).
+	 * 
+	 * @param tile
+	 *            The tile that needs to be placed.
+	 * @param boardsquare
+	 *            The boardsquare which will be the target of the tile.
+	 */
 	public Move(Tile tile, BoardSquare boardsquare) {
 		this.tileToPlay = tile;
 		this.position = boardsquare;
 	}
 
+	/**
+	 * Return the tile in the move
+	 * 
+	 * @return
+	 */
 	public Tile getTile() {
 		return tileToPlay;
 	}
 
+	/**
+	 * Sets the tile in the move
+	 * 
+	 * @param tileToPlay
+	 */
 	public void setTileToPlay(Tile tileToPlay) {
 		this.tileToPlay = tileToPlay;
 	}
 
+	/**
+	 * Gets the position of the move
+	 * 
+	 * @return
+	 */
 	public BoardSquare getPosition() {
 		return position;
 	}
 
+	/**
+	 * Sets the position of the move
+	 * 
+	 * @return
+	 */
 	public void setPosition(BoardSquare position) {
 		this.position = position;
 	}
 
+	/**
+	 * Checks whenether the move is valid on the board and in the turn.
+	 * 
+	 * @return
+	 */
 	public boolean isValidMove(Board board, Turn turn) throws SquareOutOfBoundsException, IllegalMoveException {
 
 		boolean valid = false;
-		
+
+		// If the tile is not on the list of potential tiles on that boardsquare
 		if (board.getPossiblePlaceByTile(this.getTile(), turn.getMoves()) != null) {
-			
+
 			for (BoardSquare b : board.getPossiblePlaceByTile(this.getTile(), turn.getMoves())) {
 				if (b.getX() == this.getPosition().getX() && b.getY() == this.getPosition().getY()) {
 					valid = true;
 				}
 			}
-		
+
 		}
 
-		//Util.log("Possible places: " + board.getPossiblePlaceByTile(this.getTile(), turn.getMoves()).toString());
-
+		// If not valid an exception is thrown.
 		if (!valid) {
 			throw new IllegalMoveException(this, "This place is not possible for this tile.");
 		}
 
+		// Place the tile on the board.
 		board.placeTile(this.getTile(), this.getPosition().getX(), this.getPosition().getY());
 
+		// Get the corresponding sequences in y and x direciotn
 		Move tempMove = new Move(this.getTile(), this.getPosition());
 		List<Move> tempList = new ArrayList<Move>();
 		tempList.add(tempMove);
-		
+
 		Map<Move, Map<Integer, List<Tile>>> cleanedMap = Turn.getSequencesByMovesAndBoard(board, tempList);
-		// System.out.println(this.boardCopy);
 		board.removeTile(this.getPosition().getX(), this.getPosition().getY());
 
 		// When all four the directions are checked,
 		// both the row and column will be checked
 		// if the move is legal.
 
+		// Checks whenether the sequence is valid.
 		if (!checkSequence(cleanedMap.get(tempMove).get(0))) {
 			throw new IllegalMoveException(this,
 					"This move is not valid because it conflicts current rows or columns.");
-		} else if (!checkSequence(cleanedMap.get(tempMove).get(1))){
+		} else if (!checkSequence(cleanedMap.get(tempMove).get(1))) {
 			throw new IllegalMoveException(this,
 					"This move is not valid because it conflicts current rows or columns.");
 		} else {
@@ -85,13 +120,22 @@ public class Move {
 		}
 	}
 
+	/**
+	 * Checks whether the sequence is valid. A sequence cannot contain more of
+	 * the same tiles and cannot contain the same shapes if the identity of the
+	 * sequence is the same color and vice versa.
+	 * 
+	 * @param sequence The sequence which needs to be checked.
+	 * @return True if the sequence is according to the game rules.
+	 * @throws IllegalMoveException
+	 */
 	public boolean checkSequence(List<Tile> sequence) throws IllegalMoveException {
 		// If only 1 tile is representing the sequence,
 		// the sequence does not have to be checked.
 		if (sequence.size() == 1) {
 			return true;
 		}
-		
+
 		Character color = null;
 		Character shape = null;
 
@@ -104,7 +148,6 @@ public class Move {
 				throw new IllegalMoveException(this, "The identity of the row or column can not be identified.");
 			}
 		}
-	
 
 		// The lists that are used to check the content of an sequence
 		List<Character> shapes = new ArrayList<Character>();
