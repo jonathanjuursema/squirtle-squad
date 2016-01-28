@@ -34,8 +34,25 @@ import protocol.Protocol;
 import server.Game;
 
 /**
- * This class manages an entire game flow, including their players. It is
- * instantiated by the server several clients are put in it.
+ * This class constitutes a server-side game and as such represents the state of
+ * a game as known by the server. The Game manages a board and a bag, as well as
+ * any number of players. The game communicates to Clients via intermediate
+ * Players.
+ * 
+ * The game orchestrates the game flow. It tells clients when it is their turn,
+ * receives the commands from the clients and permutates the board and the bag
+ * accordingly.
+ * 
+ * A game can be constructed, after which players can be added. As soon as the
+ * requested number of players is reached, the game is automatically started.
+ * Clients are requested to submit their initial turn, after which all turns are
+ * examined and the highest scoring turn is allowed to start. After that it
+ * alternates turns between every player, enforcing a time limit per turn and
+ * disqualifying players when necessary.
+ * 
+ * When end game conditions for Qwirkle have been met, the Game finishes and
+ * sends all players the result. When this is done, the game is emptied (all
+ * players are put back in the lobby) and the Game object is disposed of.
  * 
  * @author Jonathan Juursema & Peter Wessels
  *
@@ -55,7 +72,10 @@ public class Game implements ActionListener {
 	private Board board;
 	private Bag bag;
 	private Timer timeout;
+	
+	//@ public invariant noOfPlayers >= 0 && noOfPlayers <= MAXPLAYERS
 	private int noOfPlayers;
+	
 	private List<ServerPlayer> players = new ArrayList<ServerPlayer>();
 	private int currentPlayer;
 	private Map<ServerPlayer, Turn> initialMoves;
@@ -72,6 +92,8 @@ public class Game implements ActionListener {
 	 * @param players
 	 *            The players.
 	 * @throws TooManyPlayersException
+	 * 
+	 * @ requires noOfPlayers >= 0 && noOfPlayers <= MAXPLAYERS
 	 */
 	public Game(Server server, int noOfPlayers) throws TooManyPlayersException {
 		this.parentServer = server;
@@ -89,16 +111,13 @@ public class Game implements ActionListener {
 						+ " players.");
 	}
 
-	/*
-	 * Getters and setters below.
-	 */
-
 	/**
 	 * Adds a player to the game.
 	 * 
 	 * @param player
 	 *            The player to be added.
 	 * @throws PlayerAlreadyInGameException
+	 * 
 	 */
 	public void addPlayer(ServerPlayer player) throws PlayerAlreadyInGameException {
 		if (!players.contains(player)) {
@@ -558,6 +577,10 @@ public class Game implements ActionListener {
 		return this.players.contains(player);
 	}
 
+	/*
+	 * Getters and setters below.
+	 */
+	
 	/**
 	 * Get the current player for this game.
 	 */
