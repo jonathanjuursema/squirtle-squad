@@ -39,7 +39,7 @@ public class Server extends Thread implements ActionListener {
 	private static final int MAXLEADERBOARDLENGTH = 10;
 
 	private List<ServerHuman> lobby;
-	private List<ServerHuman> players;
+	private /*@ spec_public @*/ List<ServerHuman> players;
 	private List<Game> games;
 
 	private Map<ServerHuman, ServerHuman> challenges;

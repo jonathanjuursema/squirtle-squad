@@ -72,11 +72,13 @@ public class Game implements ActionListener {
 	private Board board;
 	private Bag bag;
 	private Timer timeout;
-	
-	//@ public invariant noOfPlayers >= 0 && noOfPlayers <= MAXPLAYERS
+
+	// @ public invariant noOfPlayers >= 0 && noOfPlayers <= MAXPLAYERS
 	private int noOfPlayers;
-	
+
+	// @ public invariant players.size == noOfPlayers
 	private List<ServerPlayer> players = new ArrayList<ServerPlayer>();
+
 	private int currentPlayer;
 	private Map<ServerPlayer, Turn> initialMoves;
 
@@ -118,6 +120,7 @@ public class Game implements ActionListener {
 	 *            The player to be added.
 	 * @throws PlayerAlreadyInGameException
 	 * 
+	 * @ requires !isPlayer(player) @ ensures isPlayer(player)
 	 */
 	public void addPlayer(ServerPlayer player) throws PlayerAlreadyInGameException {
 		if (!players.contains(player)) {
@@ -145,6 +148,11 @@ public class Game implements ActionListener {
 
 	/**
 	 * Start the game.
+	 * 
+	 * @ requires players.size() == noOfPlayers @ ensures (\forall SeverPlayer
+	 * player; players.contains(player); player.getHand().getAmountOfTiles ==
+	 * 6) @ ensures bag.getNumberOfTiles == (DIFFERENTSHAPES * DIFFERENTCOLORS *
+	 * TILESPERTYPE) - 6 * noOfPlayers
 	 */
 	public void start() {
 
@@ -206,6 +214,9 @@ public class Game implements ActionListener {
 	 *            The initial turn.
 	 * @param player
 	 *            The player.
+	 * 
+	 * @ requires (\forall Move m; turn.getMoves().contains(m);
+	 * m.isValidMove(turn.getBoardCoby, turn))
 	 */
 	public void receiveInitialMove(Turn turn, ServerPlayer player) {
 
@@ -237,6 +248,13 @@ public class Game implements ActionListener {
 
 	/**
 	 * Process the initial move.
+	 * 
+	 * We could write JML to ensure the highest scoring move is executed. But
+	 * since this function executes the turn and not returns it, we cannot
+	 * access the played turn via JML. Otherwise it would be like this:
+	 * 
+	 * @ ensures (\forall Turn t; intialMoves.values().contains(t);
+	 * t.calCulateScore() <= theTurnThatGotPlayed.calculateScore())
 	 */
 	public void initialMove() {
 
@@ -307,6 +325,18 @@ public class Game implements ActionListener {
 	 * Entry function for submission of a turn into a game.
 	 * 
 	 * @param turn
+	 * 
+	 * @ requires (\forall Move m; turn.getMoves().contains(m);
+	 * m.isValidMove(turn.getBoardCoby, turn))
+	 * 
+	 * We could write JML to verify every tile played is now on the current
+	 * board, but we have no easy way of looping over all BoardSquares on the
+	 * board (because the array is 2-dimensional). Otherwise it would look like
+	 * this:
+	 * 
+	 * @ ensures (\forall Move m; turn.getMoves().contains(m); (\exists
+	 * BoardSquare b; board.isBoardSquareOfThis(b); b.getTile() ==
+	 * turn.getMoves().get(1).tileToPlay))
 	 */
 	public void receiveTurn(Turn turn) {
 
@@ -357,6 +387,9 @@ public class Game implements ActionListener {
 	 *            player has been removed from the list in which case the next
 	 *            player is selected. 1 picks the next player from the list in
 	 *            normal situations.
+	 * 
+	 * @ ensures !gameOver() ==> currentPlayer = (\old(currentPlayer) + mod) %
+	 * noOfPlayers;
 	 */
 	public void nextTurn(int mod) {
 
@@ -380,6 +413,10 @@ public class Game implements ActionListener {
 	 * Check if the game is over.
 	 * 
 	 * @return True if any of the win conditions is met. False otherwise.
+	 * 
+	 *         We could write JML here, but it would mean only to copy the logic
+	 *         from the method itself and apply it as follows: @ ensures
+	 *         (this.players.size() == 1) ==> \result
 	 */
 	public boolean gameOver() {
 
@@ -415,6 +452,11 @@ public class Game implements ActionListener {
 	 * 
 	 * @param player
 	 *            The player to be disqualified.
+	 * 
+	 * @ ensures noOfPlayers = \old(noOfPlayers) - 1;
+	 * 
+	 * @ ensures bag.getNumberOfTiles() = \old(bag.getNumberOfTiles()) +
+	 * \old(player.getHand().getTilesInHand().size());
 	 */
 	public void disqualify(ServerPlayer player) {
 		Util.log("debug", "Disqualifying " + player.getName() + ".");
@@ -493,6 +535,11 @@ public class Game implements ActionListener {
 
 	/**
 	 * Cleans up the game after finishing or abandoning it.
+	 * 
+	 * @ ensures players.size() == 0
+	 * 
+	 * @ ensures (\forall ServerPlayer p; \old(players).contains(p);
+	 * parentServer.players.contains(p))
 	 */
 	private void cleanUp() {
 		Util.log("debug", "Cleaning up game.");
@@ -523,6 +570,11 @@ public class Game implements ActionListener {
 
 	/**
 	 * Move all players to the lobby.
+	 * 
+	 * @ ensures players.size() == 0
+	 * 
+	 * @ ensures (\forall ServerPlayer p; \old(players).contains(p);
+	 * parentServer.players.contains(p))
 	 */
 	public void playersToLobby() {
 		ArrayList<ServerPlayer> playersToMove = new ArrayList<ServerPlayer>();
@@ -534,15 +586,14 @@ public class Game implements ActionListener {
 		}
 	}
 
-	/*
-	 * Getters and setters below.
-	 */
-
 	/**
 	 * Removes a player from the game.
 	 * 
 	 * @param player
 	 *            The player to be removed.
+	 * 
+	 *            We could write JML for this function, but it would again be a
+	 *            duplicate logic of what is already in the method.
 	 */
 	public void removePlayer(ServerPlayer player) {
 		Util.log("debug", "Removing " + player.getName() + " from the game.");
@@ -566,6 +617,10 @@ public class Game implements ActionListener {
 		}
 	}
 
+	/*
+	 * Getters and setters below.
+	 */
+
 	/**
 	 * Check if the given player is participating in this game.
 	 * 
@@ -580,7 +635,7 @@ public class Game implements ActionListener {
 	/*
 	 * Getters and setters below.
 	 */
-	
+
 	/**
 	 * Get the current player for this game.
 	 */
