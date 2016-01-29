@@ -12,6 +12,8 @@ import game.Board;
 import game.Hand;
 import game.Turn;
 import protocol.Protocol;
+import strategies.SmartStrategy;
+import strategies.StrategyInterface;
 
 /**
  * This is the TUI. The TUI makes no use of a graphical interface, and insteads
@@ -21,7 +23,7 @@ import protocol.Protocol;
  */
 public class TextView extends Thread implements View {
 	private Client client;
-	
+
 	private boolean running;
 
 	public TextView(Client client) {
@@ -57,13 +59,14 @@ public class TextView extends Thread implements View {
 
 				case "help":
 
-					this.sendNotification(
-									"game <int>: request the server for a game with a certain amount of players");
+					this.sendNotification("game <int>: request the server for a game with a certain amount of players");
 					this.sendNotification("move <tileno> <x> <y>: play a move.");
 					this.sendNotification("swap <tileno>: request swap.");
 					this.sendNotification("apply: send your move to the server.");
 					this.sendNotification("revert: restart your turn.");
 					this.sendNotification("stones: get the amount of stones in the game bag.");
+					this.sendNotification("hint: request a hint.");
+					this.sendNotification("applyhint: apply the suggested hint.");
 					this.sendNotification("");
 					this.sendNotification("board: show the current board.");
 					this.sendNotification("hand: show your hand.");
@@ -94,13 +97,31 @@ public class TextView extends Thread implements View {
 					}
 					break;
 
+				case "hint":
+
+					if (this.client.status == Client.Status.IN_LOBBY) {
+						this.sendNotification("You're not in a game.");
+					} else {
+						this.showHint();
+					}
+					break;
+
+				case "applyhint":
+
+					if (this.client.status == Client.Status.IN_LOBBY) {
+						this.sendNotification("You're not in a game.");
+					} else {
+						this.applyHint();
+					}
+					break;
+
 				case "move":
 
 					if (args.length < 3) {
 						Util.println("usage: move <tileno> <x> <y> ...");
 					} else {
 						this.client.addMove(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
-										Integer.parseInt(args[2]));
+								Integer.parseInt(args[2]));
 					}
 
 					break;
@@ -184,6 +205,34 @@ public class TextView extends Thread implements View {
 	}
 
 	/**
+	 * Apply the suggested hint.
+	 */
+	private void applyHint() {
+		if (this.client.getTurn().getMoves().size() != 0) {
+			this.client.submitTurn();
+		} else { 
+			Util.println("This could not been applied to the server.");
+		}
+	}
+
+	/** 
+	 * Show the hint to the user.
+	 */
+	private void showHint() {
+		Util.println("A special hint will be calculated for you, please wait.");
+
+		StrategyInterface s = new SmartStrategy();
+
+		Turn turn = s.requestTurn(client.getTurn());
+
+		client.setTurn(turn);
+
+		Util.println("The following moves will be suggested: ");
+		Util.println(client.getTurn().getMoves().toString());
+		Util.println("Type applyhint to apply these moves.");
+	}
+
+	/**
 	 * Handle changes to observed objects.
 	 */
 	@Override
@@ -218,8 +267,8 @@ public class TextView extends Thread implements View {
 
 		while (host == null) {
 			try {
-				host = InetAddress.getByName(Util.readString("What hostname should we connect to?"
-								+ System.lineSeparator() + "> "));
+				host = InetAddress.getByName(
+						Util.readString("What hostname should we connect to?" + System.lineSeparator() + "> "));
 			} catch (UnknownHostException e) {
 				this.sendNotification("This hostname cannot be resolved.");
 				Util.log(e);
@@ -236,8 +285,7 @@ public class TextView extends Thread implements View {
 		int port = 0;
 
 		while (port < 2000 || port > 3000) {
-			port = Util.readInt("What port should we connect to? (2000..3000)"
-							+ System.lineSeparator() + "> ");
+			port = Util.readInt("What port should we connect to? (2000..3000)" + System.lineSeparator() + "> ");
 		}
 
 		return port;
@@ -246,14 +294,13 @@ public class TextView extends Thread implements View {
 
 	@Override
 	public synchronized String requestNickname() {
-		return Util.readString(
-						"What nickname would you like to use?" + System.lineSeparator() + "> ");
+		return Util.readString("What nickname would you like to use?" + System.lineSeparator() + "> ");
 	}
 
 	@Override
 	public synchronized String askForPlayerType() {
-		return Util.readString("What type of player would you like to be? (human, computer)"
-						+ System.lineSeparator() + "> ");
+		return Util.readString(
+				"What type of player would you like to be? (human, computer)" + System.lineSeparator() + "> ");
 	}
 
 	@Override
@@ -293,8 +340,7 @@ public class TextView extends Thread implements View {
 
 	@Override
 	public void showBoard() {
-		if (this.client.status == Client.Status.IN_GAME_INITIAL
-						|| this.client.status == Client.Status.IN_TURN) {
+		if (this.client.status == Client.Status.IN_GAME_INITIAL || this.client.status == Client.Status.IN_TURN) {
 			Util.println(this.client.getTurn().getBoardCopy().toString());
 		} else {
 			Util.println(this.client.getBoard().toString());
